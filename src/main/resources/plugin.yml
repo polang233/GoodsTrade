@@ -1,0 +1,6 @@
+name: GoodsTrade
+version: '${version}'
+main: cc.sbsj.polang.goodstrade.GoodsTrade
+authors: [ polang ]
+description: 简单安全的玩家物品交易插件
+website: www.sbsj.cc
