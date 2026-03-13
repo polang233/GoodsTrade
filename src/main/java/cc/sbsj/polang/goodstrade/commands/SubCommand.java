@@ -1,4 +1,4 @@
-package cc.sbsj.polang.goodstrade.commands.main;
+package cc.sbsj.polang.goodstrade.commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

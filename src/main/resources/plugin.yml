@@ -4,3 +4,13 @@ main: cc.sbsj.polang.goodstrade.GoodsTrade
 authors: [ polang ]
 description: 简单安全的玩家物品交易插件
 website: www.sbsj.cc
+permissions:
+  goodstrade.admin:
+    default: op
+  goodstrade.use:
+    default: true
+commands:
+  goodstrade:
+    permission: goodstrade.use
+    description: 交易功能主命令
+    aliases: [ gt ]

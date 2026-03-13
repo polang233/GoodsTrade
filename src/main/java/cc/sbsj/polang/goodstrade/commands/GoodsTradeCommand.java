@@ -2,9 +2,6 @@ package cc.sbsj.polang.goodstrade.commands;
 
 
 import cc.sbsj.polang.goodstrade.GoodsTrade;
-import cc.sbsj.polang.goodstrade.commands.main.CommandManager;
-import cc.sbsj.polang.goodstrade.commands.main.SubCommand;
-import cc.sbsj.polang.goodstrade.commands.main.SubCommandAnnotation;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

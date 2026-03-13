@@ -10,11 +10,14 @@ public final class GoodsTrade extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        getCommand("goodstrade").setExecutor(new GoodsTradeCommand(this));
 
+        getCommand("goodstrade").setExecutor(new GoodsTradeCommand(this));
+        getServer().getPluginManager().registerEvents(new Events(), this);
+        getLogger().info("§a插件成功加载了喵~");
     }
 
     @Override
     public void onDisable() {
+        getLogger().info("§a插件卸载了喵~");
     }
 }
