@@ -1,6 +1,9 @@
 package cc.sbsj.polang.goodstrade.commands;
 
 import cc.sbsj.polang.goodstrade.GoodsTrade;
+import cc.sbsj.polang.goodstrade.commands.annotation.SubCommand;
+import cc.sbsj.polang.goodstrade.commands.annotation.SubCommandAnnotation;
+import lombok.Getter;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.jar.JarFile;
 
+@Getter
 public class CommandManager {
     private final Map<String, SubCommand> commands = new HashMap<>();
 
@@ -52,10 +56,6 @@ public class CommandManager {
             return subCommand.tabComplete(sender, cmd, label, subArgs);
         }
         return Collections.emptyList();
-    }
-
-    public Map<String, SubCommand> getCommands() {
-        return commands;
     }
 
     /**

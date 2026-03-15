@@ -1,5 +1,6 @@
 package cc.sbsj.polang.goodstrade.gui;
 
+import cc.sbsj.polang.goodstrade.gui.view.View;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -15,17 +16,16 @@ public class GuiButton {
 
     public GuiButton(ItemStack buttonItemStack) {
         if (buttonItemStack == null) {
-            this.buttonItemStack = ViewHelper.air;
+            this.buttonItemStack = View.air;
             this.isCancelEvent = false;
             return;
         }
         this.buttonItemStack = buttonItemStack;
     }
 
-
     public GuiButton(int slot) {
         this.slot = slot;
-        this.buttonItemStack = ViewHelper.air;
+        this.buttonItemStack = View.air;
     }
 
     private GuiButtonClickHandler clickHandler;
@@ -40,6 +40,7 @@ public class GuiButton {
     }
 
     public void onClick(InventoryClickEvent event) {
+        event.setCancelled(isCancelEvent);
         if (shiftClickHandler != null && event.isShiftClick()) {
             shiftClickHandler.handle(event);
             return;

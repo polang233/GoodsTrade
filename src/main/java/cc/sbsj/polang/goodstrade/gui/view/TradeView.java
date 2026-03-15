@@ -3,7 +3,6 @@ package cc.sbsj.polang.goodstrade.gui.view;
 import cc.sbsj.polang.goodstrade.GoodsTrade;
 import cc.sbsj.polang.goodstrade.gui.Gui;
 import cc.sbsj.polang.goodstrade.gui.GuiButton;
-import cc.sbsj.polang.goodstrade.gui.ViewHelper;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import cc.sbsj.polang.goodstrade.trade.TradeSession;
 import cc.sbsj.polang.goodstrade.util.Utils;
@@ -30,9 +29,14 @@ import java.util.*;
     T=交易接受者的确认状态
     Q=确认交易按钮
 */
-public class TradeView extends ViewHelper {
+public class TradeView extends View {
     TradeSession session;
     Gui gui;
+    public BukkitRunnable runnable;
+    Player cancelledPlayer = null;  // 记录谁取消了等待状态
+
+    public TradeView() {
+    }
 
     public void open(Player sender, Player target) {
         // 创建交易会话
@@ -49,10 +53,6 @@ public class TradeView extends ViewHelper {
         gui.open(sender);
         // 接收者打开界面
         gui.open(target);
-
-        // 发送提示消息
-        sender.sendMessage("§a你向 §b" + target.getName() + " §a发起了交易请求");
-        target.sendMessage("§b" + sender.getName() + " §a向你发起了交易请求");
     }
 
     //有点难处理玩家ID过长情况，先不管了
@@ -127,8 +127,9 @@ public class TradeView extends ViewHelper {
                         case 2:
                         case 3:
                             ItemStack item = gui.getInventory().getItem(j + i * 9);
-                            if (item != null && item.getType() != Material.AIR) {
+                            if (Utils.isItemStackEmpty(item)) {
                                 itemsList.add(item);
+                                player.sendMessage(gui.getInventory().getItem(j + i * 9).toString());
                             }
                             break;
                     }
@@ -145,6 +146,7 @@ public class TradeView extends ViewHelper {
                             ItemStack item = gui.getInventory().getItem(j + i * 9);
                             if (Utils.isItemStackEmpty(item)) {
                                 itemsList.add(item);
+                                player.sendMessage(gui.getInventory().getItem(j + i * 9).toString());
                             }
                             break;
                     }
@@ -171,6 +173,22 @@ public class TradeView extends ViewHelper {
             } else {
                 event.setCancelled(false);
             }
+            if (session.isPlayerSender(user)) {
+                if (session.isSenderReady()) {
+                    event.setCancelled(true);
+                    user.sendMessage("§c你已确认，物品状态锁定！");
+                    user.playSound(user.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+                    return;
+                }
+            } else {
+                if (session.isTargetReady()) {
+                    event.setCancelled(true);
+                    user.sendMessage("§c你已确认，物品状态锁定！");
+                    user.playSound(user.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+                    return;
+                }
+            }
+
         });
         gui.addButton(slot, button);
 
@@ -179,7 +197,16 @@ public class TradeView extends ViewHelper {
 
     // 添加控制按钮
     private void addControlButtons() {
+        setButtonsEvent();
+        //左
+        changeButtons(senderReadyButton, 48, 47, 46);
+        //右
+        changeButtons(targetReadyButton, 50, 51, 52);
+        //添加中间提示按钮
+        changeButtons(infoButton, 4, 13, 22, 31);
+    }
 
+    private void setButtonsEvent() {
         senderReadyButton.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
             if (player.equals(session.getSenderPlayer())) {
@@ -200,6 +227,24 @@ public class TradeView extends ViewHelper {
                 //TODO
                 player.sendMessage("§c你已取消确认交易");
 
+            }
+        });
+        senderReadyButtonWait.setOnClick(event -> {
+            Player player = (Player) event.getWhoClicked();
+            if (player.equals(session.getSenderPlayer())) {
+                runnable.cancel();
+                //设置为对方取消
+                session.setTargetReady(false);
+                session.setSenderReady(false);
+                //设置自己的按钮
+                changeButtons(senderReadyButton, 48, 47, 46);
+
+                //设置对方按钮
+                changeButtons(cancelReadyButton, 50, 51, 52);
+
+                //记录是发送者取消的
+                cancelledPlayer = session.getTargetPlayer();
+                player.sendMessage("§c你已取消确认状态");
             }
         });
         targetReadyButton.setOnClick(event -> {
@@ -224,19 +269,46 @@ public class TradeView extends ViewHelper {
             }
         });
 
-        //左
-        changeButtons(senderReadyButton, 48, 47, 46);
-        //右
-        changeButtons(targetReadyButton, 50, 51, 52);
+        targetReadyButtonWait.setOnClick(event -> {
+            Player player = (Player) event.getWhoClicked();
+            if (player.equals(session.getTargetPlayer())) {
+                runnable.cancel();
+                //设置为对方取消
+                session.setSenderReady(false);
+                session.setTargetReady(false);
+
+                //设置自己的按钮
+                changeButtons(targetReadyButton, 50, 51, 52);
+
+                //设置对方按钮
+                changeButtons(cancelReadyButton, 48, 47, 46);
+
+                //记录是接受者取消的
+                cancelledPlayer = session.getSenderPlayer();
+
+                player.sendMessage("§c你已取消确认状态");
+            }
+        });
+        cancelReadyButton.setOnClick(event -> {
+            Player player = (Player) event.getWhoClicked();
+
+            //只有被取消的那一方才能点击这个按钮
+            if (player.equals(cancelledPlayer)) {
+                if (player == session.getSenderPlayer()) {
+                    session.setSenderReady(false);
+                    changeButtons(senderReadyButton, 48, 47, 46);
+                } else {
+                    session.setTargetReady(false);
+                    changeButtons(targetReadyButton, 50, 51, 52);
+                }
 
 
-        //添加中间提示按钮
-        ItemStack infoItem = new ItemStack(Material.IRON_FENCE);
-        GuiButton infoButton = new GuiButton(infoItem);
-        gui.addButton(4, infoButton);
-        gui.addButton(13, infoButton);
-        gui.addButton(22, infoButton);
-        gui.addButton(31, infoButton);
+                //清除记录
+                cancelledPlayer = null;
+
+                player.sendMessage("§c交易已取消，回到初始状态");
+            }
+        });
     }
 
     public void changeButtons(GuiButton button, int... slots) {
@@ -248,8 +320,8 @@ public class TradeView extends ViewHelper {
     //    }
     public void prepareTrade(TradeSession session) {
         //等待五秒，进行倒计时，将两边的界面改为等待按钮
-        new BukkitRunnable() {
-            int count = 5;
+        runnable = new BukkitRunnable() {
+            int count = GoodsTrade.config.getWaitTime();
 
             @Override
             public void run() {
@@ -257,19 +329,29 @@ public class TradeView extends ViewHelper {
                     //开始交易
                     session.setConfirmed(true);
                     executeTrade(session);
+
+                    session.getSenderPlayer().playSound(session.getSenderPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
+                    session.getTargetPlayer().playSound(session.getTargetPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
+
                     cancel();
                 } else {
                     //等待
                     session.setConfirmed(false);
                     senderReadyButtonWait.buttonItemStack.setAmount(count);
                     changeButtons(senderReadyButtonWait, 48, 47, 46);
+                    session.getSenderPlayer().playSound(session.getSenderPlayer().getLocation(), Sound.BLOCK_NOTE_PLING, 1.0f, 1.0f);
+
                     targetReadyButtonWait.buttonItemStack.setAmount(count);
                     changeButtons(targetReadyButtonWait, 50, 51, 52);
+                    session.getTargetPlayer().playSound(session.getTargetPlayer().getLocation(), Sound.BLOCK_NOTE_PLING, 1.0f, 1.0f);
+
                     count--;
+
                 }
             }
 
-        }.runTaskTimer(GoodsTrade.instance, 1L, 20L);
+        };
+        runnable.runTaskTimer(GoodsTrade.instance, 1L, 20L);
     }
 
     public void executeTrade(TradeSession session) {

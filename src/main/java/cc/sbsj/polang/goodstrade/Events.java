@@ -1,17 +1,20 @@
 package cc.sbsj.polang.goodstrade;
 
 import cc.sbsj.polang.goodstrade.gui.Gui;
+import cc.sbsj.polang.goodstrade.gui.view.View;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import cc.sbsj.polang.goodstrade.trade.TradeSession;
 import cc.sbsj.polang.goodstrade.util.Utils;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.*;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 public class Events implements Listener {
@@ -31,18 +34,35 @@ public class Events implements Listener {
         if (event.getInventory().getHolder() == null) return;
         if (!(event.getInventory().getHolder() instanceof Gui)) return;
 
+        TradeSession session = TradeManager.getSession(player);
+        if (session.bothReady() && !View.readySlots.contains(event.getRawSlot())) {
+            session.getSenderPlayer().sendMessage("§c正在交易确认中，若需取消请按黄色按钮！");
+            event.setCancelled(true);
+            return;
+        }
 
-        // 点击的是玩家自己背包就
-        player.sendMessage(event.getClick().toString());
+//        player.sendMessage("§7点击类型: §b" + event.getClick().toString());
+//        player.sendMessage("§7点击操作: §3" + event.getAction().toString());
+//        player.sendMessage("§7点击格子: §2" + event.getSlot());
+//        player.sendMessage("§7原始格子: §a" + event.getRawSlot());
+//        String itemType = event.getCurrentItem() == null ? "null" : event.getCurrentItem().getType().toString();
+//        String itemType2 = event.getCursor() == null ? "null" : event.getCursor().getType().toString();
+//        player.sendMessage("§7手里物品: §e" + itemType2);
+//        player.sendMessage("§7点击物品: §6" + itemType);
+
+        //安全处理
+        switch (event.getClick()) {
+            //拦截shift快捷放入
+            case SHIFT_RIGHT:
+            case SHIFT_LEFT:
+
+            case DOUBLE_CLICK: //拦截双击吸走容器物品操作
+                event.setCancelled(true);
+                return;
+        }
+        // 点击的是玩家自己背包
         if (event.getClickedInventory() == event.getView().getBottomInventory()) {
-            //TODO
-            //安全处理需要全部排查
-            switch (event.getClick()) {
-                case SHIFT_RIGHT:
-                case SHIFT_LEFT:
-                    event.setCancelled(true);
-                    break;
-            }
+
         } else {
             event.setCancelled(true);
             Gui gui = (Gui) event.getInventory().getHolder();
@@ -57,6 +77,52 @@ public class Events implements Listener {
     }
 
     @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (event.getInventory().getHolder() == null) return;
+        if (!(event.getInventory().getHolder() instanceof Gui)) return;
+        Player player = (Player) event.getWhoClicked();
+        Inventory topInv = event.getView().getTopInventory();
+        Inventory bottomInv = event.getView().getBottomInventory();
+        TradeSession session = TradeManager.getSession(player);
+        Player sender = session.getSenderPlayer();
+        Player target = session.getTargetPlayer();
+        if (player == sender) {
+            //阻止发起者操作被发起者界面
+            for (int rawSlot : event.getRawSlots()) {
+                if (View.isTargetTradeSlot(rawSlot)) {
+                    event.setCancelled(true);
+                    return;
+                } else if (View.isSenderTradeSlot(rawSlot)) {
+                    if (session.isSenderReady()) {
+                        event.setCancelled(true);
+                        sender.sendMessage("§c你已确认，物品状态锁定！");
+                        sender.playSound(sender.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+                        return;
+                    }
+                }
+
+            }
+
+        } else {
+            for (int rawSlot : event.getRawSlots()) {
+                if (View.isSenderTradeSlot(rawSlot)) {
+                    event.setCancelled(true);
+                    return;
+                } else if (View.isTargetTradeSlot(rawSlot)) {
+                    if (session.isTargetReady()) {
+                        event.setCancelled(true);
+                        target.sendMessage("§c你已确认，物品状态锁定！");
+                        target.playSound(target.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+                        return;
+                    }
+                }
+
+            }
+
+        }
+    }
+
+    @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getInventory().getHolder() == null) return;
         if (!(event.getInventory().getHolder() instanceof Gui)) return;
@@ -67,8 +133,16 @@ public class Events implements Listener {
             TradeManager.addItems(player, cursorItem);
         }
         //该玩家是否正在交易
-        if (TradeManager.isTrade(player)) {
-            TradeSession session = TradeManager.getSession(player);
+        if (!TradeManager.isTrade(player)) return;
+        TradeSession session = TradeManager.getSession(player);
+        if (session == null) return;
+        //俩人都确认并且没完成，有人提前想结束
+        if (session.bothReady() && !session.isConfirmed()) {
+            //取消倒计时
+            session.getView().runnable.cancel();
+            //取消交易
+            TradeManager.cancelTrade(player);
+        } else {
             if (session.isConfirmed()) {
                 //已经结束的关闭界面
                 TradeManager.cancelTrade(session);
@@ -76,7 +150,26 @@ public class Events implements Listener {
                 //正在交易但关闭界面视为提前结束
                 TradeManager.cancelTrade(player);
             }
+        }
 
+    }
+
+    //玩家交互事件
+    @EventHandler
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        if (!GoodsTrade.config.isEnabledShiftClick()) return;
+        if (event.getRightClicked() instanceof Player) {
+            Player senderPlayer = event.getPlayer();
+            if (senderPlayer.isSneaking()) {
+                Player targetPlayer = (Player) event.getRightClicked();
+                if (!TradeManager.accepts.containsKey(targetPlayer.getUniqueId())) {
+                    TradeManager.interactTradeRequest(senderPlayer, targetPlayer);
+                    senderPlayer.sendMessage(GoodsTrade.PREFIX + "已向玩家 " + targetPlayer.getName() + " 发起交易");
+                } else {
+                    senderPlayer.sendMessage(GoodsTrade.PREFIX + "正在等待玩家 " + targetPlayer.getName() + " 接受你的交易请求");
+                }
+
+            }
         }
     }
 }

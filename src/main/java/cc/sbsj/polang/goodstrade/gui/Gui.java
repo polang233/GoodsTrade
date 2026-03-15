@@ -1,5 +1,6 @@
 package cc.sbsj.polang.goodstrade.gui;
 
+import cc.sbsj.polang.goodstrade.gui.view.View;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -45,7 +46,7 @@ public class Gui implements InventoryHolder {
 
     // 整个界面添加背景
     public void addAllBackGround() {
-        GuiButton background = new GuiButton(ViewHelper.backGround);
+        GuiButton background = new GuiButton(View.backGround);
         for (int i = 0; i < row * 9; ++i) {
             addButton(i, background);
         }
@@ -77,17 +78,13 @@ public class Gui implements InventoryHolder {
     }
 
     public void addAir(int slot) {
-        this.inv.setItem(slot, ViewHelper.air);
+        this.inv.setItem(slot, View.air);
         this.buttons[slot] = null;
 
     }
 
     public void open(Player player) {
         player.openInventory(inv);
-    }
-
-    public Player getPlayer() {
-        return player;
     }
 
     @Override
