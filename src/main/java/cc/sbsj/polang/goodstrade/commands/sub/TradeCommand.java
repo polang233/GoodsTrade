@@ -4,7 +4,6 @@ package cc.sbsj.polang.goodstrade.commands.sub;
 import cc.sbsj.polang.goodstrade.GoodsTrade;
 import cc.sbsj.polang.goodstrade.commands.annotation.SubCommand;
 import cc.sbsj.polang.goodstrade.commands.annotation.SubCommandAnnotation;
-import cc.sbsj.polang.goodstrade.gui.view.TradeView;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -45,6 +44,7 @@ public class TradeCommand implements SubCommand {
             }
         }
         if (args.length == 2) {
+            if (!sender.hasPermission("goodstrade.admin")) return false;
             //发起人
             Player player = Bukkit.getPlayer(args[0]);
             if (player == null) {

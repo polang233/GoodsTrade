@@ -80,7 +80,6 @@ public class Gui implements InventoryHolder {
     public void addAir(int slot) {
         this.inv.setItem(slot, View.air);
         this.buttons[slot] = null;
-
     }
 
     public void open(Player player) {

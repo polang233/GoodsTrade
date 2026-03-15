@@ -1,6 +1,5 @@
 package cc.sbsj.polang.goodstrade.trade;
 
-import cc.sbsj.polang.goodstrade.gui.GuiButtonClickHandler;
 import cc.sbsj.polang.goodstrade.gui.view.TradeView;
 import lombok.Getter;
 import lombok.Setter;

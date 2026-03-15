@@ -6,7 +6,6 @@ import cc.sbsj.polang.goodstrade.gui.GuiButton;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import cc.sbsj.polang.goodstrade.trade.TradeSession;
 import cc.sbsj.polang.goodstrade.util.Utils;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -78,40 +77,35 @@ public class TradeView extends View {
         StringBuilder sb = new StringBuilder();
 
         // 左侧填充
-        sb.append(" ".repeat(Math.max(0, leftPadding)));
+        for (int i = 0; i < Math.max(0, leftPadding); i++) {
+            sb.append(" ");
+        }
 
         // 玩家 1 名字
         sb.append(name1);
 
         // 中间空格
-        sb.append(" ".repeat(middleSpace));
+        for (int i = 0; i < middleSpace; i++) {
+            sb.append(" ");
+        }
 
         // 玩家 2 名字
         sb.append(name2);
 
         // 右侧填充
-        sb.append(" ".repeat(Math.max(0, rightPadding)));
+        for (int i = 0; i < Math.max(0, rightPadding); i++) {
+            sb.append(" ");
+        }
 
         return sb.toString();
     }
 
     private void addTradeItemButtons() {
-        for (int i = 0; i < gui.getRow() - 2; i++) {
-            for (int j = 0; j < 9; j++) {
-                switch (j) {
-                    case 0:
-                    case 1:
-                    case 2:
-                    case 3:
-                        addTradeItem(session.getSenderPlayer(), j + i * 9);
-                        break;
-                    case 5:
-                    case 6:
-                    case 7:
-                    case 8:
-                        addTradeItem(session.getTargetPlayer(), j + i * 9);
-                }
-            }
+        for (int slot : View.senderTradeSlots) {
+            addTradeItem(session.getSenderPlayer(), slot);
+        }
+        for (int slot : View.targetTradeSlots) {
+            addTradeItem(session.getTargetPlayer(), slot);
         }
     }
 
@@ -119,43 +113,27 @@ public class TradeView extends View {
     public void backPlayerItems(Player player) {
         List<ItemStack> itemsList = new ArrayList<>();
         if (session.isPlayerSender(player)) {
-            for (int i = 0; i < gui.getRow() - 2; i++) {
-                for (int j = 0; j < 9; j++) {
-                    switch (j) {
-                        case 0:
-                        case 1:
-                        case 2:
-                        case 3:
-                            ItemStack item = gui.getInventory().getItem(j + i * 9);
-                            if (Utils.isItemStackEmpty(item)) {
-                                itemsList.add(item);
-                                player.sendMessage(gui.getInventory().getItem(j + i * 9).toString());
-                            }
-                            break;
-                    }
+            for (int slot : View.senderTradeSlots) {
+                ItemStack item = gui.getInventory().getItem(slot);
+                if (Utils.isItemStackEmpty(item)) {
+                    itemsList.add(item);
+                    //防止异常，清掉物品
+                    gui.getInventory().setItem(slot, air);
                 }
             }
         } else {
-            for (int i = 0; i < gui.getRow() - 2; i++) {
-                for (int j = 0; j < 9; j++) {
-                    switch (j) {
-                        case 5:
-                        case 6:
-                        case 7:
-                        case 8:
-                            ItemStack item = gui.getInventory().getItem(j + i * 9);
-                            if (Utils.isItemStackEmpty(item)) {
-                                itemsList.add(item);
-                                player.sendMessage(gui.getInventory().getItem(j + i * 9).toString());
-                            }
-                            break;
-                    }
+            for (int slot : View.targetTradeSlots) {
+                ItemStack item = gui.getInventory().getItem(slot);
+                if (Utils.isItemStackEmpty(item)) {
+                    itemsList.add(item);
+                    //防止异常，清掉物品
+                    gui.getInventory().setItem(slot, air);
                 }
             }
         }
 
         if (!itemsList.isEmpty()) {
-            TradeManager.addItems(player, itemsList.toArray(new ItemStack[0]));
+            Utils.addItems(player, itemsList.toArray(new ItemStack[0]));
         }
     }
 
@@ -366,41 +344,25 @@ public class TradeView extends View {
     public void addPlayerTradeItems(Player player) {
         List<ItemStack> itemsList = new ArrayList<>();
         if (session.isPlayerSender(player)) {
-            for (int i = 0; i < gui.getRow() - 2; i++) {
-                for (int j = 0; j < 9; j++) {
-                    switch (j) {
-                        case 5:
-                        case 6:
-                        case 7:
-                        case 8:
-                            ItemStack item = gui.getInventory().getItem(j + i * 9);
-                            if (item != null && item.getType() != Material.AIR) {
-                                itemsList.add(item);
-                            }
-                            break;
-                    }
+            for (int slot : View.targetTradeSlots) {
+                ItemStack item = gui.getInventory().getItem(slot);
+                if (Utils.isItemStackEmpty(item)) {
+                    itemsList.add(item);
+                    gui.getInventory().setItem(slot, air);
                 }
             }
         } else {
-            for (int i = 0; i < gui.getRow() - 2; i++) {
-                for (int j = 0; j < 9; j++) {
-                    switch (j) {
-                        case 0:
-                        case 1:
-                        case 2:
-                        case 3:
-                            ItemStack item = gui.getInventory().getItem(j + i * 9);
-                            if (Utils.isItemStackEmpty(item)) {
-                                itemsList.add(item);
-                            }
-                            break;
-                    }
+            for (int slot : View.senderTradeSlots) {
+                ItemStack item = gui.getInventory().getItem(slot);
+                if (Utils.isItemStackEmpty(item)) {
+                    itemsList.add(item);
+                    gui.getInventory().setItem(slot, air);
                 }
             }
         }
 
         if (!itemsList.isEmpty()) {
-            TradeManager.addItems(player, itemsList.toArray(new ItemStack[0]));
+            Utils.addItems(player, itemsList.toArray(new ItemStack[0]));
         }
     }
 }

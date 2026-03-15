@@ -5,15 +5,15 @@ import cc.sbsj.polang.goodstrade.gui.view.View;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import cc.sbsj.polang.goodstrade.trade.TradeSession;
 import cc.sbsj.polang.goodstrade.util.Utils;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.*;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -40,7 +40,7 @@ public class Events implements Listener {
             event.setCancelled(true);
             return;
         }
-
+        //debug
 //        player.sendMessage("§7点击类型: §b" + event.getClick().toString());
 //        player.sendMessage("§7点击操作: §3" + event.getAction().toString());
 //        player.sendMessage("§7点击格子: §2" + event.getSlot());
@@ -55,14 +55,14 @@ public class Events implements Listener {
             //拦截shift快捷放入
             case SHIFT_RIGHT:
             case SHIFT_LEFT:
-
-            case DOUBLE_CLICK: //拦截双击吸走容器物品操作
+                //拦截双击吸走容器物品操作
+            case DOUBLE_CLICK:
                 event.setCancelled(true);
                 return;
         }
         // 点击的是玩家自己背包
         if (event.getClickedInventory() == event.getView().getBottomInventory()) {
-
+            //留着，总有用
         } else {
             event.setCancelled(true);
             Gui gui = (Gui) event.getInventory().getHolder();
@@ -100,7 +100,6 @@ public class Events implements Listener {
                         return;
                     }
                 }
-
             }
 
         } else {
@@ -130,7 +129,7 @@ public class Events implements Listener {
         //返还手里物品
         ItemStack cursorItem = player.getOpenInventory().getCursor();
         if (Utils.isItemStackEmpty(cursorItem)) {
-            TradeManager.addItems(player, cursorItem);
+            Utils.addItems(player, cursorItem);
         }
         //该玩家是否正在交易
         if (!TradeManager.isTrade(player)) return;
@@ -172,4 +171,57 @@ public class Events implements Listener {
             }
         }
     }
+
+    // 伤害保护事件
+    @EventHandler
+    public void onEntityDamage(EntityDamageEvent event) {
+        if (!GoodsTrade.config.isSafeDamage()) return;
+        if (!(event.getEntity() instanceof Player)) return;
+
+        Player player = (Player) event.getEntity();
+        if (TradeManager.isTrade(player)) {
+            event.setCancelled(true);
+        }
+    }
+
+    // 实体伤害保护事件（防止被其他实体伤害）
+    @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (!GoodsTrade.config.isSafeDamage()) return;
+
+        // 检查受到伤害的玩家
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            if (TradeManager.isTrade(player)) {
+                event.setCancelled(true);
+                event.getDamager().sendMessage("该玩家正在交易，你无法对其造成伤害");
+                return;
+            }
+        }
+
+        // 检查造成伤害的玩家，防止交易中的玩家对别人造成伤害（真的会有这种情况吗？）
+        if (event.getDamager() instanceof Player) {
+            Player damager = (Player) event.getDamager();
+            if (TradeManager.isTrade(damager)) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    // 移动保护事件
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        if (!GoodsTrade.config.isSafeMove()) return;
+        Player player = event.getPlayer();
+
+        if (TradeManager.isTrade(player)) {
+            // 如果位置发生了变化
+            if (event.getFrom().getBlockX() != event.getTo().getBlockX() ||
+                    event.getFrom().getBlockZ() != event.getTo().getBlockZ() ||
+                    event.getFrom().getBlockY() != event.getTo().getBlockY()) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
 }

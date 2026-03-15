@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.jar.JarFile;
 
@@ -71,7 +70,7 @@ public class CommandManager {
                     try {
                         SubCommand instance = (SubCommand) clazz.getDeclaredConstructor().newInstance();
                         registerCommand(instance);
-                        GoodsTrade.instance.getLogger().info(GoodsTrade.PREFIX + "已注册子命令: " + clazz.getName());
+                        GoodsTrade.instance.getLogger().info(GoodsTrade.PREFIX + "已注册子命令: " + clazz.getSimpleName());
                     } catch (Exception e) {
                         GoodsTrade.instance.getLogger().warning(GoodsTrade.PREFIX + "无法实例化命令类: " + clazz.getName() + " - " + e.getMessage());
                     }
@@ -90,7 +89,8 @@ public class CommandManager {
         URL resource = loader.getResource(path);
         if (resource != null) {
             String protocol = resource.getProtocol();
-            GoodsTrade.instance.getLogger().info(GoodsTrade.PREFIX + "扫描协议: " + protocol + ", 路径: " + resource);
+            GoodsTrade.instance.getLogger().info(GoodsTrade.PREFIX + "扫描协议: " + protocol);
+            GoodsTrade.instance.getLogger().info(GoodsTrade.PREFIX + "路径: " + resource);
 
             try {
                 if ("jar".equals(protocol)) {
@@ -112,7 +112,7 @@ public class CommandManager {
             int separator = jarPath.indexOf("!/");
             if (separator == -1) return;
 
-            String realJarPath = URLDecoder.decode(jarPath.substring(5, separator), StandardCharsets.UTF_8);
+            String realJarPath = URLDecoder.decode(jarPath.substring(5, separator), "UTF-8");
             try (JarFile jar = new JarFile(realJarPath)) {
                 jar.stream()
                         .filter(entry -> !entry.isDirectory())

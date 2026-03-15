@@ -4,6 +4,7 @@ main: cc.sbsj.polang.goodstrade.GoodsTrade
 authors: [ polang ]
 description: 简单安全的玩家物品交易插件
 website: www.sbsj.cc
+api-version: '1.13'
 permissions:
   goodstrade.admin:
     default: op

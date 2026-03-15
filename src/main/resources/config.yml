@@ -4,11 +4,11 @@ Trade:
   #什么方式可以发起交易
   Triggers:
     Shift-Right-Click: true
-  Safe-Handling:
+  Safe:
     #是否开启交易期间玩家不受会伤害
-    Safe-Damage: false
+    Damage: false
     #交易期间玩家是否阻止移动、被推动等
-    Safe-Move: false
+    Move: false
   Item-BlackList:
     #是否开启黑名单
     Enable: false

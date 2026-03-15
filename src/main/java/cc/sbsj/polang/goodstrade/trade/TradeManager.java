@@ -7,9 +7,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
-import org.w3c.dom.Text;
 
 import java.util.*;
 
@@ -95,19 +92,6 @@ public class TradeManager {
 
     }
 
-    //给玩家发物品到背包，如果包满了就丢地上
-    public static void addItems(Player player, ItemStack... items) {
-        if (items.length == 0) return;
-
-        Map<Integer, ItemStack> excessItems = player.getInventory().addItem(items);
-        //没有需要返还的物品提前跳过
-        if (excessItems == null || excessItems.isEmpty()) return;
-        for (Map.Entry<Integer, ItemStack> entry : excessItems.entrySet()) {
-            player.getWorld().dropItem(player.getLocation(), entry.getValue());
-        }
-        //TODO
-        player.sendMessage(GoodsTrade.PREFIX + "§c你的背包已满！多余物品已丢出");
-    }
 
     public static void startTrade(Player senderPlayer, Player targetPlayer) {
         senderPlayer.sendMessage(GoodsTrade.PREFIX + "§2对方接受交易，正在打开界面");

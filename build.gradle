@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'cc.sbsj.polang'
-version = '1.0'
+version = '1.0.1'
 
 repositories {
     mavenCentral()
@@ -24,7 +24,7 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:1.18.42"
 }
 
-def targetJavaVersion = 11
+def targetJavaVersion = 8
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion

@@ -2,7 +2,6 @@ package cc.sbsj.polang.goodstrade.config;
 
 import cc.sbsj.polang.goodstrade.GoodsTrade;
 import org.bukkit.configuration.Configuration;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class Config {
     public Configuration config;
@@ -31,5 +30,13 @@ public class Config {
 
     public boolean isEnabledShiftClick() {
         return config.getBoolean("Trade.Triggers.Shift-Right-Click", false);
+    }
+
+    public boolean isSafeDamage() {
+        return config.getBoolean("Trade.Safe.Damage", false);
+    }
+
+    public boolean isSafeMove() {
+        return config.getBoolean("Trade.Safe.Move", false);
     }
 }
