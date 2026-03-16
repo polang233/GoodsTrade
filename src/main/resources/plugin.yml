@@ -3,8 +3,9 @@ version: '${version}'
 main: cc.sbsj.polang.goodstrade.GoodsTrade
 authors: [ polang ]
 description: 简单安全的玩家物品交易插件
-website: www.sbsj.cc
+website: https://space.bilibili.com/450460661
 api-version: '1.13'
+
 permissions:
   goodstrade.admin:
     default: op

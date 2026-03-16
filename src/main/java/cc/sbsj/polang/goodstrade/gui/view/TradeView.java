@@ -8,10 +8,12 @@ import cc.sbsj.polang.goodstrade.trade.TradeSession;
 import cc.sbsj.polang.goodstrade.util.Utils;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
     ~~~~@~~~~
@@ -30,7 +32,7 @@ import java.util.*;
 */
 public class TradeView extends View {
     TradeSession session;
-    Gui gui;
+    public Gui gui;
     public BukkitRunnable runnable;
     Player cancelledPlayer = null;  // 记录谁取消了等待状态
 
@@ -188,6 +190,9 @@ public class TradeView extends View {
         senderReadyButton.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
             if (player.equals(session.getSenderPlayer())) {
+
+                if (isBlackList(event, player)) return;
+
                 session.setSenderReady(true);
                 changeButtons(senderReadyButtonYes, 48, 47, 46);
                 if (session.bothReady()) {
@@ -228,12 +233,14 @@ public class TradeView extends View {
         targetReadyButton.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
             if (player.equals(session.getTargetPlayer())) {
+
+                if (isBlackList(event, player)) return;
+
                 session.setTargetReady(true);
                 changeButtons(targetReadyButtonYes, 50, 51, 52);
                 if (session.bothReady()) {
                     prepareTrade(session);
                 }
-                // TODO
                 player.sendMessage("§a你已确认交易，等待对方确认...");
             }
         });
@@ -242,7 +249,6 @@ public class TradeView extends View {
             if (player.equals(session.getTargetPlayer())) {
                 session.setTargetReady(false);
                 changeButtons(targetReadyButton, 50, 51, 52);
-                //TODO
                 player.sendMessage("§c你已取消确认交易");
             }
         });
@@ -287,6 +293,22 @@ public class TradeView extends View {
                 player.sendMessage("§c交易已取消，回到初始状态");
             }
         });
+    }
+
+    private boolean isBlackList(InventoryClickEvent event, Player player) {
+        if (GoodsTrade.config.isBlackList()) {
+            if (GoodsTrade.config.isTradeLoreToBlackList(player)) {
+                player.sendMessage(GoodsTrade.PREFIX + "§c你的物品槽有禁止交易的物品！");
+                event.setCancelled(true);
+                return true;
+            }
+            if (GoodsTrade.config.isTradeNameToBlackList(player)) {
+                player.sendMessage(GoodsTrade.PREFIX + "§c你的物品槽有禁止交易的物品！");
+                event.setCancelled(true);
+                return true;
+            }
+        }
+        return false;
     }
 
     public void changeButtons(GuiButton button, int... slots) {

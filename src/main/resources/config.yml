@@ -1,20 +1,27 @@
 Trade:
   #交易双方确认后的等待时间（单位秒）
   Wait-Time: 5
+
   #什么方式可以发起交易
   Triggers:
+    #蹲下加右键快捷发起交易
     Shift-Right-Click: true
+
+  #安全处理
   Safe:
     #是否开启交易期间玩家不受会伤害
     Damage: false
     #交易期间玩家是否阻止移动、被推动等
     Move: false
+
+  #阻止特定物品进行交易
   Item-BlackList:
     #是否开启黑名单
     Enable: false
-    #黑名单Lore
+    #黑名单物品Lore
     Lore:
       - "任意一条符合将无法交易"
-      - "§9禁止交易"
+      - "禁止交易"
+    #黑名单物品名称
     Name:
       - "XXX"

@@ -16,9 +16,15 @@ public final class GoodsTrade extends JavaPlugin {
         instance = this;
         config = new Config(this);
         metrics = new Metrics(this, 30110);
+        getLogger().info(PREFIX + "§3插件版本: §bv" + this.getDescription().getVersion());
+        getLogger().info(PREFIX + "§3插件功能: §e" + this.getDescription().getDescription());
+
         getCommand("goodstrade").setExecutor(new GoodsTradeCommand(this));
+        getLogger().info("§2命令成功加载");
         getServer().getPluginManager().registerEvents(new Events(), this);
-        getLogger().info("§a插件成功加载了喵~");
+        getLogger().info("§2事件监听器成功注册");
+
+        getLogger().info(PREFIX + "§a成功加载了喵~");
     }
 
     @Override

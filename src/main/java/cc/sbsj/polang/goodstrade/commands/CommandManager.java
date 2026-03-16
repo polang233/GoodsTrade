@@ -63,14 +63,14 @@ public class CommandManager {
     public void registerAnnotatedCommands(String packageName, JavaPlugin plugin) {
         try {
             Set<Class<?>> classes = getClasses(packageName, plugin);
-            GoodsTrade.instance.getLogger().info(GoodsTrade.PREFIX + "扫描到 " + classes.size() + " 个命令类");
+            GoodsTrade.instance.getLogger().info("扫描到 " + classes.size() + " 个子命令类");
 
             for (Class<?> clazz : classes) {
                 if (SubCommand.class.isAssignableFrom(clazz) && clazz.isAnnotationPresent(SubCommandAnnotation.class)) {
                     try {
                         SubCommand instance = (SubCommand) clazz.getDeclaredConstructor().newInstance();
                         registerCommand(instance);
-                        GoodsTrade.instance.getLogger().info(GoodsTrade.PREFIX + "已注册子命令: " + clazz.getSimpleName());
+                        GoodsTrade.instance.getLogger().info("已注册子命令: " + clazz.getSimpleName());
                     } catch (Exception e) {
                         GoodsTrade.instance.getLogger().warning(GoodsTrade.PREFIX + "无法实例化命令类: " + clazz.getName() + " - " + e.getMessage());
                     }
@@ -89,8 +89,6 @@ public class CommandManager {
         URL resource = loader.getResource(path);
         if (resource != null) {
             String protocol = resource.getProtocol();
-            GoodsTrade.instance.getLogger().info(GoodsTrade.PREFIX + "扫描协议: " + protocol);
-            GoodsTrade.instance.getLogger().info(GoodsTrade.PREFIX + "路径: " + resource);
 
             try {
                 if ("jar".equals(protocol)) {
