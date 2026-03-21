@@ -3,17 +3,18 @@ package cc.sbsj.polang.goodstrade.gui.view;
 import cc.sbsj.polang.goodstrade.GoodsTrade;
 import cc.sbsj.polang.goodstrade.gui.Gui;
 import cc.sbsj.polang.goodstrade.gui.GuiButton;
+import cc.sbsj.polang.goodstrade.manager.ConfigManager;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import cc.sbsj.polang.goodstrade.trade.TradeSession;
 import cc.sbsj.polang.goodstrade.util.Utils;
 import com.cryptomorin.xseries.XSound;
+import lombok.val;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /*
     ~~~~@~~~~
@@ -31,9 +32,9 @@ import java.util.List;
     Q=确认交易按钮
 */
 public class TradeView extends View {
-    TradeSession session;
     public Gui gui;
     public BukkitRunnable runnable;
+    TradeSession session;
     Player cancelledPlayer = null;  // 记录谁取消了等待状态
 
     public TradeView() {
@@ -58,18 +59,18 @@ public class TradeView extends View {
 
 
     private void addTradeSlots() {
-        for (int slot : View.senderTradeSlots) {
+        for (val slot : View.senderTradeSlots) {
             setTradeItemButton(session.getSenderPlayer(), slot);
         }
-        for (int slot : View.targetTradeSlots) {
+        for (val slot : View.targetTradeSlots) {
             setTradeItemButton(session.getTargetPlayer(), slot);
         }
     }
 
     public void setTradeItemButton(Player player, int slot) {
-        GuiButton button = new GuiButton(null);
+        val button = new GuiButton(null);
         button.setOnClick(event -> {
-            Player user = (Player) event.getWhoClicked();
+            val user = (Player) event.getWhoClicked();
             if (!player.equals(user)) {
                 user.sendMessage("§c你只能操作自己的物品");
                 user.playSound(user.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
@@ -83,14 +84,12 @@ public class TradeView extends View {
                     event.setCancelled(true);
                     user.sendMessage("§c你已确认，物品状态锁定！");
                     user.playSound(user.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
-                    return;
                 }
             } else {
                 if (session.isTargetReady()) {
                     event.setCancelled(true);
                     user.sendMessage("§c你已确认，物品状态锁定！");
                     user.playSound(user.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
-                    return;
                 }
             }
 
@@ -114,9 +113,8 @@ public class TradeView extends View {
 
     private void setControlButtons() {
         senderReadyButton.setOnClick(event -> {
-            Player player = (Player) event.getWhoClicked();
+            val player = (Player) event.getWhoClicked();
             if (player.equals(session.getSenderPlayer())) {
-
                 if (isBlackList(event, player)) return;
                 session.setSenderReady(true);
                 changeButtons(senderReadyButtonYes, 48, 47, 46);
@@ -128,7 +126,7 @@ public class TradeView extends View {
             }
         });
         senderReadyButtonYes.setOnClick(event -> {
-            Player player = (Player) event.getWhoClicked();
+            val player = (Player) event.getWhoClicked();
             if (player.equals(session.getSenderPlayer())) {
                 session.setSenderReady(false);
                 changeButtons(senderReadyButton, 48, 47, 46);
@@ -138,7 +136,7 @@ public class TradeView extends View {
             }
         });
         senderReadyButtonWait.setOnClick(event -> {
-            Player player = (Player) event.getWhoClicked();
+            val player = (Player) event.getWhoClicked();
             if (player.equals(session.getSenderPlayer())) {
                 runnable.cancel();
                 //设置为对方取消
@@ -156,7 +154,7 @@ public class TradeView extends View {
             }
         });
         targetReadyButton.setOnClick(event -> {
-            Player player = (Player) event.getWhoClicked();
+            val player = (Player) event.getWhoClicked();
             if (player.equals(session.getTargetPlayer())) {
 
                 if (isBlackList(event, player)) return;
@@ -170,7 +168,7 @@ public class TradeView extends View {
             }
         });
         targetReadyButtonYes.setOnClick(event -> {
-            Player player = (Player) event.getWhoClicked();
+            val player = (Player) event.getWhoClicked();
             if (player.equals(session.getTargetPlayer())) {
                 session.setTargetReady(false);
                 changeButtons(targetReadyButton, 50, 51, 52);
@@ -179,7 +177,7 @@ public class TradeView extends View {
         });
 
         targetReadyButtonWait.setOnClick(event -> {
-            Player player = (Player) event.getWhoClicked();
+            val player = (Player) event.getWhoClicked();
             if (player.equals(session.getTargetPlayer())) {
                 runnable.cancel();
                 //设置为对方取消
@@ -199,7 +197,7 @@ public class TradeView extends View {
             }
         });
         cancelReadyButton.setOnClick(event -> {
-            Player player = (Player) event.getWhoClicked();
+            val player = (Player) event.getWhoClicked();
 
             //只有被取消的那一方才能点击这个按钮
             if (player.equals(cancelledPlayer)) {
@@ -219,7 +217,7 @@ public class TradeView extends View {
     }
 
     public void changeButtons(GuiButton button, int... slots) {
-        for (int slot : slots) {
+        for (val slot : slots) {
             gui.addButton(slot, button);
         }
     }
@@ -227,7 +225,7 @@ public class TradeView extends View {
     public void prepareTrade(TradeSession session) {
         //等待五秒，进行倒计时，将两边的界面改为等待按钮
         runnable = new BukkitRunnable() {
-            int count = GoodsTrade.config.getWaitTime();
+            int count = ConfigManager.getWaitTime();
 
             @Override
             public void run() {
@@ -257,12 +255,12 @@ public class TradeView extends View {
             }
 
         };
-        runnable.runTaskTimer(GoodsTrade.instance, 1L, 20L);
+        runnable.runTaskTimer(GoodsTrade.getInstance(), 1L, 20L);
     }
 
     public void executeTrade(TradeSession session) {
-        Player sender = session.getSenderPlayer();
-        Player receiver = session.getTargetPlayer();
+        val sender = session.getSenderPlayer();
+        val receiver = session.getTargetPlayer();
         addPlayerTradeItems(sender);
         addPlayerTradeItems(receiver);
         session.setSenderReady(false);
@@ -271,18 +269,18 @@ public class TradeView extends View {
 
     //给玩家Gui上的物品
     public void addPlayerTradeItems(Player player) {
-        List<ItemStack> itemsList = new ArrayList<>();
+        val itemsList = new ArrayList<ItemStack>();
         if (session.isPlayerSender(player)) {
-            for (int slot : View.targetTradeSlots) {
-                ItemStack item = gui.getInventory().getItem(slot);
+            for (val slot : View.targetTradeSlots) {
+                val item = gui.getInventory().getItem(slot);
                 if (Utils.isItemStackNotEmpty(item)) {
                     itemsList.add(item);
                     gui.getInventory().setItem(slot, air);
                 }
             }
         } else {
-            for (int slot : View.senderTradeSlots) {
-                ItemStack item = gui.getInventory().getItem(slot);
+            for (val slot : View.senderTradeSlots) {
+                val item = gui.getInventory().getItem(slot);
                 if (Utils.isItemStackNotEmpty(item)) {
                     itemsList.add(item);
                     gui.getInventory().setItem(slot, air);
@@ -297,10 +295,10 @@ public class TradeView extends View {
 
     //返还交易界面内玩家物品
     public void backPlayerItems(Player player) {
-        List<ItemStack> itemsList = new ArrayList<>();
+        val itemsList = new ArrayList<ItemStack>();
         if (session.isPlayerSender(player)) {
-            for (int slot : View.senderTradeSlots) {
-                ItemStack item = gui.getInventory().getItem(slot);
+            for (val slot : View.senderTradeSlots) {
+                val item = gui.getInventory().getItem(slot);
                 if (Utils.isItemStackNotEmpty(item)) {
                     itemsList.add(item);
                     //防止异常，清掉物品
@@ -308,8 +306,8 @@ public class TradeView extends View {
                 }
             }
         } else {
-            for (int slot : View.targetTradeSlots) {
-                ItemStack item = gui.getInventory().getItem(slot);
+            for (val slot : View.targetTradeSlots) {
+                val item = gui.getInventory().getItem(slot);
                 if (Utils.isItemStackNotEmpty(item)) {
                     itemsList.add(item);
                     //防止异常，清掉物品

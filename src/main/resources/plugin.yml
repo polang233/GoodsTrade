@@ -1,18 +1,21 @@
-name: GoodsTrade
-version: '${version}'
-main: cc.sbsj.polang.goodstrade.GoodsTrade
+name: ${name}
+main: ${group}.${name}
+version: ${version}
+api-version: 1.13
 authors: [ polang ]
 description: 简单安全的玩家物品交易插件
 website: https://space.bilibili.com/450460661
-api-version: '1.13'
 
 permissions:
-  goodstrade.admin:
+  ${name.toLowerCase()}.admin:
     default: op
-  goodstrade.use:
+  ${name.toLowerCase()}.command.trade:
+    default: op
+  ${name.toLowerCase()}.command.reload:
+    default: op
+  ${name.toLowerCase()}.command:
     default: true
-commands:
-  goodstrade:
-    permission: goodstrade.use
-    description: 交易功能主命令
-    aliases: [ gt ]
+  ${name.toLowerCase()}.command.sendTrade:
+    default: true
+  ${name.toLowerCase()}.command.accept:
+    default: true
