@@ -129,7 +129,7 @@ public class Events implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getInventory().getHolder() == null) return;
         if (!(event.getInventory().getHolder() instanceof Gui)) return;
-        Player player = (Player) event.getPlayerExact();
+        Player player = (Player) event.getPlayer();
         //返还手里物品
         ItemStack cursorItem = player.getOpenInventory().getCursor();
         if (Utils.isItemStackNotEmpty(cursorItem)) {
@@ -168,7 +168,7 @@ public class Events implements Listener {
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         if (!GoodsTrade.config.isEnabledShiftClick()) return;
         if (event.getRightClicked() instanceof Player) {
-            Player senderPlayer = event.getPlayerExact();
+            Player senderPlayer = event.getPlayer();
             if (senderPlayer.isSneaking()) {
                 UUID playerId = senderPlayer.getUniqueId();
                 long currentTime = System.currentTimeMillis();
@@ -247,7 +247,7 @@ public class Events implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         if (!GoodsTrade.config.isSafeMove()) return;
-        Player player = event.getPlayerExact();
+        Player player = event.getPlayer();
 
         if (TradeManager.isTrade(player)) {
             // 如果位置发生了变化

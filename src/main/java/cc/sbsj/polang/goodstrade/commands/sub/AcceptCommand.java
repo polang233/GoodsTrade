@@ -28,7 +28,7 @@ public class AcceptCommand implements SubCommand {
             int acceptCount = requests.size();
             if (acceptCount == 1) {
                 TradeRequest request = requests.get(0);
-                Player targetPlayerExact = Bukkit.getPlayerExact(request.getSenderId());
+                Player targetPlayerExact = Bukkit.getPlayer(request.getSenderId());
                 if (targetPlayerExact == null) {
                     player.sendMessage(GoodsTrade.PREFIX + "§c该玩家不在线");
                     return false;

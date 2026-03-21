@@ -27,7 +27,7 @@ dependencies {
     implementation("com.github.cryptomorin:XSeries:13.6.0")
 }
 
-def targetJavaVersion = 11
+def targetJavaVersion = 8
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
