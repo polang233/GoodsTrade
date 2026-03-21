@@ -6,6 +6,9 @@ authors: [ polang ]
 description: 简单安全的玩家物品交易插件
 website: https://space.bilibili.com/450460661
 
+depend:
+  - NeigeItems
+
 permissions:
   ${name.toLowerCase()}.admin:
     default: op
