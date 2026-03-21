@@ -14,41 +14,46 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@SubCommandAnnotation(name = "trade")
+@SubCommandAnnotation(name = "sendtrade")
 @SuppressWarnings("unused")
-public class TradeCommand implements SubCommand {
+public class SendTradeCommand implements SubCommand {
 
     @Override
     public boolean execute(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!sender.hasPermission("goodstrade.admin")) return false;
         if (args.length == 0) {
-            sender.sendMessage(GoodsTrade.PREFIX + "§a用法：/gt trade [接收人] [发起人]");
+            sender.sendMessage(GoodsTrade.PREFIX + "§a用法：/gt sendtrade [接收人]");
+            sender.sendMessage(GoodsTrade.PREFIX + "§e发起人为可选参数,若不存在默认以输入命令者");
             return false;
         }
         if (args.length == 1) {
-            sender.sendMessage("控制台必须输入发起人与被发起人");
-            return false;
+            if (sender instanceof Player) {
+                Player player = Bukkit.getPlayerExact(args[0]);
+                if (player == null) {
+                    sender.sendMessage(GoodsTrade.PREFIX + "§c输入用户不存在或不在线");
+                    return false;
+                }
+                if (player == sender) {
+                    sender.sendMessage(GoodsTrade.PREFIX + "§c你不能与自己进行交易！");
+                    return false;
+                }
+                TradeManager.sendTradeRequest((Player) sender, player);
+                return true;
+            } else {
+                sender.sendMessage("控制台必须输入发起人与被发起人");
+                return false;
+            }
         }
         if (args.length == 2) {
             if (!sender.hasPermission("goodstrade.admin")) return false;
-            //发起人
             Player player = Bukkit.getPlayerExact(args[0]);
-            if (player == null) {
-                sender.sendMessage(GoodsTrade.PREFIX + "§c发起人不在线！");
-                return false;
-            }
             Player player2 = Bukkit.getPlayerExact(args[1]);
-            if (player2 == null) {
-                sender.sendMessage(GoodsTrade.PREFIX + "§c被受邀者不在线");
+            if (player == null || player2 == null) {
+                sender.sendMessage(GoodsTrade.PREFIX + "§c输入用户不存在或不在线");
                 return false;
             }
-            if (player == player2) {
-                sender.sendMessage(GoodsTrade.PREFIX + "§c交易必须两个不同玩家！");
-                return false;
-            }
-            TradeManager.startTrade(player, player2);
-            return true;
+            TradeManager.sendTradeRequest(player, player2);
         }
+
 
         return false;
     }
@@ -58,9 +63,6 @@ public class TradeCommand implements SubCommand {
         List<String> list = new ArrayList<>();
         Bukkit.getOnlinePlayers().forEach(player -> list.add(player.getName()));
         if (args.length == 1) {
-            return list;
-        }
-        if (args.length == 2) {
             return list;
         }
         return Collections.emptyList();

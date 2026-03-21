@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'cc.sbsj.polang'
-version = '1.0.2'
+version = '1.0.3'
 
 repositories {
     mavenCentral()
@@ -20,11 +20,14 @@ repositories {
 
 dependencies {
     compileOnly "com.destroystokyo.paper:paper-api:1.12.2-R0.1-SNAPSHOT"
-    compileOnly "org.projectlombok:lombok:1.18.42"
-    annotationProcessor "org.projectlombok:lombok:1.18.42"
+    compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
+//    compileOnly "org.projectlombok:lombok:1.18.42"
+    compileOnly "org.projectlombok:lombok:1.18.30"
+    annotationProcessor "org.projectlombok:lombok:1.18.30"
+    implementation("com.github.cryptomorin:XSeries:13.6.0")
 }
 
-def targetJavaVersion = 8
+def targetJavaVersion = 11
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
@@ -48,5 +51,10 @@ processResources {
     filteringCharset 'UTF-8'
     filesMatching('plugin.yml') {
         expand props
+    }
+}
+tasks {
+    shadowJar {
+        relocate("com.cryptomorin.xseries", "cc.sbsj.polang.goodstrade.util")
     }
 }

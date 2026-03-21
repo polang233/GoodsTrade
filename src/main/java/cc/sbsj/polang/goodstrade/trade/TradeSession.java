@@ -10,15 +10,15 @@ import org.bukkit.entity.Player;
 //交易状态类
 public class TradeSession {
     private Player senderPlayer;
-    private Player targetPlayer;
+    private Player targetPlayerExact;
     private boolean senderReady;        // 玩家 1 是否确认
     private boolean targetReady;        // 玩家 2 是否确认
     private boolean isConfirmed;         // 交易是否完成
     private TradeView view;
 
-    public TradeSession(Player senderPlayer, Player targetPlayer, TradeView view) {
+    public TradeSession(Player senderPlayer, Player targetPlayerExact, TradeView view) {
         this.senderPlayer = senderPlayer;
-        this.targetPlayer = targetPlayer;
+        this.targetPlayerExact = targetPlayerExact;
         this.senderReady = false;
         this.targetReady = false;
         this.isConfirmed = false;
@@ -34,6 +34,6 @@ public class TradeSession {
     }
 
     public boolean isPlayerTarget(Player player) {
-        return player.equals(targetPlayer);
+        return player.equals(targetPlayerExact);
     }
 }

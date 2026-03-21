@@ -22,7 +22,6 @@ public class CommandManager {
     public void registerCommand(SubCommand command) {
         commands.put(command.getName(), command);
     }
-
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
             sender.sendMessage(GoodsTrade.PREFIX + "§7可输入以下命令:");

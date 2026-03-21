@@ -5,6 +5,9 @@ import cc.sbsj.polang.goodstrade.gui.view.View;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import cc.sbsj.polang.goodstrade.trade.TradeSession;
 import cc.sbsj.polang.goodstrade.util.Utils;
+import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,14 +17,17 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Events implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (event.getClickedInventory() == null ||
-                event.getCurrentItem() == null ||
                 event.getClick() == ClickType.UNKNOWN ||
                 event.getClick() == ClickType.WINDOW_BORDER_RIGHT ||
                 event.getClick() == ClickType.WINDOW_BORDER_LEFT ||
@@ -36,7 +42,7 @@ public class Events implements Listener {
 
         TradeSession session = TradeManager.getSession(player);
         if (session.bothReady() && !View.readySlots.contains(event.getRawSlot())) {
-            session.getSenderPlayer().sendMessage("§c正在交易确认中，若需取消请按黄色按钮！");
+            session.getSenderPlayer().sendMessage("§c正在交易确认中，若需取消请按取消按钮！");
             event.setCancelled(true);
             return;
         }
@@ -81,11 +87,9 @@ public class Events implements Listener {
         if (event.getInventory().getHolder() == null) return;
         if (!(event.getInventory().getHolder() instanceof Gui)) return;
         Player player = (Player) event.getWhoClicked();
-        Inventory topInv = event.getView().getTopInventory();
-        Inventory bottomInv = event.getView().getBottomInventory();
         TradeSession session = TradeManager.getSession(player);
         Player sender = session.getSenderPlayer();
-        Player target = session.getTargetPlayer();
+        Player target = session.getTargetPlayerExact();
         if (player == sender) {
             //阻止发起者操作被发起者界面
             for (int rawSlot : event.getRawSlots()) {
@@ -125,11 +129,14 @@ public class Events implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         if (event.getInventory().getHolder() == null) return;
         if (!(event.getInventory().getHolder() instanceof Gui)) return;
-        Player player = (Player) event.getPlayer();
+        Player player = (Player) event.getPlayerExact();
         //返还手里物品
         ItemStack cursorItem = player.getOpenInventory().getCursor();
-        if (Utils.isItemStackEmpty(cursorItem)) {
+        if (Utils.isItemStackNotEmpty(cursorItem)) {
             Utils.addItems(player, cursorItem);
+        }
+        if (event.getReason() == InventoryCloseEvent.Reason.PLUGIN) {
+            return;
         }
         //该玩家是否正在交易
         if (!TradeManager.isTrade(player)) return;
@@ -153,22 +160,50 @@ public class Events implements Listener {
 
     }
 
+    private static final Map<UUID, Long> interactCooldown = Collections.synchronizedMap(new ConcurrentHashMap<>());
+    private static final long INTERACT_DELAY = 1000; // 1秒内 内防止重复触发
+
     //玩家交互事件
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         if (!GoodsTrade.config.isEnabledShiftClick()) return;
         if (event.getRightClicked() instanceof Player) {
-            Player senderPlayer = event.getPlayer();
+            Player senderPlayer = event.getPlayerExact();
             if (senderPlayer.isSneaking()) {
-                Player targetPlayer = (Player) event.getRightClicked();
-                if (!TradeManager.accepts.containsKey(targetPlayer.getUniqueId())) {
-                    TradeManager.interactTradeRequest(senderPlayer, targetPlayer);
-                    senderPlayer.sendMessage(GoodsTrade.PREFIX + "已向玩家 " + targetPlayer.getName() + " 发起交易");
-                } else {
-                    senderPlayer.sendMessage(GoodsTrade.PREFIX + "正在等待玩家 " + targetPlayer.getName() + " 接受你的交易请求");
+                UUID playerId = senderPlayer.getUniqueId();
+                long currentTime = System.currentTimeMillis();
+
+                // 检查冷却时间
+                if (interactCooldown.containsKey(playerId)) {
+                    long lastInteractTime = interactCooldown.get(playerId);
+                    if (currentTime - lastInteractTime < INTERACT_DELAY) {
+                        event.setCancelled(true);
+                        return;
+                    }
                 }
 
+                // 更新冷却时间
+                interactCooldown.put(playerId, currentTime);
+
+
+                Player targetPlayerExact = (Player) event.getRightClicked();
+                TradeManager.sendTradeRequest(senderPlayer, targetPlayerExact);
             }
+        }
+    }
+
+    //帮忙修复简单漏洞（1.18、1.20均有出现）
+    @EventHandler(ignoreCancelled = true)
+    public void onTabComplete(AsyncTabCompleteEvent event) {
+        String buffer = event.getBuffer();
+        if (buffer.contains("@") && buffer.contains("[nbt=")) {
+            event.setCancelled(true);
+            Player player = (Player) event.getSender();
+            //主线程踢出
+            Bukkit.getScheduler().runTask(GoodsTrade.instance, () -> {
+                Component kick = Component.text(GoodsTrade.PREFIX + "§c试图滥发消息被踢出！");
+                player.kick(kick);
+            });
         }
     }
 
@@ -212,7 +247,7 @@ public class Events implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         if (!GoodsTrade.config.isSafeMove()) return;
-        Player player = event.getPlayer();
+        Player player = event.getPlayerExact();
 
         if (TradeManager.isTrade(player)) {
             // 如果位置发生了变化

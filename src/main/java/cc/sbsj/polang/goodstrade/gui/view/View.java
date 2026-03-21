@@ -1,7 +1,11 @@
 package cc.sbsj.polang.goodstrade.gui.view;
 
+import cc.sbsj.polang.goodstrade.GoodsTrade;
 import cc.sbsj.polang.goodstrade.gui.GuiButton;
+import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -9,14 +13,14 @@ import java.util.*;
 
 public class View {
     public final static ItemStack air = new ItemStack(Material.AIR);
-    public final static ItemStack backGround = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 15);
+    public final static ItemStack backGround = new ItemStack(XMaterial.BLACK_STAINED_GLASS_PANE.parseItem());
 
-    public static ItemStack readyButtonItem = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14);
-    public static ItemStack readyButtonItemYes = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 5);
-    public static ItemStack readyButtonItemWait = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 4);
+    public static ItemStack readyButtonItem = new ItemStack(XMaterial.RED_STAINED_GLASS_PANE.parseItem());
+    public static ItemStack readyButtonItemYes = new ItemStack(XMaterial.GREEN_STAINED_GLASS_PANE.parseItem());
+    public static ItemStack readyButtonItemWait = new ItemStack(XMaterial.BLUE_STAINED_GLASS_PANE.parseItem());
 
-    public static ItemStack cancelReadyItem = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 11);
-    public static ItemStack infoItem = new ItemStack(Material.IRON_FENCE);
+    public static ItemStack cancelReadyItem = new ItemStack(XMaterial.YELLOW_STAINED_GLASS_PANE.parseItem());
+    public static ItemStack infoItem = new ItemStack(XMaterial.IRON_BARS.parseItem());
 
 
     public final GuiButton senderReadyButton = new GuiButton(readyButtonItem);
@@ -130,5 +134,21 @@ public class View {
         );
         meta.setLore(lore);
         infoItem.setItemMeta(meta);
+    }
+
+    public boolean isBlackList(InventoryClickEvent event, Player player) {
+        if (GoodsTrade.config.isBlackList()) {
+            if (GoodsTrade.config.isTradeLoreToBlackList(player)) {
+                player.sendMessage(GoodsTrade.PREFIX + "§c你的物品槽有禁止交易的物品！");
+                event.setCancelled(true);
+                return true;
+            }
+            if (GoodsTrade.config.isTradeNameToBlackList(player)) {
+                player.sendMessage(GoodsTrade.PREFIX + "§c你的物品槽有禁止交易的物品！");
+                event.setCancelled(true);
+                return true;
+            }
+        }
+        return false;
     }
 }

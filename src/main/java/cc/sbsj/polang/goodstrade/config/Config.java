@@ -33,6 +33,8 @@ public class Config {
     public void reload() {
         plugin.reloadConfig();
         config = plugin.getConfig();
+
+
     }
 
     public boolean isEnabledShiftClick() {
@@ -48,7 +50,7 @@ public class Config {
     }
 
     public boolean isBlackList() {
-        return config.getBoolean("Trade.Item-BlackList", false);
+        return config.getBoolean("Trade.Item-BlackList.Enable", false);
     }
 
     public boolean isTradeLoreToBlackList(Player player) {
@@ -78,7 +80,7 @@ public class Config {
     private static boolean isNameBlackList(List<Integer> slots, TradeSession session, List<String> blackList) {
         for (int i : slots) {
             ItemStack item = session.getView().gui.getInventory().getItem(i);
-            if (!Utils.isItemStackEmpty(item)) continue;
+            if (!Utils.isItemStackNotEmpty(item)) continue;
             if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
                 for (String blackStr : blackList) {
                     if (item.getItemMeta().getDisplayName().contains(blackStr)) {
@@ -93,7 +95,7 @@ public class Config {
     private static boolean isLoreBlackList(List<Integer> slots, TradeSession session, List<String> blackList) {
         for (int i : slots) {
             ItemStack item = session.getView().gui.getInventory().getItem(i);
-            if (!Utils.isItemStackEmpty(item)) continue;
+            if (!Utils.isItemStackNotEmpty(item)) continue;
             if (item.hasItemMeta() && item.getItemMeta().hasLore()) {
                 for (String lore : item.getItemMeta().getLore()) {
                     for (String blackStr : blackList) {

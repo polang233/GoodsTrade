@@ -40,7 +40,7 @@ public class GuiButton {
     }
 
     public void onClick(InventoryClickEvent event) {
-        event.setCancelled(isCancelEvent);
+//        event.setCancelled(isCancelEvent);
         if (shiftClickHandler != null && event.isShiftClick()) {
             shiftClickHandler.handle(event);
             return;
