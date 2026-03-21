@@ -62,7 +62,7 @@ public class TradeView extends View {
             setTradeItemButton(session.getSenderPlayer(), slot);
         }
         for (int slot : View.targetTradeSlots) {
-            setTradeItemButton(session.getTargetPlayerExact(), slot);
+            setTradeItemButton(session.getTargetPlayer(), slot);
         }
     }
 
@@ -151,13 +151,13 @@ public class TradeView extends View {
                 changeButtons(cancelReadyButton, 50, 51, 52);
 
                 //记录是发送者取消的
-                cancelledPlayer = session.getTargetPlayerExact();
+                cancelledPlayer = session.getTargetPlayer();
                 player.sendMessage("§c你已取消确认状态");
             }
         });
         targetReadyButton.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
-            if (player.equals(session.getTargetPlayerExact())) {
+            if (player.equals(session.getTargetPlayer())) {
 
                 if (isBlackList(event, player)) return;
 
@@ -171,7 +171,7 @@ public class TradeView extends View {
         });
         targetReadyButtonYes.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
-            if (player.equals(session.getTargetPlayerExact())) {
+            if (player.equals(session.getTargetPlayer())) {
                 session.setTargetReady(false);
                 changeButtons(targetReadyButton, 50, 51, 52);
                 player.sendMessage("§c你已取消确认交易");
@@ -180,7 +180,7 @@ public class TradeView extends View {
 
         targetReadyButtonWait.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
-            if (player.equals(session.getTargetPlayerExact())) {
+            if (player.equals(session.getTargetPlayer())) {
                 runnable.cancel();
                 //设置为对方取消
                 session.setSenderReady(false);
@@ -237,7 +237,7 @@ public class TradeView extends View {
                     executeTrade(session);
 
                     session.getSenderPlayer().playSound(session.getSenderPlayer().getLocation(), XSound.ENTITY_PLAYER_LEVELUP.get(), 1.0f, 1.5f);
-                    session.getTargetPlayerExact().playSound(session.getTargetPlayerExact().getLocation(), XSound.ENTITY_PLAYER_LEVELUP.get(), 1.0f, 1.5f);
+                    session.getTargetPlayer().playSound(session.getTargetPlayer().getLocation(), XSound.ENTITY_PLAYER_LEVELUP.get(), 1.0f, 1.5f);
 
                     cancel();
                 } else {
@@ -249,7 +249,7 @@ public class TradeView extends View {
 
                     targetReadyButtonWait.buttonItemStack.setAmount(count);
                     changeButtons(targetReadyButtonWait, 50, 51, 52);
-                    session.getTargetPlayerExact().playSound(session.getTargetPlayerExact().getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.get(), 1.0f, 1.0f);
+                    session.getTargetPlayer().playSound(session.getTargetPlayer().getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.get(), 1.0f, 1.0f);
 
                     count--;
 
@@ -262,7 +262,7 @@ public class TradeView extends View {
 
     public void executeTrade(TradeSession session) {
         Player sender = session.getSenderPlayer();
-        Player receiver = session.getTargetPlayerExact();
+        Player receiver = session.getTargetPlayer();
         addPlayerTradeItems(sender);
         addPlayerTradeItems(receiver);
         session.setSenderReady(false);

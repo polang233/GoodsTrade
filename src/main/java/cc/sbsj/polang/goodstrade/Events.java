@@ -89,7 +89,7 @@ public class Events implements Listener {
         Player player = (Player) event.getWhoClicked();
         TradeSession session = TradeManager.getSession(player);
         Player sender = session.getSenderPlayer();
-        Player target = session.getTargetPlayerExact();
+        Player target = session.getTargetPlayer();
         if (player == sender) {
             //阻止发起者操作被发起者界面
             for (int rawSlot : event.getRawSlots()) {
@@ -186,8 +186,8 @@ public class Events implements Listener {
                 interactCooldown.put(playerId, currentTime);
 
 
-                Player targetPlayerExact = (Player) event.getRightClicked();
-                TradeManager.sendTradeRequest(senderPlayer, targetPlayerExact);
+                Player targetPlayer = (Player) event.getRightClicked();
+                TradeManager.sendTradeRequest(senderPlayer, targetPlayer);
             }
         }
     }

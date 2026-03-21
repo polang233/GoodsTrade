@@ -140,7 +140,7 @@ public class Metrics {
     }
 
     private void appendPlatformData(JsonObjectBuilder builder) {
-        builder.appendField("playerAmount", getPlayerExactAmount());
+        builder.appendField("playerAmount", getPlayerAmount());
         builder.appendField("onlineMode", Bukkit.getOnlineMode() ? 1 : 0);
         builder.appendField("bukkitVersion", Bukkit.getVersion());
         builder.appendField("bukkitName", Bukkit.getName());
@@ -155,7 +155,7 @@ public class Metrics {
         builder.appendField("pluginVersion", plugin.getDescription().getVersion());
     }
 
-    private int getPlayerExactAmount() {
+    private int getPlayerAmount() {
         try {
             // Around MC 1.8 the return type was changed from an array to a collection,
             // This fixes java.lang.NoSuchMethodError:

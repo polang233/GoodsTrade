@@ -45,7 +45,7 @@ public class TradeManager {
     public static Player getOtherPlayer(Player player, TradeSession session) {
         if (session.getSenderPlayer().equals(player)) {
             // 返回被发起人
-            return session.getTargetPlayerExact();
+            return session.getTargetPlayer();
         } else {
             //返回发起人
             return session.getSenderPlayer();
@@ -64,7 +64,7 @@ public class TradeManager {
         Player sender = session.getSenderPlayer();
         session.getView().backPlayerItems(sender);
 
-        Player target = session.getTargetPlayerExact();
+        Player target = session.getTargetPlayer();
         session.getView().backPlayerItems(target);
 
         if (session.isPlayerSender(player)) {
@@ -85,40 +85,40 @@ public class TradeManager {
     //已经结束的取消交易
     //只需要关闭被交易者
     public static void cancelTrade(TradeSession session) {
-        Player target = session.getTargetPlayerExact();
+        Player target = session.getTargetPlayer();
         TradeManager.removeSession(target);
         //必须先移除交易会话再关闭界面
         target.closeInventory();
     }
 
-    public static void startTrade(Player senderPlayer, Player targetPlayerExact) {
-        if (!pendingRequests.containsKey(targetPlayerExact.getUniqueId())) {
-            targetPlayerExact.sendMessage(GoodsTrade.PREFIX + "§c你当前没有交易请求！");
+    public static void startTrade(Player senderPlayer, Player targetPlayer) {
+        if (!pendingRequests.containsKey(targetPlayer.getUniqueId())) {
+            targetPlayer.sendMessage(GoodsTrade.PREFIX + "§c你当前没有交易请求！");
             return;
         }
         senderPlayer.sendMessage(GoodsTrade.PREFIX + "§2正在为您打开交易界面");
-        targetPlayerExact.sendMessage(GoodsTrade.PREFIX + "§2正在为您打开交易界面");
+        targetPlayer.sendMessage(GoodsTrade.PREFIX + "§2正在为您打开交易界面");
         //打开界面后移除他俩的交易请求
         pendingRequests.remove(senderPlayer.getUniqueId());
-        pendingRequests.remove(targetPlayerExact.getUniqueId());
+        pendingRequests.remove(targetPlayer.getUniqueId());
         TradeView gui = new TradeView();
-        gui.open(senderPlayer, targetPlayerExact);
+        gui.open(senderPlayer, targetPlayer);
     }
 
-    public static void sendTradeRequest(Player senderPlayer, Player targetPlayerExact) {
-        if (isInCooldown(senderPlayer, targetPlayerExact)) {
-//            long remainingSeconds = getRemainingCooldownSeconds(senderPlayer, targetPlayerExact);
+    public static void sendTradeRequest(Player senderPlayer, Player targetPlayer) {
+        if (isInCooldown(senderPlayer, targetPlayer)) {
+//            long remainingSeconds = getRemainingCooldownSeconds(senderPlayer, targetPlayer);
             senderPlayer.sendMessage(GoodsTrade.PREFIX + "§c发起交易过于频繁，请等待一会再重试");
             return;
         }
 
-        addRequest(senderPlayer, targetPlayerExact);
+        addRequest(senderPlayer, targetPlayer);
 
         BaseComponent component = new TextComponent(GoodsTrade.PREFIX + "§7玩家 §e" + senderPlayer.getName() + " §7向你发起交易 §a[点击接受]");
         component.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/goodstrade accept " + senderPlayer.getName()));
         component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText("点击可确认")));
-        targetPlayerExact.sendMessage(component);
-        senderPlayer.sendMessage(GoodsTrade.PREFIX + "§7已向玩家 §e" + targetPlayerExact.getName() + " §7发起交易");
+        targetPlayer.sendMessage(component);
+        senderPlayer.sendMessage(GoodsTrade.PREFIX + "§7已向玩家 §e" + targetPlayer.getName() + " §7发起交易");
     }
 
     private static void addRequest(Player sender, Player target) {
@@ -195,7 +195,7 @@ public class TradeManager {
         for (TradeSession session : sessions.values()) {
             try {
                 Player sender = session.getSenderPlayer();
-                Player target = session.getTargetPlayerExact();
+                Player target = session.getTargetPlayer();
                 // 检查玩家是否在线
                 if (sender != null && target != null) {
                     if (session.getView().runnable != null) session.getView().runnable.cancel();

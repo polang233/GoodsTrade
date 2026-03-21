@@ -28,24 +28,24 @@ public class AcceptCommand implements SubCommand {
             int acceptCount = requests.size();
             if (acceptCount == 1) {
                 TradeRequest request = requests.get(0);
-                Player targetPlayerExact = Bukkit.getPlayer(request.getSenderId());
-                if (targetPlayerExact == null) {
+                Player targetPlayer = Bukkit.getPlayer(request.getSenderId());
+                if (targetPlayer == null) {
                     player.sendMessage(GoodsTrade.PREFIX + "§c该玩家不在线");
                     return false;
                 }
-                TradeManager.startTrade(targetPlayerExact, player);
+                TradeManager.startTrade(targetPlayer, player);
                 return true;
             }
             player.sendMessage(GoodsTrade.PREFIX + "§c请选择一个玩家");
             return false;
         }
         if (args.length == 1) {
-            Player targetPlayerExact = Bukkit.getPlayerExact(args[0]);
-            if (targetPlayerExact == null) {
+            Player targetPlayer = Bukkit.getPlayerExact(args[0]);
+            if (targetPlayer == null) {
                 sender.sendMessage(GoodsTrade.PREFIX + "§c该玩家不在线");
                 return false;
             }
-            TradeManager.startTrade(targetPlayerExact, (Player) sender);
+            TradeManager.startTrade(targetPlayer, (Player) sender);
         }
         return false;
     }
