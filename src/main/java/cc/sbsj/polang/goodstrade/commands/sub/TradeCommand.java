@@ -1,0 +1,68 @@
+package cc.sbsj.polang.goodstrade.commands.sub;
+
+
+import cc.sbsj.polang.goodstrade.GoodsTrade;
+import cc.sbsj.polang.goodstrade.commands.annotation.SubCommand;
+import cc.sbsj.polang.goodstrade.commands.annotation.SubCommandAnnotation;
+import cc.sbsj.polang.goodstrade.trade.TradeManager;
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+@SubCommandAnnotation(name = "trade")
+@SuppressWarnings("unused")
+public class TradeCommand implements SubCommand {
+
+    @Override
+    public boolean execute(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!sender.hasPermission("goodstrade.admin")) return false;
+        if (args.length == 0) {
+            sender.sendMessage(GoodsTrade.PREFIX + "§a用法：/gt trade [接收人] [发起人]");
+            return false;
+        }
+        if (args.length == 1) {
+            sender.sendMessage("控制台必须输入发起人与被发起人");
+            return false;
+        }
+        if (args.length == 2) {
+            if (!sender.hasPermission("goodstrade.admin")) return false;
+            //发起人
+            Player player = Bukkit.getPlayerExact(args[0]);
+            if (player == null) {
+                sender.sendMessage(GoodsTrade.PREFIX + "§c发起人不在线！");
+                return false;
+            }
+            Player player2 = Bukkit.getPlayerExact(args[1]);
+            if (player2 == null) {
+                sender.sendMessage(GoodsTrade.PREFIX + "§c被受邀者不在线");
+                return false;
+            }
+            if (player == player2) {
+                sender.sendMessage(GoodsTrade.PREFIX + "§c交易必须两个不同玩家！");
+                return false;
+            }
+            TradeManager.startTrade(player, player2);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+        List<String> list = new ArrayList<>();
+        Bukkit.getOnlinePlayers().forEach(player -> list.add(player.getName()));
+        if (args.length == 1) {
+            return list;
+        }
+        if (args.length == 2) {
+            return list;
+        }
+        return Collections.emptyList();
+    }
+}

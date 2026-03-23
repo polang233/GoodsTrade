@@ -2,7 +2,6 @@ package cc.sbsj.polang.goodstrade.gui;
 
 import cc.sbsj.polang.goodstrade.gui.view.View;
 import lombok.Getter;
-import lombok.val;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -10,12 +9,12 @@ import org.bukkit.inventory.InventoryHolder;
 
 @Getter
 public class Gui implements InventoryHolder {
-    private final Player player;      //主要玩家
-    private final Inventory inv;      //界面
-    private final String title;       //标题
-    private final int row;            //列数
-    private final int size;           //界面总大小
     public GuiButton[] buttons; //所有按钮
+    private Player player;      //主要玩家
+    private Inventory inv;      //界面
+    private String title;       //标题
+    private int row;            //列数
+    private int size;           //界面总大小
 
 
     public Gui(Player player, String title, int row) {
@@ -29,8 +28,8 @@ public class Gui implements InventoryHolder {
 
     // 整个界面添加背景
     public void addAllBackGround() {
-        val background = new GuiButton(View.backGround);
-        for (var i = 0; i < row * 9; ++i) {
+        GuiButton background = new GuiButton(View.backGround);
+        for (int i = 0; i < row * 9; ++i) {
             addButton(i, background);
         }
     }

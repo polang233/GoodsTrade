@@ -8,8 +8,6 @@ public class GuiButton {
     public int slot;
     public ItemStack buttonItemStack;
     public boolean isCancelEvent = true;
-    private GuiButtonClickHandler clickHandler;
-    private GuiButtonClickHandler shiftClickHandler;
 
     public GuiButton(int slot, ItemStack buttonItemStack) {
         this.slot = slot;
@@ -29,6 +27,9 @@ public class GuiButton {
         this.slot = slot;
         this.buttonItemStack = View.air;
     }
+
+    private GuiButtonClickHandler clickHandler;
+    private GuiButtonClickHandler shiftClickHandler;
 
     public void setOnClick(GuiButtonClickHandler handler) {
         this.clickHandler = handler;
