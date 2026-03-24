@@ -69,12 +69,12 @@ java {
 }
 
 tasks.compileJava {
-    sourceCompatibility = "16"
+    sourceCompatibility = "17"
     options.release = 8
     options.encoding = "UTF-8"
 
     javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(16)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
