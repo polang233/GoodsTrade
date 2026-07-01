@@ -112,7 +112,6 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 
 如遇到问题或有功能建议，请通过以下方式联系：
 
-- 📧 Email: polang@sbsj.cc
 - 💬 QQ 群：620224543
 - 📝 Issues: [就在这里](https://github.com/polang233/GoodsTrade/issues)
 - 🔧 有问题直接联系我就行
