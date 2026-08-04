@@ -72,27 +72,33 @@ The player-facing command permissions default to everyone. `trade` and `reload` 
 
 ## Language selection
 
-New installations generate both language files:
+New installations extract every bundled translation from the JAR. Version 1.1.5 includes:
 
 ```text
-plugins/GoodsTrade/lang/cn.yml
-plugins/GoodsTrade/lang/en.yml
+plugins/GoodsTrade/lang/zh_cn.yml
+plugins/GoodsTrade/lang/en_us.yml
 ```
 
-Choose the active language in `config.yml`:
+By default, GoodsTrade follows the server JVM/operating-system locale. Older configs without a `Language` key behave the same way. If no matching translation is available, the console explains the fallback and GoodsTrade uses Simplified Chinese.
+
+You can also choose a locale explicitly in `config.yml`:
 
 ```yaml
-Language: en
+Language: system
+# Language: zh_cn
+# Language: en_us
 ```
 
-Supported values are `cn` and `en`. Run `/gt reload` after changing the value. If a selected English entry is missing, GoodsTrade falls back to the Chinese entry instead of sending a blank message.
+Run `/gt reload` after changing the value. Locale names follow the common Minecraft/i18n format, such as `zh_cn`, `en_us`, and `ja_jp`. The older `cn` and `en` values remain accepted as aliases.
 
-When upgrading from an older release, an existing `plugins/GoodsTrade/Lang.yml` is copied to `lang/cn.yml` if the new Chinese file does not exist. The legacy file is left untouched so custom messages are not lost.
+GoodsTrade scans the complete `lang/` folder inside each new JAR and extracts any translation that is missing on disk. Existing files are never overwritten, so local edits are preserved while newly bundled languages appear automatically.
+
+When upgrading, legacy `Lang.yml`, `lang/cn.yml`, and `lang/en.yml` files are migrated to the standard locale names when needed. The original files are left untouched.
 
 ## Main configuration
 
 ```yaml
-Language: en
+Language: en_us
 
 Trade:
   Wait-Time: 5

@@ -61,20 +61,24 @@ Closing the menu or cancelling the confirmation returns the offered items.
 
 ## English and Chinese messages
 
-GoodsTrade generates both files on first launch:
+GoodsTrade extracts every bundled translation from the JAR. Version 1.1.5 includes:
 
 ```text
-plugins/GoodsTrade/lang/cn.yml
-plugins/GoodsTrade/lang/en.yml
+plugins/GoodsTrade/lang/zh_cn.yml
+plugins/GoodsTrade/lang/en_us.yml
 ```
 
-Select a language in `config.yml`, then run `/gt reload`:
+The default `system` setting follows the server JVM/operating-system locale. Older configs without a `Language` key also use automatic detection. You can select a locale explicitly, then run `/gt reload`:
 
 ```yaml
-Language: en
+Language: system
+# Language: zh_cn
+# Language: en_us
 ```
 
-The default language is `cn`. Existing servers upgrading from an older version keep their customized messages: the legacy `Lang.yml` is copied to `lang/cn.yml` when needed and is not deleted.
+Locale filenames follow the standard i18n style, such as `zh_cn`, `en_us`, and `ja_jp`. If a locale is unavailable, GoodsTrade logs a warning and falls back to `zh_cn`.
+
+On future updates, any new translation bundled under `lang/` is generated automatically when the server does not already have that file. Existing translations are never overwritten. Legacy `Lang.yml`, `lang/cn.yml`, and `lang/en.yml` files are migrated when needed and are not deleted.
 
 ## Item blacklist
 

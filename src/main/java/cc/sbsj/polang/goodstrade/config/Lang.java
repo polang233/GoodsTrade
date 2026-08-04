@@ -6,20 +6,34 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
 public class Lang {
     private static final String LANG_DIRECTORY = "lang";
-    private static final String DEFAULT_LANGUAGE = "cn";
+    private static final String DEFAULT_LANGUAGE = "zh_cn";
+    private static final String SYSTEM_LANGUAGE = "system";
     private static final String LEGACY_LANG_FILE = "Lang.yml";
+
+    private final GoodsTrade plugin;
     private YamlConfiguration langConfig;
     private YamlConfiguration fallbackConfig;
     private String activeLanguage = DEFAULT_LANGUAGE;
-    private final GoodsTrade plugin;
 
     public Lang(GoodsTrade plugin) {
         this.plugin = plugin;
@@ -28,7 +42,8 @@ public class Lang {
 
     public void load() {
         ensureLanguageFiles();
-        activeLanguage = resolveLanguage();
+        Set<String> availableLanguages = findInstalledLanguages();
+        activeLanguage = resolveLanguage(availableLanguages);
 
         File langFile = getLanguageFile(activeLanguage);
         File fallbackFile = getLanguageFile(DEFAULT_LANGUAGE);
@@ -38,10 +53,7 @@ public class Lang {
     }
 
     public String getString(String path) {
-        String value = langConfig.getString(path);
-        if (value == null && !DEFAULT_LANGUAGE.equals(activeLanguage)) {
-            value = fallbackConfig.getString(path);
-        }
+        String value = getStringOrFallback(path);
         if (value == null) {
             warnMissing(path);
             return "";
@@ -50,37 +62,21 @@ public class Lang {
     }
 
     public String getString(String path, String defaultValue) {
-        String value = langConfig.getString(path, defaultValue);
-        return color(value);
+        String value = getStringOrFallback(path);
+        return color(value == null ? defaultValue : value);
     }
 
     public List<String> getStringList(String path) {
-        List<String> values = langConfig.getStringList(path);
+        List<String> values = getListOrFallback(path);
         if (values.isEmpty()) {
-            String single = langConfig.getString(path);
+            String single = getStringOrFallback(path);
             if (single != null) {
-                List<String> result = new ArrayList<>();
-                result.add(color(single));
-                return result;
+                return Collections.singletonList(color(single));
             }
-
-            if (!DEFAULT_LANGUAGE.equals(activeLanguage)) {
-                values = fallbackConfig.getStringList(path);
-                if (values.isEmpty()) {
-                    single = fallbackConfig.getString(path);
-                    if (single != null) {
-                        List<String> result = new ArrayList<>();
-                        result.add(color(single));
-                        return result;
-                    }
-                }
-            }
-
-            if (values.isEmpty()) {
-                warnMissing(path);
-                return new ArrayList<>();
-            }
+            warnMissing(path);
+            return new ArrayList<>();
         }
+
         List<String> colored = new ArrayList<>();
         for (String value : values) {
             colored.add(color(value));
@@ -99,14 +95,66 @@ public class Lang {
         return text;
     }
 
-    private String resolveLanguage() {
-        String configured = plugin.getConfig().getString("Language", DEFAULT_LANGUAGE);
-        String language = configured == null ? DEFAULT_LANGUAGE : configured.trim().toLowerCase(Locale.ROOT);
-        if (!"cn".equals(language) && !"en".equals(language)) {
-            plugin.getLogger().warning("Unsupported language '" + configured + "'. Falling back to cn.");
+    public String getActiveLanguage() {
+        return activeLanguage;
+    }
+
+    private String getStringOrFallback(String path) {
+        String value = langConfig.getString(path);
+        if (value == null && !DEFAULT_LANGUAGE.equals(activeLanguage)) {
+            value = fallbackConfig.getString(path);
+        }
+        return value;
+    }
+
+    private List<String> getListOrFallback(String path) {
+        List<String> values = langConfig.getStringList(path);
+        if (values.isEmpty() && !DEFAULT_LANGUAGE.equals(activeLanguage)) {
+            values = fallbackConfig.getStringList(path);
+        }
+        return values;
+    }
+
+    private String resolveLanguage(Set<String> availableLanguages) {
+        String configured = plugin.getConfig().getString("Language");
+        if (configured == null || configured.trim().isEmpty() || SYSTEM_LANGUAGE.equalsIgnoreCase(configured.trim())) {
+            String systemLanguage = toLocaleCode(Locale.getDefault());
+            String matched = matchAvailableLanguage(systemLanguage, availableLanguages);
+            if (matched != null) {
+                return matched;
+            }
+            warnUnsupported("system language " + systemLanguage, availableLanguages);
             return DEFAULT_LANGUAGE;
         }
-        return language;
+
+        String requested = normalizeLanguageCode(configured);
+        String matched = matchAvailableLanguage(requested, availableLanguages);
+        if (matched != null) {
+            return matched;
+        }
+
+        warnUnsupported("configured language " + configured, availableLanguages);
+        return DEFAULT_LANGUAGE;
+    }
+
+    private String matchAvailableLanguage(String requested, Set<String> availableLanguages) {
+        if (availableLanguages.contains(requested)) {
+            return requested;
+        }
+
+        String language = languagePart(requested);
+        String preferred = preferredLocale(language);
+        if (preferred != null && availableLanguages.contains(preferred)) {
+            return preferred;
+        }
+
+        String prefix = language + "_";
+        for (String available : availableLanguages) {
+            if (available.startsWith(prefix)) {
+                return available;
+            }
+        }
+        return null;
     }
 
     private void ensureLanguageFiles() {
@@ -115,34 +163,145 @@ public class Lang {
             plugin.getLogger().warning("Could not create language directory: " + languageDirectory.getPath());
         }
 
-        File chineseFile = getLanguageFile("cn");
-        File legacyFile = new File(plugin.getDataFolder(), LEGACY_LANG_FILE);
-        if (!chineseFile.exists() && legacyFile.exists()) {
+        migrateLegacyLanguage(new File(languageDirectory, "cn.yml"), "zh_cn");
+        migrateLegacyLanguage(new File(languageDirectory, "en.yml"), "en_us");
+        migrateLegacyLanguage(new File(plugin.getDataFolder(), LEGACY_LANG_FILE), "zh_cn");
+
+        Set<String> resources = findBundledLanguageResources();
+        for (String resource : resources) {
+            File output = new File(plugin.getDataFolder(), resource.replace('/', File.separatorChar));
+            if (output.exists()) continue;
             try {
-                Files.copy(legacyFile.toPath(), chineseFile.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
-                plugin.getLogger().info("Migrated legacy Lang.yml to lang/cn.yml");
-            } catch (IOException exception) {
-                plugin.getLogger().warning("Could not migrate Lang.yml: " + exception.getMessage());
+                plugin.saveResource(resource, false);
+                plugin.getLogger().info("Generated language file: " + resource);
+            } catch (IllegalArgumentException exception) {
+                plugin.getLogger().warning("Could not extract " + resource + ": " + exception.getMessage());
             }
         }
 
-        saveLanguageResource("cn");
-        saveLanguageResource("en");
+        if (!getLanguageFile(DEFAULT_LANGUAGE).exists()) {
+            plugin.getLogger().severe("Default language file lang/" + DEFAULT_LANGUAGE + ".yml is missing.");
+        }
     }
 
-    private void saveLanguageResource(String language) {
-        File file = getLanguageFile(language);
-        if (!file.exists()) {
-            plugin.saveResource(LANG_DIRECTORY + "/" + language + ".yml", false);
+    private void migrateLegacyLanguage(File source, String targetLanguage) {
+        File target = getLanguageFile(targetLanguage);
+        if (!source.exists() || target.exists()) return;
+        try {
+            Files.copy(source.toPath(), target.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
+            plugin.getLogger().info("Migrated " + source.getName() + " to lang/" + targetLanguage + ".yml");
+        } catch (IOException exception) {
+            plugin.getLogger().warning("Could not migrate " + source.getPath() + ": " + exception.getMessage());
         }
+    }
+
+    private Set<String> findBundledLanguageResources() {
+        Set<String> resources = new TreeSet<>();
+        try {
+            URI location = plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI();
+            Path codePath = Paths.get(location);
+            if (Files.isDirectory(codePath)) {
+                Path languagePath = codePath.resolve(LANG_DIRECTORY);
+                if (Files.isDirectory(languagePath)) {
+                    try (Stream<Path> paths = Files.walk(languagePath)) {
+                        paths.filter(Files::isRegularFile)
+                                .map(languagePath::relativize)
+                                .map(Path::toString)
+                                .filter(Lang::isYamlFile)
+                                .map(path -> LANG_DIRECTORY + "/" + path.replace(File.separatorChar, '/'))
+                                .forEach(resources::add);
+                    }
+                }
+            } else {
+                try (JarFile jarFile = new JarFile(codePath.toFile())) {
+                    Enumeration<JarEntry> entries = jarFile.entries();
+                    while (entries.hasMoreElements()) {
+                        JarEntry entry = entries.nextElement();
+                        String name = entry.getName();
+                        if (!entry.isDirectory() && name.startsWith(LANG_DIRECTORY + "/") && isYamlFile(name)) {
+                            resources.add(name);
+                        }
+                    }
+                }
+            }
+        } catch (Exception exception) {
+            plugin.getLogger().warning("Could not scan bundled language files: " + exception.getMessage());
+        }
+
+        for (String fallback : Arrays.asList("lang/zh_cn.yml", "lang/en_us.yml")) {
+            if (hasResource(fallback)) {
+                resources.add(fallback);
+            }
+        }
+        return resources;
+    }
+
+    private boolean hasResource(String path) {
+        try (InputStream input = plugin.getResource(path)) {
+            return input != null;
+        } catch (IOException ignored) {
+            return false;
+        }
+    }
+
+    private Set<String> findInstalledLanguages() {
+        Set<String> languages = new TreeSet<>();
+        File directory = new File(plugin.getDataFolder(), LANG_DIRECTORY);
+        File[] files = directory.listFiles((dir, name) -> isYamlFile(name));
+        if (files == null) return languages;
+        for (File file : files) {
+            String name = file.getName();
+            languages.add(name.substring(0, name.length() - 4).toLowerCase(Locale.ROOT));
+        }
+        return languages;
     }
 
     private File getLanguageFile(String language) {
         return new File(new File(plugin.getDataFolder(), LANG_DIRECTORY), language + ".yml");
     }
 
+    private void warnUnsupported(String source, Set<String> availableLanguages) {
+        plugin.getLogger().warning("Unsupported " + source + ". Available languages: "
+                + availableLanguages + ". Falling back to " + DEFAULT_LANGUAGE + ".");
+    }
+
     private void warnMissing(String path) {
         plugin.getLogger().warning("Missing language entry in lang/" + activeLanguage + ".yml: " + path);
+    }
+
+    private static String toLocaleCode(Locale locale) {
+        String language = locale.getLanguage().toLowerCase(Locale.ROOT);
+        String country = locale.getCountry().toLowerCase(Locale.ROOT);
+        if (country.isEmpty()) {
+            String preferred = preferredLocale(language);
+            return preferred == null ? language : preferred;
+        }
+        return language + "_" + country;
+    }
+
+    private static String normalizeLanguageCode(String value) {
+        String normalized = value.trim().toLowerCase(Locale.ROOT).replace('-', '_');
+        if ("cn".equals(normalized) || "zh".equals(normalized)) return "zh_cn";
+        if ("en".equals(normalized)) return "en_us";
+        if ("jp".equals(normalized) || "ja".equals(normalized)) return "ja_jp";
+        return normalized;
+    }
+
+    private static String languagePart(String localeCode) {
+        int separator = localeCode.indexOf('_');
+        return separator < 0 ? localeCode : localeCode.substring(0, separator);
+    }
+
+    private static String preferredLocale(String language) {
+        if ("zh".equals(language)) return "zh_cn";
+        if ("en".equals(language)) return "en_us";
+        if ("ja".equals(language)) return "ja_jp";
+        return null;
+    }
+
+    private static boolean isYamlFile(String path) {
+        String lower = path.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".yml");
     }
 
     private String color(String text) {

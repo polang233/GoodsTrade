@@ -69,17 +69,22 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 
 首次启动后会生成：
 
-- `plugins/GoodsTrade/lang/cn.yml`
-- `plugins/GoodsTrade/lang/en.yml`
+- `plugins/GoodsTrade/lang/zh_cn.yml`
+- `plugins/GoodsTrade/lang/en_us.yml`
 
-在 `config.yml` 中修改语言，然后执行 `/gt reload`：
+默认使用服务器 JVM/操作系统语言。`config.yml` 中没有 `Language` 的旧配置也会使用系统语言；若没有对应翻译，控制台会提示并回退到简体中文。
+
+也可以指定语言，然后执行 `/gt reload`：
 
 ```yaml
-Language: cn # 中文
-# Language: en # English
+Language: system # 自动检测
+# Language: zh_cn # 简体中文
+# Language: en_us # English (US)
 ```
 
-从旧版本升级时，如果插件目录里仍有自定义的 `Lang.yml`，插件会在首次启动新版时将其复制为 `lang/cn.yml`，不会删除原文件。
+插件会自动释放 JAR 内 `lang/` 目录中的所有语言文件，只补充缺少的文件，不覆盖服主已经修改的翻译。因此未来版本加入 `ja_jp.yml` 等翻译时，升级后会自动生成。
+
+从旧版本升级时，已有的 `Lang.yml`、`lang/cn.yml` 和 `lang/en.yml` 会在需要时迁移到标准名称，旧文件不会被删除。
 
 ---
 
