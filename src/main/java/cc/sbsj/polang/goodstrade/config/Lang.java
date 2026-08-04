@@ -6,14 +6,13 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -119,42 +118,20 @@ public class Lang {
         String configured = plugin.getConfig().getString("Language");
         if (configured == null || configured.trim().isEmpty() || SYSTEM_LANGUAGE.equalsIgnoreCase(configured.trim())) {
             String systemLanguage = toLocaleCode(Locale.getDefault());
-            String matched = matchAvailableLanguage(systemLanguage, availableLanguages);
-            if (matched != null) {
-                return matched;
+            if (availableLanguages.contains(systemLanguage)) {
+                return systemLanguage;
             }
             warnUnsupported("system language " + systemLanguage, availableLanguages);
             return DEFAULT_LANGUAGE;
         }
 
         String requested = normalizeLanguageCode(configured);
-        String matched = matchAvailableLanguage(requested, availableLanguages);
-        if (matched != null) {
-            return matched;
-        }
-
-        warnUnsupported("configured language " + configured, availableLanguages);
-        return DEFAULT_LANGUAGE;
-    }
-
-    private String matchAvailableLanguage(String requested, Set<String> availableLanguages) {
         if (availableLanguages.contains(requested)) {
             return requested;
         }
 
-        String language = languagePart(requested);
-        String preferred = preferredLocale(language);
-        if (preferred != null && availableLanguages.contains(preferred)) {
-            return preferred;
-        }
-
-        String prefix = language + "_";
-        for (String available : availableLanguages) {
-            if (available.startsWith(prefix)) {
-                return available;
-            }
-        }
-        return null;
+        warnUnsupported("configured language " + configured, availableLanguages);
+        return DEFAULT_LANGUAGE;
     }
 
     private void ensureLanguageFiles() {
@@ -163,9 +140,7 @@ public class Lang {
             plugin.getLogger().warning("Could not create language directory: " + languageDirectory.getPath());
         }
 
-        migrateLegacyLanguage(new File(languageDirectory, "cn.yml"), "zh_cn");
-        migrateLegacyLanguage(new File(languageDirectory, "en.yml"), "en_us");
-        migrateLegacyLanguage(new File(plugin.getDataFolder(), LEGACY_LANG_FILE), "zh_cn");
+        migrateLegacyLanguage(new File(plugin.getDataFolder(), LEGACY_LANG_FILE), DEFAULT_LANGUAGE);
 
         Set<String> resources = findBundledLanguageResources();
         for (String resource : resources) {
@@ -201,17 +176,7 @@ public class Lang {
             URI location = plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI();
             Path codePath = Paths.get(location);
             if (Files.isDirectory(codePath)) {
-                Path languagePath = codePath.resolve(LANG_DIRECTORY);
-                if (Files.isDirectory(languagePath)) {
-                    try (Stream<Path> paths = Files.walk(languagePath)) {
-                        paths.filter(Files::isRegularFile)
-                                .map(languagePath::relativize)
-                                .map(Path::toString)
-                                .filter(Lang::isYamlFile)
-                                .map(path -> LANG_DIRECTORY + "/" + path.replace(File.separatorChar, '/'))
-                                .forEach(resources::add);
-                    }
-                }
+                collectDirectoryResources(codePath.resolve(LANG_DIRECTORY), resources);
             } else {
                 try (JarFile jarFile = new JarFile(codePath.toFile())) {
                     Enumeration<JarEntry> entries = jarFile.entries();
@@ -224,23 +189,29 @@ public class Lang {
                     }
                 }
             }
+
+            if (resources.isEmpty()) {
+                URL languageUrl = plugin.getClass().getClassLoader().getResource(LANG_DIRECTORY);
+                if (languageUrl != null && "file".equalsIgnoreCase(languageUrl.getProtocol())) {
+                    collectDirectoryResources(Paths.get(languageUrl.toURI()), resources);
+                }
+            }
         } catch (Exception exception) {
             plugin.getLogger().warning("Could not scan bundled language files: " + exception.getMessage());
         }
 
-        for (String fallback : Arrays.asList("lang/zh_cn.yml", "lang/en_us.yml")) {
-            if (hasResource(fallback)) {
-                resources.add(fallback);
-            }
-        }
         return resources;
     }
 
-    private boolean hasResource(String path) {
-        try (InputStream input = plugin.getResource(path)) {
-            return input != null;
-        } catch (IOException ignored) {
-            return false;
+    private void collectDirectoryResources(Path languagePath, Set<String> resources) throws IOException {
+        if (!Files.isDirectory(languagePath)) return;
+        try (Stream<Path> paths = Files.walk(languagePath)) {
+            paths.filter(Files::isRegularFile)
+                    .map(languagePath::relativize)
+                    .map(Path::toString)
+                    .filter(Lang::isYamlFile)
+                    .map(path -> LANG_DIRECTORY + "/" + path.replace(File.separatorChar, '/'))
+                    .forEach(resources::add);
         }
     }
 
@@ -272,31 +243,12 @@ public class Lang {
     private static String toLocaleCode(Locale locale) {
         String language = locale.getLanguage().toLowerCase(Locale.ROOT);
         String country = locale.getCountry().toLowerCase(Locale.ROOT);
-        if (country.isEmpty()) {
-            String preferred = preferredLocale(language);
-            return preferred == null ? language : preferred;
-        }
+        if (country.isEmpty()) return language;
         return language + "_" + country;
     }
 
     private static String normalizeLanguageCode(String value) {
-        String normalized = value.trim().toLowerCase(Locale.ROOT).replace('-', '_');
-        if ("cn".equals(normalized) || "zh".equals(normalized)) return "zh_cn";
-        if ("en".equals(normalized)) return "en_us";
-        if ("jp".equals(normalized) || "ja".equals(normalized)) return "ja_jp";
-        return normalized;
-    }
-
-    private static String languagePart(String localeCode) {
-        int separator = localeCode.indexOf('_');
-        return separator < 0 ? localeCode : localeCode.substring(0, separator);
-    }
-
-    private static String preferredLocale(String language) {
-        if ("zh".equals(language)) return "zh_cn";
-        if ("en".equals(language)) return "en_us";
-        if ("ja".equals(language)) return "ja_jp";
-        return null;
+        return value.trim().toLowerCase(Locale.ROOT).replace('-', '_');
     }
 
     private static boolean isYamlFile(String path) {

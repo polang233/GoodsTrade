@@ -78,7 +78,7 @@ Language: system
 
 Locale filenames follow the standard i18n style, such as `zh_cn`, `en_us`, and `ja_jp`. If a locale is unavailable, GoodsTrade logs a warning and falls back to `zh_cn`.
 
-On future updates, any new translation bundled under `lang/` is generated automatically when the server does not already have that file. Existing translations are never overwritten. Legacy `Lang.yml`, `lang/cn.yml`, and `lang/en.yml` files are migrated when needed and are not deleted.
+On future updates, any new translation bundled under `lang/` is generated automatically when the server does not already have that file. Existing translations are never overwritten. The root-level `Lang.yml` from older published versions is migrated to `lang/zh_cn.yml` when needed and is not deleted.
 
 ## Item blacklist
 

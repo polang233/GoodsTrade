@@ -89,11 +89,11 @@ Language: system
 # Language: en_us
 ```
 
-Run `/gt reload` after changing the value. Locale names follow the common Minecraft/i18n format, such as `zh_cn`, `en_us`, and `ja_jp`. The older `cn` and `en` values remain accepted as aliases.
+Run `/gt reload` after changing the value. Locale names follow the common Minecraft/i18n format, such as `zh_cn`, `en_us`, and `ja_jp`.
 
 GoodsTrade scans the complete `lang/` folder inside each new JAR and extracts any translation that is missing on disk. Existing files are never overwritten, so local edits are preserved while newly bundled languages appear automatically.
 
-When upgrading, legacy `Lang.yml`, `lang/cn.yml`, and `lang/en.yml` files are migrated to the standard locale names when needed. The original files are left untouched.
+When upgrading from an older published version, the root-level `Lang.yml` is migrated to `lang/zh_cn.yml` when needed. The original file is left untouched.
 
 ## Main configuration
 
