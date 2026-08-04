@@ -4,6 +4,7 @@ import cc.sbsj.polang.goodstrade.commands.GoodsTradeCommand;
 import cc.sbsj.polang.goodstrade.config.Config;
 import cc.sbsj.polang.goodstrade.config.Lang;
 import cc.sbsj.polang.goodstrade.config.PlayerDataManager;
+import cc.sbsj.polang.goodstrade.config.ViewConfig;
 import cc.sbsj.polang.goodstrade.hook.Metrics;
 import cc.sbsj.polang.goodstrade.hook.Papi;
 import cc.sbsj.polang.goodstrade.task.RunTask;
@@ -36,8 +37,9 @@ public final class GoodsTrade extends JavaPlugin {
             getLogger().severe("§c为了阻止可能出现的错误，插件停止加载功能");
             return;
         }
-        lang = new Lang(this);
         config = new Config(this);
+        lang = new Lang(this);
+        ViewConfig.load(this);
         playerDataManager = new PlayerDataManager(this);
 
         getLogger().info(getPrefix() + "§3插件版本: §bv" + this.getDescription().getVersion());

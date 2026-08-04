@@ -116,72 +116,82 @@ public class View {
 
     public static void defaultItemReady() {
         ItemMeta meta = senderReadyButtonItem.getItemMeta();
-        meta.setDisplayName("§7当前未确认");
-        List<String> lore = Arrays.asList("", "§a单击可确认");
+        meta.setDisplayName(text("trade-view.unconfirmed-name", "§7当前未确认"));
+        List<String> lore = lines("trade-view.click-confirm-lore", Arrays.asList("", "§a单击可确认"));
         meta.setLore(lore);
         senderReadyButtonItem.setItemMeta(meta);
     }
 
     public static void defaultItemReadyYes() {
         ItemMeta meta = senderReadyButtonItemYes.getItemMeta();
-        meta.setDisplayName("§e已确认");
-        List<String> lore = Arrays.asList("", "§a等待对方确认");
+        meta.setDisplayName(text("trade-view.confirmed-name", "§e已确认"));
+        List<String> lore = lines("trade-view.waiting-other-lore", Arrays.asList("", "§a等待对方确认"));
         meta.setLore(lore);
         senderReadyButtonItemYes.setItemMeta(meta);
     }
 
     public static void defaultItemReadyWait() {
         ItemMeta meta = senderReadyButtonItemWait.getItemMeta();
-        meta.setDisplayName("§b确认交易中...");
-        List<String> lore = Arrays.asList("", "§e可检查对方物品是否符合要求", "§6若存在问题请再次点击以取消确认！");
+        meta.setDisplayName(text("trade-view.countdown-name", "§b确认交易中..."));
+        List<String> lore = lines("trade-view.countdown-lore", Arrays.asList("", "§e可检查对方物品是否符合要求", "§6若存在问题请再次点击以取消确认！"));
         meta.setLore(lore);
         senderReadyButtonItemWait.setItemMeta(meta);
     }
 
     public static void defaultTargetItemReady() {
         ItemMeta meta = targetReadyButtonItem.getItemMeta();
-        meta.setDisplayName("§7当前未确认");
-        List<String> lore = Arrays.asList("", "§a单击可确认");
+        meta.setDisplayName(text("trade-view.unconfirmed-name", "§7当前未确认"));
+        List<String> lore = lines("trade-view.click-confirm-lore", Arrays.asList("", "§a单击可确认"));
         meta.setLore(lore);
         targetReadyButtonItem.setItemMeta(meta);
     }
 
     public static void defaultTargetItemReadyYes() {
         ItemMeta meta = targetReadyButtonItemYes.getItemMeta();
-        meta.setDisplayName("§e已确认");
-        List<String> lore = Arrays.asList("", "§a等待对方确认");
+        meta.setDisplayName(text("trade-view.confirmed-name", "§e已确认"));
+        List<String> lore = lines("trade-view.waiting-other-lore", Arrays.asList("", "§a等待对方确认"));
         meta.setLore(lore);
         targetReadyButtonItemYes.setItemMeta(meta);
     }
 
     public static void defaultTargetItemReadyWait() {
         ItemMeta meta = targetReadyButtonItemWait.getItemMeta();
-        meta.setDisplayName("§b确认交易中...");
-        List<String> lore = Arrays.asList("", "§e可检查对方物品是否符合要求", "§6若存在问题请再次点击以取消确认！");
+        meta.setDisplayName(text("trade-view.countdown-name", "§b确认交易中..."));
+        List<String> lore = lines("trade-view.countdown-lore", Arrays.asList("", "§e可检查对方物品是否符合要求", "§6若存在问题请再次点击以取消确认！"));
         meta.setLore(lore);
         targetReadyButtonItemWait.setItemMeta(meta);
     }
 
     public static void defaultItemCancelReady() {
         ItemMeta meta = cancelReadyItem.getItemMeta();
-        meta.setDisplayName("§c对方取消");
-        List<String> lore = Arrays.asList("", "§e再次点击重新开始，需要双方都确认才可进行交易");
+        meta.setDisplayName(text("trade-view.other-cancelled-name", "§c对方取消"));
+        List<String> lore = lines("trade-view.restart-confirm-lore", Arrays.asList("", "§e再次点击重新开始，需要双方都确认才可进行交易"));
         meta.setLore(lore);
         cancelReadyItem.setItemMeta(meta);
     }
 
     public static void defaultItemInfo() {
         ItemMeta meta = infoItem.getItemMeta();
-        meta.setDisplayName("§7分隔板");
-        List<String> lore = Arrays.asList("",
+        meta.setDisplayName(text("trade-view.divider-name", "§7分隔板"));
+        List<String> lore = lines("trade-view.divider-lore", Arrays.asList("",
                 "§a交易发起者默认在左侧",
                 "§a被发起者默认在右侧",
                 "§e将想要交易的物品放入后点击下方确认",
                 "§e确认后将锁定物品，待双方确认进行交易",
                 "§e交易过程中等待读秒结束，期间请检查物品"
-        );
+        ));
         meta.setLore(lore);
         infoItem.setItemMeta(meta);
+    }
+
+    private static String text(String path, String fallback) {
+        return GoodsTrade.lang == null ? fallback : GoodsTrade.lang.getString(path, fallback);
+    }
+
+    private static List<String> lines(String path, List<String> fallback) {
+        if (GoodsTrade.lang == null) return fallback;
+        List<String> configured = GoodsTrade.lang.getStringList(path);
+        return configured.isEmpty() ? fallback : configured;
     }
 
     public boolean isBlackList(InventoryClickEvent event, Player player) {

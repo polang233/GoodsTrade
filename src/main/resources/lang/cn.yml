@@ -49,6 +49,34 @@ trade-gui:
   confirm-in-progress: "&c正在交易确认中，若需取消请按取消按钮！"
   blacklist-hit: "&c你的物品槽有禁止交易的物品！"
 
+# 默认交易界面按钮；View.yml 中的自定义值会覆盖这些内容
+trade-view:
+  unconfirmed-name: "&7当前未确认"
+  click-confirm-lore:
+    - ""
+    - "&a单击可确认"
+  confirmed-name: "&e已确认"
+  waiting-other-lore:
+    - ""
+    - "&a等待对方确认"
+  countdown-name: "&b确认交易中..."
+  countdown-lore:
+    - ""
+    - "&e可检查对方物品是否符合要求"
+    - "&6若存在问题请再次点击以取消确认！"
+  other-cancelled-name: "&c对方取消"
+  restart-confirm-lore:
+    - ""
+    - "&e再次点击重新开始，需要双方都确认才可进行交易"
+  divider-name: "&7分隔板"
+  divider-lore:
+    - ""
+    - "&a交易发起者默认在左侧"
+    - "&a被发起者默认在右侧"
+    - "&e将想要交易的物品放入后点击下方确认"
+    - "&e确认后将锁定物品，待双方确认进行交易"
+    - "&e交易过程中等待读秒结束，期间请检查物品"
+
 # 交易开关
 trade-toggle:
   enabled: "&a你已 &2开启 &a交易接受状态，其他玩家可以向你发起交易"
@@ -73,8 +101,6 @@ protection:
 # 安全违规
 security:
   exploit-attempt: "&c试图滥发消息被踢出！"
-
-
 
 # 重载
 reload:

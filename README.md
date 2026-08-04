@@ -1,6 +1,12 @@
+<p align="center">
+  <img src="img/logo.png" alt="GoodsTrade Logo" width="220">
+</p>
+
 # GoodsTrade - 简单安全的玩家物品交易插件
 
 >  Minecraft 服务器的轻量物品交易插件，提供安全、便捷的玩家间交易功能。
+
+> English-speaking server owners: read the full [English documentation](doc/README_EN.md).
 
 ![示例](/img/QQ20260315-190201-HD.gif "交易界面演示")
 ![示例2](/img/1773587841043.webp "交易界面演示2")
@@ -59,6 +65,22 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 
 配置文件位置：`plugins/GoodsTrade/config.yml`
 
+### 🌐 语言切换
+
+首次启动后会生成：
+
+- `plugins/GoodsTrade/lang/cn.yml`
+- `plugins/GoodsTrade/lang/en.yml`
+
+在 `config.yml` 中修改语言，然后执行 `/gt reload`：
+
+```yaml
+Language: cn # 中文
+# Language: en # English
+```
+
+从旧版本升级时，如果插件目录里仍有自定义的 `Lang.yml`，插件会在首次启动新版时将其复制为 `lang/cn.yml`，不会删除原文件。
+
 ---
 
 ## 🎮 使用方法
@@ -66,7 +88,7 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 ### 基础交易流程
 
 1. **发起交易**：
-    - 方式一：输入命令 `/gt trade [玩家名]`
+    - 方式一：输入命令 `/gt sendtrade [玩家名]`
     - 方式二：潜行状态下右键点击玩家（需配置开启）
 
 2. **接受交易**：

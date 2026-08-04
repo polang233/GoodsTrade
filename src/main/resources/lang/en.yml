@@ -1,0 +1,96 @@
+# GoodsTrade English messages
+# Supports legacy & color codes
+# Placeholders:
+#   %prefix% - plugin prefix
+#   %player% - player name
+#   %target% - target player name
+
+prefix: "&7[&2&lGoods&6&lTrade&7] &r"
+
+command:
+  help: "&7Available commands:"
+  unknown: "&cUnknown subcommand."
+  no-permission: "&cYou don't have permission to use this command."
+  player-only: "&cOnly players can use this command."
+  usage:
+    trade: "&aUsage: /gt trade <sender> <receiver>"
+    sendtrade: "&aUsage: /gt sendtrade <player>"
+    toggle: "&cUsage: /gt toggle [true|false]"
+    toggle-hint: "&7Leave out the value to switch your current setting."
+
+trade-request:
+  sent: "&7Trade request sent to &e%target%&7."
+  received: "&e%player% &7wants to trade with you. &a[Click to accept]"
+  hover: "Click to accept this trade"
+  cooldown: "&cYou're sending trade requests too quickly. Try again in a moment."
+  target-closed: "&cThat player isn't accepting trade requests."
+  no-pending: "&cYou don't have any pending trade requests."
+  select-player: "&cChoose which player's request you want to accept."
+
+trade-status:
+  opening: "&2Opening the trade menu..."
+  success: "&aTrade complete!"
+  cancelled-by-self: "&cYou cancelled the trade."
+  cancelled-by-other: "&cThe other player cancelled the trade."
+  cancelled-by-reload: "&cThe plugin is reloading, so your trade was cancelled."
+
+trade-gui:
+  confirm: "&aOffer confirmed. Waiting for the other player..."
+  unconfirm: "&cYou withdrew your confirmation."
+  cancel-ready: "&cYou stopped the final confirmation countdown."
+  trade-cancelled: "&cConfirmation cancelled. You can edit your offer again."
+  items-locked: "&cYour offer is locked while confirmed."
+  self-operation: "&cYou can only edit your own offer slots."
+  confirm-in-progress: "&cThe trade is being confirmed. Use the cancel button if you need to stop it."
+  blacklist-hit: "&cYour offer contains an item that cannot be traded."
+
+# Default trade menu labels. Explicit values in View.yml take priority.
+trade-view:
+  unconfirmed-name: "&7Not confirmed"
+  click-confirm-lore:
+    - ""
+    - "&aClick to confirm your offer"
+  confirmed-name: "&eOffer confirmed"
+  waiting-other-lore:
+    - ""
+    - "&aWaiting for the other player"
+  countdown-name: "&bFinalizing trade..."
+  countdown-lore:
+    - ""
+    - "&eCheck the other player's offer carefully"
+    - "&6Click again to cancel if something looks wrong"
+  other-cancelled-name: "&cConfirmation cancelled"
+  restart-confirm-lore:
+    - ""
+    - "&eClick to start over; both players must confirm again"
+  divider-name: "&7Trade guide"
+  divider-lore:
+    - ""
+    - "&aThe sender places items on the left"
+    - "&aThe receiver places items on the right"
+    - "&eAdd your offer, then use the buttons below"
+    - "&eConfirmed offers are locked until the trade completes"
+    - "&eUse the countdown to double-check every item"
+
+trade-toggle:
+  enabled: "&aTrade requests are now &2enabled&a."
+  disabled: "&cTrade requests are now &4disabled&c."
+
+player:
+  offline: "&cThat player is offline."
+  not-found: "&cThat player could not be found or is offline."
+  self-trade: "&cYou can't trade with yourself."
+  different-players: "&cA trade needs two different players."
+  inv-full: "&cYour inventory was full, so the remaining items were dropped at your feet."
+
+console:
+  need-both-players: "Console must specify both the sender and receiver."
+
+protection:
+  trading: "&cThat player is currently trading and cannot be damaged."
+
+security:
+  exploit-attempt: "&cYou were kicked for attempting an unsafe chat payload."
+
+reload:
+  success: "&aGoodsTrade configuration reloaded."

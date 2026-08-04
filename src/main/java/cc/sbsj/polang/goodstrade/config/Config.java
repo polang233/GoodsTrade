@@ -11,7 +11,6 @@ public class Config {
     public Config(GoodsTrade plugin) {
         config = plugin.getConfig();
         plugin.saveDefaultConfig();
-        ViewConfig.load(plugin);
         loadItemBlackList();
     }
 
@@ -27,8 +26,8 @@ public class Config {
     public void reload() {
         GoodsTrade.instance.reloadConfig();
         config = GoodsTrade.instance.getConfig();
-        ViewConfig.load(GoodsTrade.instance);
         GoodsTrade.lang.load();
+        ViewConfig.load(GoodsTrade.instance);
         loadItemBlackList();
     }
 

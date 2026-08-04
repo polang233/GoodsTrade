@@ -3,7 +3,7 @@ button:
   "#":
     #   每个按钮都可以配置以下字段：
      material: black_stained_glass_pane # 物品材质，支持 XMaterial/Bukkit
-     name: "&7背景板"                    # 没有会使用默认名称
+     name: " "                           # 留空白名称，避免背景物品显示额外文字
      lore:                              # 不写会使用默认描述
        - "&7"                           # 建议默认留一行，不然玩家拿普通玻璃板改个名可以把物品放进去或者有可能抠出来
      custom_model_data: 0               # 资源包自定义模型数据，不写或 0 表示不设置
