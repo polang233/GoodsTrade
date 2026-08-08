@@ -48,11 +48,28 @@ public final class GoodsTrade extends JavaPlugin {
         getCommand("goodstrade").setExecutor(new GoodsTradeCommand(this));
         getLogger().info("§2命令成功加载");
         getServer().getPluginManager().registerEvents(new Events(), this);
+        registerPaperSecurityEvents();
         getLogger().info("§2事件监听器成功注册");
         //每十分钟运行一次检查
         this.getServer().getScheduler().runTaskTimer(this, new RunTask(), 20L, 12000L);
 
         getLogger().info(getPrefix() + "§a成功加载了喵~");
+    }
+
+    private void registerPaperSecurityEvents() {
+        try {
+            Class.forName(
+                    "com.destroystokyo.paper.event.server.AsyncTabCompleteEvent",
+                    false,
+                    getClass().getClassLoader()
+            );
+            getServer().getPluginManager().registerEvents(new PaperSecurityEvents(), this);
+            getLogger().info("Paper安全检测已启用");
+        } catch (ClassNotFoundException e) {
+            getLogger().info("Paper安全检测未启用");
+        } catch (LinkageError ignored) {
+            getLogger().warning("Paper安全检测不可用，已跳过");
+        }
     }
 
     private boolean checkDependencies() {

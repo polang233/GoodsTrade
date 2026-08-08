@@ -4,9 +4,6 @@ import cc.sbsj.polang.goodstrade.gui.Gui;
 import cc.sbsj.polang.goodstrade.gui.view.View;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import cc.sbsj.polang.goodstrade.trade.TradeSession;
-import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
-import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -183,21 +180,6 @@ public class Events implements Listener {
                 Player targetPlayer = (Player) event.getRightClicked();
                 TradeManager.sendTradeRequest(senderPlayer, targetPlayer);
             }
-        }
-    }
-
-    //帮忙修复简单漏洞（1.18、1.20均有出现）
-    @EventHandler(ignoreCancelled = true)
-    public void onTabComplete(AsyncTabCompleteEvent event) {
-        String buffer = event.getBuffer();
-        if (buffer.contains("@") && buffer.contains("[nbt=")) {
-            event.setCancelled(true);
-            Player player = (Player) event.getSender();
-            //主线程踢出
-            Bukkit.getScheduler().runTask(GoodsTrade.instance, () -> {
-                Component kick = Component.text(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("security.exploit-attempt"));
-                player.kick(kick);
-            });
         }
     }
 
