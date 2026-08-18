@@ -14,6 +14,7 @@
  */
 package cc.sbsj.polang.goodstrade.hook;
 
+import cc.sbsj.polang.goodstrade.compat.ServerCompatibility;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -93,11 +94,8 @@ public class Metrics {
         boolean logErrors = config.getBoolean("logFailedRequests", false);
         boolean logSentData = config.getBoolean("logSentData", false);
         boolean logResponseStatusText = config.getBoolean("logResponseStatusText", false);
-        boolean isFolia = false;
-        try {
-            isFolia = Class.forName("io.papermc.paper.threadedregions.RegionizedServer") != null;
-        } catch (Exception e) {
-        }
+        // Folia 类检测统一收口在兼容层，避免服务端特有类名散落。
+        boolean isFolia = ServerCompatibility.isFolia();
         metricsBase =
                 new // See https://github.com/Bastian/bstats-metrics/pull/126
                         // See https://github.com/Bastian/bstats-metrics/pull/126

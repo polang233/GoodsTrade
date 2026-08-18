@@ -1,6 +1,7 @@
 package cc.sbsj.polang.goodstrade;
 
 import cc.sbsj.polang.goodstrade.commands.GoodsTradeCommand;
+import cc.sbsj.polang.goodstrade.compat.ServerCompatibility;
 import cc.sbsj.polang.goodstrade.config.Config;
 import cc.sbsj.polang.goodstrade.config.Lang;
 import cc.sbsj.polang.goodstrade.config.PlayerDataManager;
@@ -48,28 +49,13 @@ public final class GoodsTrade extends JavaPlugin {
         getCommand("goodstrade").setExecutor(new GoodsTradeCommand(this));
         getLogger().info("§2命令成功加载");
         getServer().getPluginManager().registerEvents(new Events(), this);
-        registerPaperSecurityEvents();
+        // 启动时缓存服务端能力，避免交易过程中反复反射。
+        ServerCompatibility.initialize(this);
         getLogger().info("§2事件监听器成功注册");
         //每十分钟运行一次检查
         this.getServer().getScheduler().runTaskTimer(this, new RunTask(), 20L, 12000L);
 
         getLogger().info(getPrefix() + "§a成功加载了喵~");
-    }
-
-    private void registerPaperSecurityEvents() {
-        try {
-            Class.forName(
-                    "com.destroystokyo.paper.event.server.AsyncTabCompleteEvent",
-                    false,
-                    getClass().getClassLoader()
-            );
-            getServer().getPluginManager().registerEvents(new PaperSecurityEvents(), this);
-            getLogger().info("Paper安全检测已启用");
-        } catch (ClassNotFoundException e) {
-            getLogger().info("Paper安全检测未启用");
-        } catch (LinkageError ignored) {
-            getLogger().warning("Paper安全检测不可用，已跳过");
-        }
     }
 
     private boolean checkDependencies() {

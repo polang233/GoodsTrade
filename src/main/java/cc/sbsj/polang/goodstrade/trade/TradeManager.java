@@ -1,18 +1,14 @@
 package cc.sbsj.polang.goodstrade.trade;
 
 import cc.sbsj.polang.goodstrade.GoodsTrade;
+import cc.sbsj.polang.goodstrade.compat.ServerCompatibility;
 import cc.sbsj.polang.goodstrade.gui.view.TradeView;
 import cc.sbsj.polang.goodstrade.util.Utils;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
-import static org.bukkit.event.inventory.InventoryCloseEvent.Reason.PLUGIN;
 
 public class TradeManager {
     private static final Map<UUID, TradeSession> sessions = new HashMap<>();
@@ -77,14 +73,16 @@ public class TradeManager {
             TradeManager.removeSession(player);
             // 手动处理光标物品后清空，防止 Bukkit closeInventory 内部重复返还
             returnCursorItem(target);
-            target.closeInventory(PLUGIN);
+            // 统一走兼容层：1.12 没有 closeInventory(Reason)。
+            ServerCompatibility.closeInventory(target);
         } else {
             //被发起者结束交易
             player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.cancelled-by-self"));
             sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.cancelled-by-other"));
             TradeManager.removeSession(player);
             returnCursorItem(sender);
-            sender.closeInventory(PLUGIN);
+            // 统一走兼容层：1.12 没有 closeInventory(Reason)。
+            ServerCompatibility.closeInventory(sender);
         }
     }
 
@@ -95,7 +93,8 @@ public class TradeManager {
         TradeManager.removeSession(target);
         //必须先移除交易会话再关闭界面
         returnCursorItem(target);
-        target.closeInventory(PLUGIN);
+        // 统一走兼容层：1.12 没有 closeInventory(Reason)。
+        ServerCompatibility.closeInventory(target);
     }
 
     /**
@@ -142,10 +141,13 @@ public class TradeManager {
                 GoodsTrade.lang.getString("trade-request.received"),
                 "%player%", senderPlayer.getName()
         );
-        BaseComponent component = new TextComponent(GoodsTrade.getPrefix() + receivedMsg);
-        component.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/goodstrade accept " + senderPlayer.getName()));
-        component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent.fromLegacyText(GoodsTrade.lang.getString("trade-request.hover"))));
-        targetPlayer.sendMessage(component);
+        // 不支持 BungeeChat 的服务端会由兼容层降级为普通文本消息。
+        ServerCompatibility.sendClickableMessage(
+                targetPlayer,
+                GoodsTrade.getPrefix() + receivedMsg,
+                "/goodstrade accept " + senderPlayer.getName(),
+                GoodsTrade.lang.getString("trade-request.hover")
+        );
         String sentMsg = GoodsTrade.lang.replacePlaceholders(
                 GoodsTrade.lang.getString("trade-request.sent"),
                 "%target%", targetPlayer.getName()
@@ -236,13 +238,15 @@ public class TradeManager {
                 if (sender != null) {
                     session.getView().backPlayerItems(sender);
                     returnCursorItem(sender);
-                    sender.closeInventory(PLUGIN);
+                    // 统一走兼容层：1.12 没有 closeInventory(Reason)。
+                    ServerCompatibility.closeInventory(sender);
                     sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.cancelled-by-reload"));
                 }
                 if (target != null) {
                     session.getView().backPlayerItems(target);
                     returnCursorItem(target);
-                    target.closeInventory(PLUGIN);
+                    // 统一走兼容层：1.12 没有 closeInventory(Reason)。
+                    ServerCompatibility.closeInventory(target);
                     target.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.cancelled-by-reload"));
                 }
             } catch (Exception e) {

@@ -1,6 +1,7 @@
 package cc.sbsj.polang.goodstrade.gui.view;
 
 import cc.sbsj.polang.goodstrade.GoodsTrade;
+import cc.sbsj.polang.goodstrade.compat.ServerCompatibility;
 import cc.sbsj.polang.goodstrade.gui.Gui;
 import cc.sbsj.polang.goodstrade.gui.GuiButton;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
@@ -11,8 +12,6 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import static org.bukkit.event.inventory.InventoryCloseEvent.Reason.PLUGIN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -281,9 +280,11 @@ public class TradeView extends View {
 
         // 手动处理光标物品后清空光标，防止 Bukkit closeInventory 内部自动返还导致重复
         returnCursorItem(sender);
-        sender.closeInventory(PLUGIN);
+        // 统一走兼容层：1.12 没有 closeInventory(Reason)。
+        ServerCompatibility.closeInventory(sender);
         returnCursorItem(receiver);
-        receiver.closeInventory(PLUGIN);
+        // 统一走兼容层：1.12 没有 closeInventory(Reason)。
+        ServerCompatibility.closeInventory(receiver);
     }
 
     /**

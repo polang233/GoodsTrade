@@ -2,6 +2,7 @@ package cc.sbsj.polang.goodstrade;
 
 import cc.sbsj.polang.goodstrade.gui.Gui;
 import cc.sbsj.polang.goodstrade.gui.view.View;
+import cc.sbsj.polang.goodstrade.compat.ServerCompatibility;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import cc.sbsj.polang.goodstrade.trade.TradeSession;
 import org.bukkit.Sound;
@@ -129,7 +130,8 @@ public class Events implements Listener {
         Player player = (Player) event.getPlayer();
 
         // 交易已完成或已取消，物品已由调用方处理，直接返回
-        if (event.getReason() == InventoryCloseEvent.Reason.PLUGIN) {
+        // 兼容层标记的插件主动关闭不能再次触发交易取消。
+        if (ServerCompatibility.isPluginInventoryClose(event)) {
             return;
         }
 
