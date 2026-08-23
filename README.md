@@ -23,6 +23,7 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 - 🎯 **可视化界面**：直观的 GUI 操作，无需复杂命令，可玩家蹲下右键快捷发起
 - ⏱️ **确认机制**：双方确认后进行倒计时，期间若发现物品不对可取消，确保交易安全
 - 🔒 **物品锁定**：确认后双方无法更改交易物品，防止受骗
+- 💰 **Vault 金币交易**：双方可在界面中调整支付金额，余额不足时无法报价或结算，改价会重置已有确认
 - ⚙️ **可配置**：支持自定义等待时间、触发方式等
 
 ---
@@ -33,6 +34,7 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 - #### **环境要求**: Java8 及以上
 - #### **前置要求**: (可选)
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)
+- 金币交易需要 [Vault](https://www.spigotmc.org/resources/vault.34315/) 和一个支持 Vault 的经济插件；未安装时仍可正常交易物品
 
 ## 🚀 命令
 
@@ -43,6 +45,7 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 | `/gt trade [发起者] [接收者]`   | `goodstrade.command.trade`     | 让设定两个玩家进行交易 |
 | `/gt accept`              | `goodstrade.command.accept`    | 接受当前交易请求    |
 | `/gt accept [玩家名]`        | `goodstrade.command.accept`    | 接受指定玩家的交易请求 |
+| `/gt test [虚拟玩家名]`       | `goodstrade.command.test`      | 与虚拟玩家进行沙盒测试交易 |
 | `/gt reload`              | `goodstrade.command.reload`    | 重载插件配置文件    |
 | `/gt`                     | `goodstrade.command`           | 查询命令帮助      |
 
@@ -57,6 +60,7 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 | `goodstrade.command.sendtrade` | true | 使用sendTrade指令向其他玩家发起交易请求的权限 |
 | `goodstrade.command.accept`    | true | 同意他人交易请求的权限                 |
 | `goodstrade.command.trade`     | op   | 强制两人交易的权限                   |
+| `goodstrade.command.test`      | op   | 使用虚拟玩家沙盒测试交易界面和完整流程         |
 | `goodstrade.command.reload`    | op   | 重载插件的权限                     |
 
 ---
@@ -84,7 +88,34 @@ Language: system # 自动检测
 
 插件会自动释放 JAR 内 `lang/` 目录中的所有语言文件，只补充缺少的文件，不覆盖服主已经修改的翻译。因此未来版本加入 `ja_jp.yml` 等翻译时，升级后会自动生成。
 
+直接输入 `/gt` 时显示的命令功能说明来自语言文件中的 `command.help-entry` 和 `command.description`，服主可自行修改措辞。
+
 从旧版本升级时，已有的根目录 `Lang.yml` 会在需要时迁移为 `lang/zh_cn.yml`，原文件不会被删除。
+
+### 💰 Vault 金币交易
+
+安装 Vault 和经济插件后，玩家可通过交易界面两侧的金币按钮调整报价。左键增加、右键减少；中央分隔板会始终显示双方最终需要支付的金额。任一方改价都会撤销对方已有的确认并发送提示，双方重新确认且倒计时结束后才会结算。
+
+```yaml
+Trade:
+  Economy:
+    Enable: true
+    Allow-Negative: false
+    Amounts:
+      - 1000
+      - 10000
+```
+
+- `Amounts` 支持 1–4 档正数金额，每档会在双方各生成一个按钮；按钮样式可在 `View.yml` 的 `Money`、`Money-1` 至 `Money-4` 中覆盖，`%amount%` 表示该档金额。
+- `Allow-Negative: false` 时每人的报价最低为 `0`。
+- `Allow-Negative: true` 时，报价可减为负数，负数表示要求对方支付。例如双方从 `0` 开始，玩家 1 右键减少 `10000` 后，中央信息会显示玩家 2 需支付 `10000`。
+- 每次点击、玩家确认及最终结算前都会再次验证双方余额；任何一方余额不足或 Vault 结算失败时，金币不会继续结算，物品会返还。
+
+### 🧪 管理员沙盒测试
+
+拥有 `goodstrade.command.test` 权限的玩家可执行 `/gt test [虚拟玩家名]`。该命令会创建一个不存在的虚拟交易对象，管理员可以操作左右两侧物品格、双方金额按钮和双方确认按钮，用于检查界面、负数金额、确认重置及倒计时流程。
+
+沙盒模式不会调用 Vault，也不会实际交换物品；完成、关闭或重载时，放入左右两侧的物品都会返还给管理员。控制台不能执行此命令。
 
 ---
 
@@ -104,7 +135,7 @@ Language: system # 自动检测
 
 4. **确认交易**：点击按钮变绿后确认，双方都确认后进入倒计时
 
-5. **完成交易**：倒计时结束后，物品自动交换
+5. **完成交易**：倒计时结束后，金币完成结算且物品自动交换
 
 ### 💡 交易提示
 
@@ -112,6 +143,7 @@ Language: system # 自动检测
 - ⏰ 双方都确认后开始 5 秒倒计时(配置文件修改)
 - ❌ 倒计时期间可取消，回到初始状态
 - 🎒 交易取消或关闭界面时，物品自动返还
+- 💵 任一方修改金币报价后，已有的确认会被重置，需要双方重新检查并确认
 
 ---
 
@@ -120,7 +152,8 @@ Language: system # 自动检测
 - [x] 物品黑名单系统
 - [x] 权限模块完善
 - [x] 自定义界面材质、描述等
-- [ ] 支持金币、等级等货币交易
+- [x] 支持 Vault 金币交易
+- [ ] 支持等级等其他交易内容
 - [ ] 交易历史记录
 - [ ] 自定义交易要求，服务器可设置
 - [ ] 交易冷却时间设置

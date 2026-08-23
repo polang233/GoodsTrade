@@ -22,6 +22,7 @@ GoodsTrade is a lightweight, inventory-based trading plugin for Minecraft server
 - **Two-player confirmation:** the trade only completes after both players approve their offers.
 - **Final countdown:** either side can stop the confirmation before the exchange is committed.
 - **Locked offers:** confirmed players cannot quietly swap items at the last moment.
+- **Vault money offers:** configurable GUI buttons add or subtract money, validate both balances, and reset stale confirmations after a change.
 - **Safe returns:** cancelling or closing the menu returns offered items; overflow is dropped at the player's location instead of disappearing.
 - **Quick requests:** players can use a command or sneak-right-click another player.
 - **Trade preferences:** each player can disable incoming requests when they want some peace and quiet.
@@ -37,6 +38,7 @@ GoodsTrade is a lightweight, inventory-based trading plugin for Minecraft server
 - Bukkit, Spigot, or Paper
 - Java 8 or newer
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) is optional
+- [Vault](https://www.spigotmc.org/resources/vault.34315/) plus a Vault-compatible economy plugin is required only for money trading
 
 GoodsTrade Lite does **not** currently claim Folia support.
 
@@ -65,6 +67,7 @@ GoodsTrade Lite does **not** currently claim Folia support.
 | `/gt accept <player>` | `goodstrade.command.accept` | Accept a request from a specific player |
 | `/gt toggle [true\|false]` | `goodstrade.command.toggle` | Enable, disable, or toggle incoming requests |
 | `/gt trade <sender> <receiver>` | `goodstrade.command.trade` | Open a trade between two players as an administrator |
+| `/gt test [virtual-player-name]` | `goodstrade.command.test` | Open a sandbox trade with a nonexistent virtual player |
 | `/gt reload` | `goodstrade.command.reload` | Reload configuration, menu items, blacklist rules, and language messages |
 | `/gt` | `goodstrade.command` | Show available subcommands |
 
@@ -91,6 +94,8 @@ Language: system
 
 Run `/gt reload` after changing the value. Locale names follow the common Minecraft/i18n format, such as `zh_cn`, `en_us`, and `ja_jp`.
 
+The command list shown by `/gt` reads its layout and descriptions from `command.help-entry` and `command.description` in the active language file.
+
 GoodsTrade scans the complete `lang/` folder inside each new JAR and extracts any translation that is missing on disk. Existing files are never overwritten, so local edits are preserved while newly bundled languages appear automatically.
 
 When upgrading from an older published version, the root-level `Lang.yml` is migrated to `lang/zh_cn.yml` when needed. The original file is left untouched.
@@ -102,6 +107,12 @@ Language: en_us
 
 Trade:
   Wait-Time: 5
+  Economy:
+    Enable: true
+    Allow-Negative: false
+    Amounts:
+      - 1000
+      - 10000
   Triggers:
     Shift-Right-Click: true
   Safe:
@@ -110,9 +121,18 @@ Trade:
 ```
 
 - `Wait-Time` controls the final confirmation countdown in seconds and is capped at 64.
+- `Economy.Amounts` defines one to four button steps. Left click adds the step and right click subtracts it.
+- `Allow-Negative` lets an offer cross below zero; a negative offer means the other player must pay. The divider always shows each player's resulting payment obligation.
+- Balance checks run on every amount change, on confirmation, and immediately before settlement. Changing money resets any existing confirmation so both players must review again.
 - `Shift-Right-Click` enables the quick request gesture.
 - `Safe.Damage` cancels damage against players who are currently trading.
 - `Safe.Move` stops block-to-block movement while the trade menu is open.
+
+## Administrator sandbox trade
+
+Players with `goodstrade.command.test` can run `/gt test [virtual-player-name]`. The administrator controls both offer areas, both sets of money buttons, and both confirmation buttons, making it possible to verify negative offers, confirmation resets, and the complete countdown without a second online player.
+
+Sandbox trades never call Vault or exchange items. Anything placed on either side is returned to the administrator when the test completes, closes, or is interrupted by a reload. The command cannot be run from the console.
 
 ## Item blacklist
 
@@ -139,7 +159,7 @@ Trade:
 
 ## Menu customization
 
-`View.yml` controls the background, separator, ready buttons, countdown button, and cancellation state. A button section can define:
+`View.yml` controls the background, separator, ready buttons, countdown button, cancellation state, and money buttons. `Money` sets the shared money-button style; `Money-1` through `Money-4` can override individual steps, and `%amount%` is replaced at runtime. A button section can define:
 
 ```yaml
 button:
