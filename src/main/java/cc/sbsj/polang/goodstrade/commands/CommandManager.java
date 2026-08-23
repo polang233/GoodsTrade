@@ -25,8 +25,16 @@ public class CommandManager {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
             sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("command.help"));
-            for (SubCommand command : commands.values()) {
-                sender.sendMessage(GoodsTrade.getPrefix() + "/GoodsTrade " + command.getName());
+            List<SubCommand> sortedCommands = new ArrayList<>(commands.values());
+            sortedCommands.sort(Comparator.comparing(SubCommand::getName));
+            for (SubCommand command : sortedCommands) {
+                if (!sender.hasPermission(command.getPermission())) continue;
+                String entry = GoodsTrade.lang.replacePlaceholders(
+                        GoodsTrade.lang.getString("command.help-entry"),
+                        "%command%", command.getName(),
+                        "%description%", GoodsTrade.lang.getString("command.description." + command.getName())
+                );
+                sender.sendMessage(GoodsTrade.getPrefix() + entry);
             }
             return false;
         }
@@ -44,7 +52,15 @@ public class CommandManager {
 
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 1) {
-            return new ArrayList<>(commands.keySet());
+            List<String> available = new ArrayList<>();
+            for (SubCommand command : commands.values()) {
+                if (sender.hasPermission(command.getPermission())
+                        && command.getName().startsWith(args[0].toLowerCase())) {
+                    available.add(command.getName());
+                }
+            }
+            Collections.sort(available);
+            return available;
         }
         String subCommandName = args[0];
         SubCommand subCommand = commands.get(subCommandName);

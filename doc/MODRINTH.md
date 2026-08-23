@@ -16,6 +16,7 @@ GoodsTrade gives players a clear two-sided inventory where they can review each 
 - Confirmation from both players before any items are exchanged
 - Configurable final countdown with a chance to cancel
 - Locked offers after confirmation to prevent last-second item swapping
+- Optional Vault money offers with configurable GUI steps, balance checks, and confirmation resets after price changes
 - Safe item returns when a menu is closed or a trade is cancelled
 - Overflow items are dropped at the player's location instead of being deleted
 - Requests through `/gt sendtrade <player>` or sneak-right-click
@@ -33,7 +34,7 @@ GoodsTrade gives players a clear two-sided inventory where they can review each 
 - **Minecraft:** 1.12–26.1
 - **Server software:** Bukkit, Spigot, and Paper
 - **Java:** 8 or newer
-- **Optional dependency:** PlaceholderAPI
+- **Optional dependencies:** PlaceholderAPI; Vault plus a compatible economy plugin for money trading
 
 GoodsTrade Lite does **not** currently claim Folia support.
 
@@ -57,11 +58,12 @@ Closing the menu or cancelling the confirmation returns the offered items.
 | `/gt accept <player>` | Accept a request from a specific player |
 | `/gt toggle [true\|false]` | Toggle or explicitly set incoming requests |
 | `/gt trade <sender> <receiver>` | Open a trade as an administrator |
+| `/gt test [virtual-player-name]` | Run a safe sandbox trade while controlling both sides |
 | `/gt reload` | Reload configuration, menu items, blacklist rules, and language files |
 
 ## English and Chinese messages
 
-GoodsTrade extracts every bundled translation from the JAR. Version 1.1.5 includes:
+GoodsTrade extracts every bundled translation from the JAR. Version 1.1.7 includes:
 
 ```text
 plugins/GoodsTrade/lang/zh_cn.yml

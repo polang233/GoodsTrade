@@ -75,7 +75,7 @@ The player-facing command permissions default to everyone. `trade` and `reload` 
 
 ## Language selection
 
-New installations extract every bundled translation from the JAR. Version 1.1.5 includes:
+New installations extract every bundled translation from the JAR. Version 1.1.7 includes:
 
 ```text
 plugins/GoodsTrade/lang/zh_cn.yml

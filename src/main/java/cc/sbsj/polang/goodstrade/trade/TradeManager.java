@@ -25,6 +25,12 @@ public class TradeManager {
         return session;
     }
 
+    public static TradeSession createTestSession(Player administrator, String virtualPlayerName, TradeView view) {
+        TradeSession session = TradeSession.createTest(administrator, virtualPlayerName, view);
+        sessions.put(administrator.getUniqueId(), session);
+        return session;
+    }
+
     //获取交易状态
     public static TradeSession getSession(Player player) {
         return sessions.get(player.getUniqueId());
@@ -33,7 +39,12 @@ public class TradeManager {
     //删除双方交易状态
     public static void removeSession(Player player) {
         if (!isTrade(player)) return;
-        Player otherPlayer = getOtherPlayer(player, sessions.get(player.getUniqueId()));
+        TradeSession session = sessions.get(player.getUniqueId());
+        if (session.isTestMode()) {
+            sessions.remove(player.getUniqueId());
+            return;
+        }
+        Player otherPlayer = getOtherPlayer(player, session);
         sessions.remove(otherPlayer.getUniqueId());
         //移除发起关闭的人
         sessions.remove(player.getUniqueId());
@@ -59,6 +70,20 @@ public class TradeManager {
     public static void cancelTrade(Player player) {
         TradeSession session = TradeManager.getSession(player);
         if (session == null) return;
+
+        if (session.isTestMode()) {
+            if (session.getView().runnable != null) {
+                try {
+                    session.getView().runnable.cancel();
+                } catch (IllegalStateException ignored) {
+                    // The countdown was not scheduled or has already stopped.
+                }
+            }
+            session.getView().backPlayerItems(player);
+            player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.test-cancelled"));
+            TradeManager.removeSession(player);
+            return;
+        }
 
         Player sender = session.getSenderPlayer();
         session.getView().backPlayerItems(sender);
@@ -89,6 +114,14 @@ public class TradeManager {
     //已经结束的取消交易
     //只需要关闭被交易者
     public static void cancelTrade(TradeSession session) {
+        if (session.isTestMode()) {
+            Player administrator = session.getSenderPlayer();
+            session.getView().backPlayerItems(administrator);
+            TradeManager.removeSession(administrator);
+            returnCursorItem(administrator);
+            ServerCompatibility.closeInventory(administrator);
+            return;
+        }
         Player target = session.getTargetPlayer();
         TradeManager.removeSession(target);
         //必须先移除交易会话再关闭界面
@@ -109,6 +142,11 @@ public class TradeManager {
     }
 
     public static void startTrade(Player senderPlayer, Player targetPlayer) {
+        if (isTrade(senderPlayer) || isTrade(targetPlayer)) {
+            senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.already-trading"));
+            targetPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.already-trading"));
+            return;
+        }
         if (!pendingRequests.containsKey(targetPlayer.getUniqueId())) {
             targetPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.no-pending"));
             return;
@@ -227,13 +265,21 @@ public class TradeManager {
         if (sessions.isEmpty()) return;
 
         // 复制一份避免并发修改异常
-        List<TradeSession> sessionList = new ArrayList<>(sessions.values());
+        Set<TradeSession> sessionList = new HashSet<>(sessions.values());
 
         for (TradeSession session : sessionList) {
             try {
                 Player sender = session.getSenderPlayer();
                 Player target = session.getTargetPlayer();
                 if (session.getView().runnable != null) session.getView().runnable.cancel();
+
+                if (session.isTestMode()) {
+                    session.getView().backPlayerItems(sender);
+                    returnCursorItem(sender);
+                    ServerCompatibility.closeInventory(sender);
+                    sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.cancelled-by-reload"));
+                    continue;
+                }
 
                 if (sender != null) {
                     session.getView().backPlayerItems(sender);
@@ -262,11 +308,11 @@ public class TradeManager {
     }
 
     public static Collection<TradeSession> getAllSessions() {
-        return Collections.unmodifiableCollection(sessions.values());
+        return Collections.unmodifiableSet(new HashSet<>(sessions.values()));
     }
 
     public static int getActiveTradeCount() {
-        return sessions.size() / 2; // 除以 2 因为每对交易有 2 个记录
+        return new HashSet<>(sessions.values()).size();
     }
 
     public static void cancelAllRequests(Player player) {

@@ -5,7 +5,7 @@ authors: [ polang ]
 description: 简单安全的玩家物品交易插件
 website: https://space.bilibili.com/450460661
 api-version: '1.13'
-softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI, Vault]
 
 permissions:
   goodstrade.command.reload:
@@ -14,6 +14,9 @@ permissions:
   goodstrade.command.trade:
     default: op
     description: 指定两个玩家进行交易
+  goodstrade.command.test:
+    default: op
+    description: 与虚拟玩家进行沙盒测试交易
   goodstrade.command.sendtrade:
     default: true
     description: 发送交易请求

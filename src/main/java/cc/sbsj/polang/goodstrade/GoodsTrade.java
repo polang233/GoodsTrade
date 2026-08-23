@@ -8,6 +8,8 @@ import cc.sbsj.polang.goodstrade.config.PlayerDataManager;
 import cc.sbsj.polang.goodstrade.config.ViewConfig;
 import cc.sbsj.polang.goodstrade.hook.Metrics;
 import cc.sbsj.polang.goodstrade.hook.Papi;
+import cc.sbsj.polang.goodstrade.hook.EconomyProvider;
+import cc.sbsj.polang.goodstrade.hook.VaultEconomyProvider;
 import cc.sbsj.polang.goodstrade.task.RunTask;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import com.cryptomorin.xseries.XMaterial;
@@ -21,6 +23,7 @@ public final class GoodsTrade extends JavaPlugin {
     public Metrics metrics;
     public static Config config;
     public static Lang lang;
+    public static EconomyProvider economyProvider;
     
     public static String getPrefix() {
         return lang.getString(PREFIX_KEY);
@@ -40,6 +43,7 @@ public final class GoodsTrade extends JavaPlugin {
         }
         config = new Config(this);
         lang = new Lang(this);
+        refreshEconomy();
         ViewConfig.load(this);
         playerDataManager = new PlayerDataManager(this);
 
@@ -56,6 +60,32 @@ public final class GoodsTrade extends JavaPlugin {
         this.getServer().getScheduler().runTaskTimer(this, new RunTask(), 20L, 12000L);
 
         getLogger().info(getPrefix() + "§a成功加载了喵~");
+    }
+
+    public void refreshEconomy() {
+        economyProvider = null;
+        if (config == null || !config.isEconomyEnabled()) {
+            getLogger().info("§7Vault 金币交易已在配置中关闭");
+            return;
+        }
+        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
+            getLogger().warning("未检测到 Vault，金币交易按钮将不会显示，物品交易不受影响。");
+            return;
+        }
+        try {
+            economyProvider = VaultEconomyProvider.hook(this);
+            if (economyProvider == null) {
+                getLogger().warning("Vault 未注册经济服务，金币交易按钮将不会显示。");
+            } else {
+                getLogger().info("§2Vault 经济服务已连接: " + economyProvider.getName());
+            }
+        } catch (NoClassDefFoundError error) {
+            economyProvider = null;
+            getLogger().warning("Vault API 不可用，金币交易按钮将不会显示。");
+        } catch (RuntimeException exception) {
+            economyProvider = null;
+            getLogger().warning("连接 Vault 经济服务失败: " + exception.getMessage());
+        }
     }
 
     private boolean checkDependencies() {

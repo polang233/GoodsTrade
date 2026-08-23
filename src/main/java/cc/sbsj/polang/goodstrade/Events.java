@@ -39,7 +39,7 @@ public class Events implements Listener {
         TradeSession session = TradeManager.getSession(player);
         if (session == null) return;
         if (session.bothReady() && !View.readySlots.contains(event.getRawSlot())) {
-            session.getSenderPlayer().sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.confirm-in-progress"));
+            player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.confirm-in-progress"));
             event.setCancelled(true);
             return;
         }
@@ -86,40 +86,28 @@ public class Events implements Listener {
         Player player = (Player) event.getWhoClicked();
         TradeSession session = TradeManager.getSession(player);
         if (session == null) return;
-        Player sender = session.getSenderPlayer();
-        Player target = session.getTargetPlayer();
-        if (player == sender) {
-            //阻止发起者操作被发起者界面
-            for (int rawSlot : event.getRawSlots()) {
-                if (View.isTargetTradeSlot(rawSlot)) {
-                    event.setCancelled(true);
-                    return;
-                } else if (View.isSenderTradeSlot(rawSlot)) {
-                    if (session.isSenderReady()) {
-                        event.setCancelled(true);
-                        sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.items-locked"));
-                        sender.playSound(sender.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
-                        return;
-                    }
-                }
+        boolean sender = session.isPlayerSender(player);
+        int topSize = event.getView().getTopInventory().getSize();
+        for (int rawSlot : event.getRawSlots()) {
+            if (rawSlot >= topSize) continue;
+            boolean senderSlot = View.isSenderTradeSlot(rawSlot);
+            boolean targetSlot = View.isTargetTradeSlot(rawSlot);
+            boolean ownTradeSlot = session.isTestMode()
+                    ? senderSlot || targetSlot
+                    : sender ? senderSlot : targetSlot;
+            // Only the player's own offer slots accept dragged items. This also protects
+            // divider, ready, and economy buttons from drag-based replacement.
+            if (!ownTradeSlot) {
+                event.setCancelled(true);
+                return;
             }
-
-        } else {
-            for (int rawSlot : event.getRawSlots()) {
-                if (View.isSenderTradeSlot(rawSlot)) {
-                    event.setCancelled(true);
-                    return;
-                } else if (View.isTargetTradeSlot(rawSlot)) {
-                    if (session.isTargetReady()) {
-                        event.setCancelled(true);
-                        target.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.items-locked"));
-                        target.playSound(target.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
-                        return;
-                    }
-                }
-
+            boolean locked = senderSlot ? session.isSenderReady() : session.isTargetReady();
+            if (locked) {
+                event.setCancelled(true);
+                player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.items-locked"));
+                player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+                return;
             }
-
         }
     }
 

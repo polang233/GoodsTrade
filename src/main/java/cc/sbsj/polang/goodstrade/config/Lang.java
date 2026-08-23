@@ -6,12 +6,15 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -32,6 +35,8 @@ public class Lang {
     private final GoodsTrade plugin;
     private YamlConfiguration langConfig;
     private YamlConfiguration fallbackConfig;
+    private YamlConfiguration bundledLangConfig;
+    private YamlConfiguration bundledFallbackConfig;
     private String activeLanguage = DEFAULT_LANGUAGE;
 
     public Lang(GoodsTrade plugin) {
@@ -48,6 +53,8 @@ public class Lang {
         File fallbackFile = getLanguageFile(DEFAULT_LANGUAGE);
         langConfig = YamlConfiguration.loadConfiguration(langFile);
         fallbackConfig = YamlConfiguration.loadConfiguration(fallbackFile);
+        bundledLangConfig = loadBundledLanguage(activeLanguage);
+        bundledFallbackConfig = loadBundledLanguage(DEFAULT_LANGUAGE);
         plugin.getLogger().info("Loaded language: " + activeLanguage);
     }
 
@@ -100,18 +107,42 @@ public class Lang {
 
     private String getStringOrFallback(String path) {
         String value = langConfig.getString(path);
+        if (value == null) {
+            value = bundledLangConfig.getString(path);
+        }
         if (value == null && !DEFAULT_LANGUAGE.equals(activeLanguage)) {
             value = fallbackConfig.getString(path);
+        }
+        if (value == null) {
+            value = bundledFallbackConfig.getString(path);
         }
         return value;
     }
 
     private List<String> getListOrFallback(String path) {
         List<String> values = langConfig.getStringList(path);
+        if (values.isEmpty()) {
+            values = bundledLangConfig.getStringList(path);
+        }
         if (values.isEmpty() && !DEFAULT_LANGUAGE.equals(activeLanguage)) {
             values = fallbackConfig.getStringList(path);
         }
+        if (values.isEmpty()) {
+            values = bundledFallbackConfig.getStringList(path);
+        }
         return values;
+    }
+
+    private YamlConfiguration loadBundledLanguage(String language) {
+        String resourcePath = LANG_DIRECTORY + "/" + language + ".yml";
+        InputStream stream = plugin.getResource(resourcePath);
+        if (stream == null) return new YamlConfiguration();
+        try (InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
+            return YamlConfiguration.loadConfiguration(reader);
+        } catch (IOException exception) {
+            plugin.getLogger().warning("Could not load bundled language " + resourcePath + ": " + exception.getMessage());
+            return new YamlConfiguration();
+        }
     }
 
     private String resolveLanguage(Set<String> availableLanguages) {

@@ -28,6 +28,7 @@ public class View {
 
     public static ItemStack cancelReadyItem = XMaterial.YELLOW_STAINED_GLASS_PANE.parseItem();
     public static ItemStack infoItem = XMaterial.IRON_BARS.parseItem();
+    public static final List<ItemStack> moneyButtonItems = new ArrayList<>();
 
 
     public final GuiButton senderReadyButton = new GuiButton(senderReadyButtonItem.clone());
@@ -62,6 +63,10 @@ public class View {
         targetReadyButtonItemWait = XMaterial.BLUE_STAINED_GLASS_PANE.parseItem();
         cancelReadyItem = XMaterial.YELLOW_STAINED_GLASS_PANE.parseItem();
         infoItem = XMaterial.IRON_BARS.parseItem();
+        moneyButtonItems.clear();
+        for (int i = 0; i < 4; i++) {
+            moneyButtonItems.add(XMaterial.GOLD_INGOT.parseItem());
+        }
 
         defaultItemBackGround();
         defaultItemReady();
@@ -72,6 +77,7 @@ public class View {
         defaultTargetItemReadyWait();
         defaultItemCancelReady();
         defaultItemInfo();
+        defaultMoneyButtons();
     }
 
     public static void defaultTradingSlots() {
@@ -184,6 +190,19 @@ public class View {
         infoItem.setItemMeta(meta);
     }
 
+    public static void defaultMoneyButtons() {
+        for (ItemStack item : moneyButtonItems) {
+            ItemMeta meta = item.getItemMeta();
+            meta.setDisplayName(text("trade-view.money-button-name", "§6调整金币: §e%amount%"));
+            meta.setLore(lines("trade-view.money-button-lore", Arrays.asList(
+                    "",
+                    "§a左键: 增加 %amount%",
+                    "§c右键: 减少 %amount%"
+            )));
+            item.setItemMeta(meta);
+        }
+    }
+
     private static String text(String path, String fallback) {
         return GoodsTrade.lang == null ? fallback : GoodsTrade.lang.getString(path, fallback);
     }
@@ -194,8 +213,8 @@ public class View {
         return configured.isEmpty() ? fallback : configured;
     }
 
-    public boolean isBlackList(InventoryClickEvent event, Player player) {
-        if (GoodsTrade.config.getItemBlackList().contains(player)) {
+    public boolean isBlackList(InventoryClickEvent event, Player player, boolean senderSide) {
+        if (GoodsTrade.config.getItemBlackList().contains(player, senderSide)) {
             player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.blacklist-hit"));
             event.setCancelled(true);
             return true;

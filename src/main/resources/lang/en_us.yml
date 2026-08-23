@@ -9,6 +9,7 @@ prefix: "&7[&2&lGoods&6&lTrade&7] &r"
 
 command:
   help: "&7Available commands:"
+  help-entry: "&e/gt %command% &7- %description%"
   unknown: "&cUnknown subcommand."
   no-permission: "&cYou don't have permission to use this command."
   player-only: "&cOnly players can use this command."
@@ -17,6 +18,14 @@ command:
     sendtrade: "&aUsage: /gt sendtrade <player>"
     toggle: "&cUsage: /gt toggle [true|false]"
     toggle-hint: "&7Leave out the value to switch your current setting."
+    test: "&aUsage: /gt test [virtual-player-name]"
+  description:
+    accept: "Accept a pending trade request"
+    reload: "Reload configuration, language, and menu files"
+    sendtrade: "Send a trade request to a player"
+    test: "Run a sandbox trade with a virtual player without moving money or items"
+    toggle: "Enable or disable incoming trade requests"
+    trade: "Start a trade between two online players as an administrator"
 
 trade-request:
   sent: "&7Trade request sent to &e%target%&7."
@@ -33,6 +42,17 @@ trade-status:
   cancelled-by-self: "&cYou cancelled the trade."
   cancelled-by-other: "&cThe other player cancelled the trade."
   cancelled-by-reload: "&cThe plugin is reloading, so your trade was cancelled."
+  already-trading: "&cOne of the players is already in a real or sandbox trade."
+  money-balance-changed: "&cTrade cancelled: a player's balance changed during the countdown. All items were returned."
+  money-settlement-failed: "&cTrade cancelled: the economy provider rejected the payment. All items were returned."
+  test-opening: "&eSandbox trade opened. You control both sides and both confirmation buttons; no real money or items will move."
+  test-success: "&aSandbox trade completed! Vault was not charged and all menu items were returned."
+  test-cancelled: "&eSandbox trade closed. All menu items were returned."
+
+test-trade:
+  invalid-name: "&cThe virtual player name must contain 1-16 letters, numbers, or underscores."
+  player-exists: "&cThat name belongs to an online player. Choose a nonexistent virtual player name."
+  already-trading: "&cYou are already in a real or sandbox trade."
 
 trade-gui:
   confirm: "&aOffer confirmed. Waiting for the other player..."
@@ -43,6 +63,13 @@ trade-gui:
   self-operation: "&cYou can only edit your own offer slots."
   confirm-in-progress: "&cThe trade is being confirmed. Use the cancel button if you need to stop it."
   blacklist-hit: "&cYour offer contains an item that cannot be traded."
+  money-changed: "&aYour money offer is now &e%amount%&a."
+  money-offer-changed: "&e%player% &cchanged the money offer. Your confirmation was reset; review the trade again."
+  money-insufficient: "&c%player% cannot cover the required payment of %amount%."
+  money-locked: "&cYour money offer is locked while confirmed."
+  money-minimum: "&cMoney offers cannot go below zero while negative offers are disabled."
+  money-unavailable: "&cVault money trading is currently unavailable."
+  money-invalid: "&cThat amount is invalid or outside the economy provider's supported range."
 
 # Default trade menu labels. Explicit values in View.yml take priority.
 trade-view:
@@ -71,6 +98,14 @@ trade-view:
     - "&eAdd your offer, then use the buttons below"
     - "&eConfirmed offers are locked until the trade completes"
     - "&eUse the countdown to double-check every item"
+  money-button-name: "&6Adjust money: &e%amount%"
+  money-button-lore:
+    - ""
+    - "&aLeft click: add %amount%"
+    - "&cRight click: subtract %amount%"
+  sender-payment: "&6%player% must pay: &e%amount%"
+  target-payment: "&6%player% must pay: &e%amount%"
+  test-mode: "&bSandbox mode: no real money or items will move"
 
 trade-toggle:
   enabled: "&aTrade requests are now &2enabled&a."

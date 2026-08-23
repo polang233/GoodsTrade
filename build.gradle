@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'cc.sbsj.polang'
-version = '1.1.5'
+version = '1.1.7'
 
 repositories {
     mavenCentral()
@@ -24,6 +24,10 @@ repositories {
         name = "codemc"
         url = "https://repo.codemc.io/repository/maven-public/"
     }
+    maven {
+        name = "jitpack"
+        url = "https://jitpack.io"
+    }
 }
 
 dependencies {
@@ -34,6 +38,8 @@ dependencies {
     implementation("com.github.cryptomorin:XSeries:13.7.0")
     implementation("de.tr7zw:item-nbt-api:2.15.7")
     compileOnly "me.clip:placeholderapi:2.11.6"
+    compileOnly "com.github.MilkBowl:VaultAPI:1.7"
+    testImplementation "junit:junit:4.13.2"
 }
 
 def targetJavaVersion = 8

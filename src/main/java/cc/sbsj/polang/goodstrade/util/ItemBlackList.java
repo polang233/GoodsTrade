@@ -32,12 +32,12 @@ public class ItemBlackList {
         );
     }
 
-    public boolean contains(Player player) {
+    public boolean contains(Player player, boolean senderSide) {
         if (!enabled) return false;
         TradeSession session = TradeManager.getSession(player);
         if (session == null) return false;
 
-        List<Integer> slots = session.getSenderPlayer() == player ? View.senderTradeSlots : View.targetTradeSlots;
+        List<Integer> slots = senderSide ? View.senderTradeSlots : View.targetTradeSlots;
         return contains(slots, session);
     }
 

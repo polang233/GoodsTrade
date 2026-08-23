@@ -11,6 +11,7 @@ prefix: "&7[&2&lGoods&6&lTrade&7] &r"
 # 命令相关
 command:
   help: "&7可输入以下命令."
+  help-entry: "&e/gt %command% &7- %description%"
   unknown: "&c未知的子命令."
   no-permission: "&c你没有权限执行此命令！"
   player-only: "&c该命令只能由玩家执行"
@@ -19,6 +20,14 @@ command:
     sendtrade: "&a用法：/gt sendtrade [接收人]"
     toggle: "&c用法：/gt toggle [true|false]"
     toggle-hint: "&7不填参数则切换当前状态"
+    test: "&a用法：/gt test [虚拟玩家名]"
+  description:
+    accept: "接受一个待处理的交易请求"
+    reload: "重载配置、语言和界面文件"
+    sendtrade: "向指定玩家发送交易请求"
+    test: "与虚拟玩家进行不会扣钱或转移物品的沙盒交易"
+    toggle: "开启或关闭接收交易请求"
+    trade: "由管理员指定两名在线玩家开始交易"
 
 # 交易请求相关
 trade-request:
@@ -37,6 +46,17 @@ trade-status:
   cancelled-by-self: "你取消了交易！"
   cancelled-by-other: "对方取消了交易！"
   cancelled-by-reload: "&c功能重载中，交易已取消"
+  already-trading: "&c其中一名玩家已经处于交易或测试交易中。"
+  money-balance-changed: "&c交易取消：倒计时期间有玩家余额不足，物品已返还。"
+  money-settlement-failed: "&c交易取消：经济插件拒绝了金币结算，物品已返还。"
+  test-opening: "&e已打开沙盒测试交易：你可以操作双方区域和确认按钮；不会实际扣款或转移物品。"
+  test-success: "&a测试交易流程完成！Vault 未扣款，界面内物品已全部返还。"
+  test-cancelled: "&e测试交易已关闭，界面内物品已全部返还。"
+
+test-trade:
+  invalid-name: "&c虚拟玩家名只能包含 1-16 个英文字母、数字或下划线。"
+  player-exists: "&c该名称当前属于在线玩家，请换一个不存在的虚拟玩家名。"
+  already-trading: "&c你已经处于交易或测试交易中。"
 
 # 交易界面
 trade-gui:
@@ -48,6 +68,13 @@ trade-gui:
   self-operation: "&c你只能操作自己的物品"
   confirm-in-progress: "&c正在交易确认中，若需取消请按取消按钮！"
   blacklist-hit: "&c你的物品槽有禁止交易的物品！"
+  money-changed: "&a你的金币报价已调整为 &e%amount%&a。"
+  money-offer-changed: "&e%player% &c修改了金币报价，你的确认状态已重置，请重新检查交易。"
+  money-insufficient: "&c%player% 余额不足，无法承担 %amount% 的支付金额。"
+  money-locked: "&c你已确认，金币报价已锁定！"
+  money-minimum: "&c未开启负数报价时，金币报价最小只能为 0。"
+  money-unavailable: "&cVault 金币交易当前不可用。"
+  money-invalid: "&c该金额无效或超出经济插件支持的范围。"
 
 # 默认交易界面按钮；View.yml 中的自定义值会覆盖这些内容
 trade-view:
@@ -76,6 +103,14 @@ trade-view:
     - "&e将想要交易的物品放入后点击下方确认"
     - "&e确认后将锁定物品，待双方确认进行交易"
     - "&e交易过程中等待读秒结束，期间请检查物品"
+  money-button-name: "&6调整金币: &e%amount%"
+  money-button-lore:
+    - ""
+    - "&a左键: 增加 %amount%"
+    - "&c右键: 减少 %amount%"
+  sender-payment: "&6%player% 需支付: &e%amount%"
+  target-payment: "&6%player% 需支付: &e%amount%"
+  test-mode: "&b沙盒测试模式：不会实际扣款或交换物品"
 
 # 交易开关
 trade-toggle:

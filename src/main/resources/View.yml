@@ -27,3 +27,22 @@ button:
   "Wait": # 双方同意后的倒计时按钮
 
   "CancelReady": # 等待过程中有一方取消后的按钮
+
+  # 金币调整按钮的通用样式，%amount% 会替换为 config.yml 中对应的金额。
+  # 也可以通过 Money-1、Money-2、Money-3、Money-4 分别覆盖每档按钮。
+  "Money":
+#    material: gold_ingot
+#    name: "&6调整金币: &e%amount%"
+#    lore:
+#      - ""
+#      - "&a左键: 增加 %amount%"
+#      - "&c右键: 减少 %amount%"
+#    custom_model_data: 0
+
+  "Money-1":
+
+  "Money-2":
+
+  "Money-3":
+
+  "Money-4":

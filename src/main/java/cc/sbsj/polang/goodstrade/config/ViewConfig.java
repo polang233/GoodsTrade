@@ -47,6 +47,15 @@ public class ViewConfig {
         View.targetReadyButtonItemWait = loadButtonItem(viewItemsConfig, "Wait", View.targetReadyButtonItemWait);
 
         View.cancelReadyItem = loadButtonItem(viewItemsConfig, "CancelReady", View.cancelReadyItem);
+
+        ItemStack baseMoneyButton = loadButtonItem(viewItemsConfig, "Money", View.moneyButtonItems.get(0));
+        for (int index = 0; index < View.moneyButtonItems.size(); index++) {
+            View.moneyButtonItems.set(index, loadButtonItem(
+                    viewItemsConfig,
+                    "Money-" + (index + 1),
+                    baseMoneyButton.clone()
+            ));
+        }
     }
 
     private static ItemStack loadButtonItem(YamlConfiguration config, String key, ItemStack defaultItem) {

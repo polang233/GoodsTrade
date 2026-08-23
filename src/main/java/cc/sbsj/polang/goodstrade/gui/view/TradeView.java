@@ -6,13 +6,17 @@ import cc.sbsj.polang.goodstrade.gui.Gui;
 import cc.sbsj.polang.goodstrade.gui.GuiButton;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import cc.sbsj.polang.goodstrade.trade.TradeSession;
+import cc.sbsj.polang.goodstrade.trade.EconomyTradeService;
+import cc.sbsj.polang.goodstrade.trade.MoneyTrade;
 import cc.sbsj.polang.goodstrade.util.Utils;
 import com.cryptomorin.xseries.XSound;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,15 +25,15 @@ import java.util.List;
     ~~~~@~~~~
     ~~~~@~~~~
     ~~~~@~~~~
+    MMMM@MMMM
     #FFF#TTT#
-    ####Q####
 
     ~=操作格
     #=背景物品
     @=中间提示物品
+    M=金币调整按钮（启用 Vault 时）
     F=交易发起者的确认状态
     T=交易接受者的确认状态
-    Q=确认交易按钮
 */
 public class TradeView extends View {
     TradeSession session;
@@ -43,35 +47,46 @@ public class TradeView extends View {
     public void open(Player sender, Player target) {
         // 创建交易会话
         session = TradeManager.createSession(sender, target, this);
-        // 创建 GUI 界面，使用玩家名称作为标题
-        gui = new Gui(sender, Utils.createTwoPlayerTitle(sender.getName(), target.getName()), 6);
-        //添加背景格
-        gui.addAllBackGround();
-        //添加交易物品格
-        addTradeSlots();
-        //添加控制按钮
-        addControlButtons();
+        initializeGui(sender, sender.getName(), target.getName());
         // 给发送者打开界面
         gui.open(sender);
         // 接收者打开界面
         gui.open(target);
     }
 
+    public void openTest(Player administrator, String virtualPlayerName) {
+        session = TradeManager.createTestSession(administrator, virtualPlayerName, this);
+        initializeGui(administrator, administrator.getName(), virtualPlayerName);
+        gui.open(administrator);
+        administrator.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.test-opening"));
+    }
+
+    private void initializeGui(Player owner, String senderName, String targetName) {
+        // 创建 GUI 界面，使用玩家名称作为标题
+        gui = new Gui(owner, Utils.createTwoPlayerTitle(senderName, targetName), 6);
+        //添加背景格
+        gui.addAllBackGround();
+        //添加交易物品格
+        addTradeSlots();
+        //添加控制按钮
+        addControlButtons();
+    }
+
 
     private void addTradeSlots() {
         for (int slot : View.senderTradeSlots) {
-            setTradeItemButton(session.getSenderPlayer(), slot);
+            setTradeItemButton(slot, true);
         }
         for (int slot : View.targetTradeSlots) {
-            setTradeItemButton(session.getTargetPlayer(), slot);
+            setTradeItemButton(slot, false);
         }
     }
 
-    public void setTradeItemButton(Player player, int slot) {
+    public void setTradeItemButton(int slot, boolean senderSide) {
         GuiButton button = new GuiButton(null);
         button.setOnClick(event -> {
             Player user = (Player) event.getWhoClicked();
-            if (!player.equals(user)) {
+            if (!session.canControlSide(user, senderSide)) {
                 user.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.self-operation"));
                 user.playSound(user.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
                 event.setCancelled(true);
@@ -79,7 +94,7 @@ public class TradeView extends View {
             } else {
                 event.setCancelled(false);
             }
-            if (session.isPlayerSender(user)) {
+            if (senderSide) {
                 if (session.isSenderReady()) {
                     event.setCancelled(true);
                     user.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.items-locked"));
@@ -110,15 +125,20 @@ public class TradeView extends View {
         //右
         changeButtons(targetReadyButton, 50, 51, 52);
         //添加中间提示按钮
-        changeButtons(infoButton, 4, 13, 22, 31);
+        changeButtons(infoButton, 4, 13, 22, 31, 40);
+        if (session.isTestMode() || EconomyTradeService.isAvailable()) {
+            addMoneyButtons();
+            updateMoneyInfo();
+        }
     }
 
     private void setControlButtons() {
         senderReadyButton.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
-            if (player.equals(session.getSenderPlayer())) {
+            if (session.canControlSide(player, true)) {
 
-                if (isBlackList(event, player)) return;
+                if (isBlackList(event, player, true)) return;
+                if (!checkMoneyBeforeConfirm(player)) return;
                 session.setSenderReady(true);
                 changeButtons(senderReadyButtonYes, 48, 47, 46);
                 if (session.bothReady()) {
@@ -129,7 +149,7 @@ public class TradeView extends View {
         });
         senderReadyButtonYes.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
-            if (player.equals(session.getSenderPlayer())) {
+            if (session.canControlSide(player, true)) {
                 session.setSenderReady(false);
                 changeButtons(senderReadyButton, 48, 47, 46);
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.unconfirm"));
@@ -138,7 +158,7 @@ public class TradeView extends View {
         });
         senderReadyButtonWait.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
-            if (player.equals(session.getSenderPlayer())) {
+            if (session.canControlSide(player, true)) {
                 runnable.cancel();
                 //设置为对方取消
                 session.setTargetReady(false);
@@ -156,9 +176,10 @@ public class TradeView extends View {
         });
         targetReadyButton.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
-            if (player.equals(session.getTargetPlayer())) {
+            if (session.canControlSide(player, false)) {
 
-                if (isBlackList(event, player)) return;
+                if (isBlackList(event, player, false)) return;
+                if (!checkMoneyBeforeConfirm(player)) return;
 
                 session.setTargetReady(true);
                 changeButtons(targetReadyButtonYes, 50, 51, 52);
@@ -170,7 +191,7 @@ public class TradeView extends View {
         });
         targetReadyButtonYes.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
-            if (player.equals(session.getTargetPlayer())) {
+            if (session.canControlSide(player, false)) {
                 session.setTargetReady(false);
                 changeButtons(targetReadyButton, 50, 51, 52);
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.unconfirm"));
@@ -179,7 +200,7 @@ public class TradeView extends View {
 
         targetReadyButtonWait.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
-            if (player.equals(session.getTargetPlayer())) {
+            if (session.canControlSide(player, false)) {
                 runnable.cancel();
                 //设置为对方取消
                 session.setSenderReady(false);
@@ -199,6 +220,16 @@ public class TradeView extends View {
         });
         cancelReadyButton.setOnClick(event -> {
             Player player = (Player) event.getWhoClicked();
+
+            if (session.isTestMode() && session.getSenderPlayer().equals(player)) {
+                session.setSenderReady(false);
+                session.setTargetReady(false);
+                changeButtons(senderReadyButton, 48, 47, 46);
+                changeButtons(targetReadyButton, 50, 51, 52);
+                cancelledPlayer = null;
+                player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.trade-cancelled"));
+                return;
+            }
 
             //只有被取消的那一方才能点击这个按钮
             if (player.equals(cancelledPlayer)) {
@@ -223,6 +254,186 @@ public class TradeView extends View {
         }
     }
 
+    private void addMoneyButtons() {
+        List<BigDecimal> amounts = GoodsTrade.config.getEconomyButtonAmounts();
+        int[] senderSlots = {36, 37, 38, 39};
+        int[] targetSlots = {44, 43, 42, 41};
+        for (int index = 0; index < amounts.size(); index++) {
+            BigDecimal amount = amounts.get(index);
+            gui.addButton(senderSlots[index], createMoneyButton(amount, index, true));
+            gui.addButton(targetSlots[index], createMoneyButton(amount, index, false));
+        }
+    }
+
+    private GuiButton createMoneyButton(BigDecimal step, int index, boolean senderSide) {
+        ItemStack item = View.moneyButtonItems.get(index).clone();
+        replaceAmountPlaceholder(item, EconomyTradeService.format(step));
+        GuiButton button = new GuiButton(item);
+        button.setOnClick(event -> handleMoneyClick((Player) event.getWhoClicked(), step,
+                event.isLeftClick(), event.isRightClick(), senderSide));
+        return button;
+    }
+
+    private void handleMoneyClick(Player player, BigDecimal step,
+                                  boolean leftClick, boolean rightClick, boolean senderSide) {
+        if (!session.canControlSide(player, senderSide)) {
+            rejectMoneyChange(player, "trade-gui.self-operation");
+            return;
+        }
+        if (!leftClick && !rightClick) return;
+        if (!session.isTestMode() && !EconomyTradeService.isAvailable()) {
+            rejectMoneyChange(player, "trade-gui.money-unavailable");
+            return;
+        }
+        if ((senderSide && session.isSenderReady())
+                || (!senderSide && session.isTargetReady())) {
+            rejectMoneyChange(player, "trade-gui.money-locked");
+            return;
+        }
+
+        BigDecimal current = senderSide ? session.getSenderMoney() : session.getTargetMoney();
+        BigDecimal adjusted = MoneyTrade.adjust(
+                current,
+                step,
+                leftClick,
+                GoodsTrade.config.isNegativeEconomyAllowed()
+        );
+        if (adjusted.compareTo(current) == 0) {
+            rejectMoneyChange(player, "trade-gui.money-minimum");
+            return;
+        }
+
+        BigDecimal senderOffer = senderSide ? adjusted : session.getSenderMoney();
+        BigDecimal targetOffer = senderSide ? session.getTargetMoney() : adjusted;
+        if (session.isTestMode()) {
+            if (!MoneyTrade.calculate(senderOffer, targetOffer).isVaultSafe()) {
+                rejectMoneyChange(player, "trade-gui.money-invalid");
+                return;
+            }
+        } else {
+            EconomyTradeService.BalanceCheck check = EconomyTradeService.checkBalances(
+                    session.getSenderPlayer(), session.getTargetPlayer(), senderOffer, targetOffer);
+            if (!check.isSuccess()) {
+                sendMoneyCheckFailure(player, check);
+                return;
+            }
+        }
+
+        if (senderSide) {
+            session.setSenderMoney(adjusted);
+        } else {
+            session.setTargetMoney(adjusted);
+        }
+        resetConfirmationsAfterMoneyChange(player, senderSide);
+        updateMoneyInfo();
+        String changed = GoodsTrade.lang.replacePlaceholders(
+                GoodsTrade.lang.getString("trade-gui.money-changed"),
+                "%amount%", EconomyTradeService.format(adjusted)
+        );
+        player.sendMessage(GoodsTrade.getPrefix() + changed);
+        player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.get(), 1.0f, 1.2f);
+    }
+
+    private void resetConfirmationsAfterMoneyChange(Player changer, boolean senderSide) {
+        if (!session.isSenderReady() && !session.isTargetReady() && cancelledPlayer == null) return;
+        if (runnable != null) {
+            try {
+                runnable.cancel();
+            } catch (IllegalStateException ignored) {
+                // It was created but not scheduled, or has already stopped.
+            }
+            runnable = null;
+        }
+        session.setSenderReady(false);
+        session.setTargetReady(false);
+        session.setConfirmed(false);
+        cancelledPlayer = null;
+        changeButtons(senderReadyButton, 48, 47, 46);
+        changeButtons(targetReadyButton, 50, 51, 52);
+
+        String message = GoodsTrade.lang.replacePlaceholders(
+                GoodsTrade.lang.getString("trade-gui.money-offer-changed"),
+                "%player%", senderSide ? session.getSenderDisplayName() : session.getTargetDisplayName()
+        );
+        Player other = session.isTestMode() ? changer : TradeManager.getOtherPlayer(changer, session);
+        other.sendMessage(GoodsTrade.getPrefix() + message);
+        other.playSound(other.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+    }
+
+    private boolean checkMoneyBeforeConfirm(Player player) {
+        if (session.isTestMode()) return true;
+        EconomyTradeService.BalanceCheck check = EconomyTradeService.checkBalances(session);
+        if (check.isSuccess()) return true;
+        sendMoneyCheckFailure(player, check);
+        return false;
+    }
+
+    private void sendMoneyCheckFailure(Player player, EconomyTradeService.BalanceCheck check) {
+        if (check.getFailure() == EconomyTradeService.Failure.INSUFFICIENT_BALANCE
+                && check.getPlayer() != null) {
+            String message = GoodsTrade.lang.replacePlaceholders(
+                    GoodsTrade.lang.getString("trade-gui.money-insufficient"),
+                    "%player%", check.getPlayer().getName(),
+                    "%amount%", EconomyTradeService.format(check.getAmount())
+            );
+            player.sendMessage(GoodsTrade.getPrefix() + message);
+        } else if (check.getFailure() == EconomyTradeService.Failure.INVALID_AMOUNT) {
+            rejectMoneyChange(player, "trade-gui.money-invalid");
+            return;
+        } else {
+            rejectMoneyChange(player, "trade-gui.money-unavailable");
+            return;
+        }
+        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+    }
+
+    private void rejectMoneyChange(Player player, String path) {
+        player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString(path));
+        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+    }
+
+    private void updateMoneyInfo() {
+        MoneyTrade.PaymentPlan plan = MoneyTrade.calculate(session.getSenderMoney(), session.getTargetMoney());
+        ItemStack item = View.infoItem.clone();
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+        lore.add("");
+        if (session.isTestMode()) {
+            lore.add(GoodsTrade.lang.getString("trade-view.test-mode"));
+        }
+        lore.add(paymentLine("trade-view.sender-payment", session.getSenderDisplayName(), plan.getSenderPayment()));
+        lore.add(paymentLine("trade-view.target-payment", session.getTargetDisplayName(), plan.getTargetPayment()));
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        infoButton.buttonItemStack = item;
+        changeButtons(infoButton, 4, 13, 22, 31, 40);
+    }
+
+    private String paymentLine(String path, String playerName, BigDecimal amount) {
+        return GoodsTrade.lang.replacePlaceholders(
+                GoodsTrade.lang.getString(path),
+                "%player%", playerName,
+                "%amount%", EconomyTradeService.format(amount)
+        );
+    }
+
+    private void replaceAmountPlaceholder(ItemStack item, String amount) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        if (meta.hasDisplayName()) {
+            meta.setDisplayName(meta.getDisplayName().replace("%amount%", amount));
+        }
+        if (meta.hasLore()) {
+            List<String> lore = new ArrayList<>();
+            for (String line : meta.getLore()) {
+                lore.add(line.replace("%amount%", amount));
+            }
+            meta.setLore(lore);
+        }
+        item.setItemMeta(meta);
+    }
+
     public void prepareTrade(TradeSession session) {
         //等待五秒，进行倒计时，将两边的界面改为等待按钮
         runnable = new BukkitRunnable() {
@@ -232,8 +443,10 @@ public class TradeView extends View {
             public void run() {
                 if (count == 0) {
                     // 防止交易已被取消后仍然执行
-                    if (!TradeManager.isTrade(session.getSenderPlayer())) return;
-                    session.setConfirmed(true);
+                    if (!TradeManager.isTrade(session.getSenderPlayer()) || !session.bothReady()) {
+                        cancel();
+                        return;
+                    }
                     executeTrade(session);
                     cancel();
                 } else {
@@ -245,7 +458,9 @@ public class TradeView extends View {
 
                     targetReadyButtonWait.buttonItemStack.setAmount(count);
                     changeButtons(targetReadyButtonWait, 50, 51, 52);
-                    session.getTargetPlayer().playSound(session.getTargetPlayer().getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.get(), 1.0f, 1.0f);
+                    if (!session.isTestMode()) {
+                        session.getTargetPlayer().playSound(session.getTargetPlayer().getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.get(), 1.0f, 1.0f);
+                    }
 
                     count--;
 
@@ -259,6 +474,21 @@ public class TradeView extends View {
     public void executeTrade(TradeSession session) {
         Player sender = session.getSenderPlayer();
         Player receiver = session.getTargetPlayer();
+
+        if (session.isTestMode()) {
+            completeTestTrade(sender);
+            return;
+        }
+
+        // Vault first validates both displayed obligations, then performs one net transfer.
+        // Items do not move if the balance changed or the provider rejects the transaction.
+        EconomyTradeService.SettlementResult settlement = EconomyTradeService.settle(session);
+        if (!settlement.isSuccess()) {
+            abortFailedMoneyTrade(settlement.getFailure());
+            return;
+        }
+
+        session.setConfirmed(true);
 
         // 交换交易物品
         addPlayerTradeItems(sender);
@@ -285,6 +515,39 @@ public class TradeView extends View {
         returnCursorItem(receiver);
         // 统一走兼容层：1.12 没有 closeInventory(Reason)。
         ServerCompatibility.closeInventory(receiver);
+    }
+
+    private void completeTestTrade(Player administrator) {
+        backPlayerItems(administrator);
+        session.setSenderReady(false);
+        session.setTargetReady(false);
+        session.setConfirmed(true);
+        administrator.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.test-success"));
+        administrator.playSound(administrator.getLocation(), XSound.ENTITY_PLAYER_LEVELUP.get(), 1.0f, 1.5f);
+        TradeManager.removeSession(administrator);
+        returnCursorItem(administrator);
+        ServerCompatibility.closeInventory(administrator);
+    }
+
+    private void abortFailedMoneyTrade(EconomyTradeService.Failure failure) {
+        Player sender = session.getSenderPlayer();
+        Player target = session.getTargetPlayer();
+        session.setSenderReady(false);
+        session.setTargetReady(false);
+        session.setConfirmed(false);
+        backPlayerItems(sender);
+        backPlayerItems(target);
+
+        String path = failure == EconomyTradeService.Failure.INSUFFICIENT_BALANCE
+                ? "trade-status.money-balance-changed"
+                : "trade-status.money-settlement-failed";
+        sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString(path));
+        target.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString(path));
+        TradeManager.removeSession(sender);
+        returnCursorItem(sender);
+        ServerCompatibility.closeInventory(sender);
+        returnCursorItem(target);
+        ServerCompatibility.closeInventory(target);
     }
 
     /**
@@ -327,6 +590,14 @@ public class TradeView extends View {
     //返还交易界面内玩家物品
     public void backPlayerItems(Player player) {
         List<ItemStack> itemsList = new ArrayList<>();
+        if (session.isTestMode()) {
+            collectTradeItems(itemsList, View.senderTradeSlots);
+            collectTradeItems(itemsList, View.targetTradeSlots);
+            if (!itemsList.isEmpty()) {
+                Utils.addItems(player, itemsList.toArray(new ItemStack[0]));
+            }
+            return;
+        }
         if (session.isPlayerSender(player)) {
             for (int slot : View.senderTradeSlots) {
                 ItemStack item = gui.getInventory().getItem(slot);
@@ -349,6 +620,16 @@ public class TradeView extends View {
 
         if (!itemsList.isEmpty()) {
             Utils.addItems(player, itemsList.toArray(new ItemStack[0]));
+        }
+    }
+
+    private void collectTradeItems(List<ItemStack> itemsList, List<Integer> slots) {
+        for (int slot : slots) {
+            ItemStack item = gui.getInventory().getItem(slot);
+            if (Utils.isItemStackNotEmpty(item)) {
+                itemsList.add(item);
+                gui.getInventory().setItem(slot, air);
+            }
         }
     }
 }
