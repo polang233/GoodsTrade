@@ -12,8 +12,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.*;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.EquipmentSlot;
 
 import java.util.Collections;
 import java.util.Map;
@@ -144,33 +146,45 @@ public class Events implements Listener {
     private static final Map<UUID, Long> interactCooldown = Collections.synchronizedMap(new ConcurrentHashMap<>());
     private static final long INTERACT_DELAY = 1000; // 1秒内 内防止重复触发
 
-    //玩家交互事件
+    // 1.12–1.21 仍会单独触发 PlayerInteractEntityEvent。
+    // Paper 26.x 只再触发子类 PlayerInteractAtEntityEvent，父类监听收不到。
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        handleShiftRightClickTrade(event);
+    }
+
+    @EventHandler
+    public void onPlayerInteractAtEntity(PlayerInteractAtEntityEvent event) {
+        handleShiftRightClickTrade(event);
+    }
+
+    private void handleShiftRightClickTrade(PlayerInteractEntityEvent event) {
         if (!GoodsTrade.config.isEnabledShiftClick()) return;
-        if (event.getRightClicked() instanceof Player) {
-            Player senderPlayer = event.getPlayer();
-            if (senderPlayer.isSneaking()) {
-                UUID playerId = senderPlayer.getUniqueId();
-                long currentTime = System.currentTimeMillis();
+        if (isOffHandInteract(event)) return;
+        if (!(event.getRightClicked() instanceof Player)) return;
 
-                // 检查冷却时间
-                if (interactCooldown.containsKey(playerId)) {
-                    long lastInteractTime = interactCooldown.get(playerId);
-                    if (currentTime - lastInteractTime < INTERACT_DELAY) {
-                        event.setCancelled(true);
-                        return;
-                    }
-                }
+        Player senderPlayer = event.getPlayer();
+        if (!senderPlayer.isSneaking()) return;
 
-                // 更新冷却时间
-                interactCooldown.put(playerId, currentTime);
+        Player targetPlayer = (Player) event.getRightClicked();
+        if (senderPlayer.getUniqueId().equals(targetPlayer.getUniqueId())) return;
 
-
-                Player targetPlayer = (Player) event.getRightClicked();
-                TradeManager.sendTradeRequest(senderPlayer, targetPlayer);
-            }
+        UUID playerId = senderPlayer.getUniqueId();
+        long currentTime = System.currentTimeMillis();
+        Long lastInteractTime = interactCooldown.get(playerId);
+        if (lastInteractTime != null && currentTime - lastInteractTime < INTERACT_DELAY) {
+            return;
         }
+        interactCooldown.put(playerId, currentTime);
+        TradeManager.sendTradeRequest(senderPlayer, targetPlayer);
+    }
+
+    /**
+     * 1.9+ 主副手各触发一次。用 name 判断，避免 1.12 的 HAND 与新版本 MAIN_HAND 枚举常量不兼容。
+     */
+    private static boolean isOffHandInteract(PlayerInteractEntityEvent event) {
+        EquipmentSlot hand = event.getHand();
+        return hand != null && "OFF_HAND".equals(hand.name());
     }
 
     // 伤害保护事件

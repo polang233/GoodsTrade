@@ -41,7 +41,7 @@ public class Config {
     }
 
     public boolean isEnabledShiftClick() {
-        return config.getBoolean("Trade.Triggers.Shift-Right-Click", false);
+        return config.getBoolean("Trade.Triggers.Shift-Right-Click", true);
     }
 
     public boolean isSafeDamage() {
