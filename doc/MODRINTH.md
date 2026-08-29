@@ -1,4 +1,6 @@
-![GoodsTrade logo](https://raw.githubusercontent.com/polang233/GoodsTrade/lite/img/logo.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/polang233/GoodsTrade/lite/img/logo-96x96.jpg" alt="GoodsTrade logo" width="96" height="96">
+</p>
 
 # GoodsTrade Lite
 
@@ -26,6 +28,7 @@ GoodsTrade gives players a clear two-sided inventory where they can review each 
 - Optional movement and damage protection during a trade
 - Optional PlaceholderAPI integration
 - Built-in Chinese and English messages
+- Administrator sandbox trading with `/gt test`, so the full flow can be checked without a second player
 
 ![GoodsTrade secondary preview](https://raw.githubusercontent.com/polang233/GoodsTrade/lite/img/1773587841043.webp)
 
@@ -45,7 +48,7 @@ GoodsTrade Lite does **not** currently claim Folia support.
 3. Both players place their items into their own side of the menu.
 4. Each player confirms their offer.
 5. GoodsTrade locks both offers and starts the countdown.
-6. When the countdown ends, the items are exchanged automatically.
+6. When the countdown ends, enabled money offers are settled and the items are exchanged automatically.
 
 Closing the menu or cancelling the confirmation returns the offered items.
 
@@ -81,6 +84,28 @@ Language: system
 Locale filenames follow the standard i18n style, such as `zh_cn`, `en_us`, and `ja_jp`. If a locale is unavailable, GoodsTrade logs a warning and falls back to `zh_cn`.
 
 On future updates, any new translation bundled under `lang/` is generated automatically when the server does not already have that file. Existing translations are never overwritten. The root-level `Lang.yml` from older published versions is migrated to `lang/zh_cn.yml` when needed and is not deleted.
+
+The `/gt` help text is read from the active language file, so server owners can customize command descriptions without changing the plugin.
+
+## Vault money trading
+
+When Vault and a compatible economy plugin are installed, players can adjust their money offers directly in the trade menu. Changing an offer resets both confirmations, and balances are checked again before settlement.
+
+```yaml
+Trade:
+  Economy:
+    Enable: true
+    Allow-Negative: false
+    Amounts:
+      - 1000
+      - 10000
+```
+
+`Amounts` defines one to four GUI steps. Negative offers can be enabled when one player should receive money instead of paying it. If a balance check or settlement fails, the trade is cancelled safely and the items are returned.
+
+## Administrator sandbox trade
+
+Players with `goodstrade.command.test` can run `/gt test [virtual-player-name]` to control both sides of a trade. This is useful for checking item offers, money buttons, confirmation resets, and the countdown without a second online player. Sandbox trades never call Vault or exchange items, and anything placed in the menu is returned when the test ends.
 
 ## Item blacklist
 
@@ -120,13 +145,17 @@ button:
 
 With PlaceholderAPI installed, `%goodstrade_stats%` returns whether the selected player currently accepts trade requests.
 
-## Metrics and support
-
-GoodsTrade uses bStats for anonymous usage statistics. Server owners can opt out through `plugins/bStats/config.yml`.
+## Metrics
 
 ![GoodsTrade bStats](https://bstats.org/signatures/bukkit/GoodsTrade.svg)
+
+## Support
 
 - [GitHub issues](https://github.com/polang233/GoodsTrade/issues)
 - QQ group: `620224543`
 
 GoodsTrade is open source under the [GNU GPL v3](https://github.com/polang233/GoodsTrade/blob/lite/LICENSE).
+
+## Support the project
+
+If GoodsTrade is useful to you, please visit the [GitHub repository](https://github.com/polang233/GoodsTrade) and leave a ⭐ Star. Thank you for your support!
