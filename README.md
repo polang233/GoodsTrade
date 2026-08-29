@@ -4,7 +4,7 @@
 
 
 
-## [更多功能在轻量版: ](https://github.com/polang233/GoodsTrade/tree/lite)[![GoodsTrade Lite](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/polang233/GoodsTrade/refs/heads/lite/.github/badges/lite-version.json)](https://github.com/polang233/GoodsTrade/tree/lite)
+## [更多功能在轻量版: ](https://github.com/polang233/GoodsTrade/tree/master)[![GoodsTrade Lite](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/polang233/GoodsTrade/refs/heads/master/.github/badges/lite-version.json)](https://github.com/polang233/GoodsTrade/tree/master)
 
 
 ![示例](/img/QQ20260315-190201-HD.gif "交易界面演示")
@@ -25,9 +25,9 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 - ⚙️ **可配置**：支持自定义等待时间、触发方式等
 
 ---
-- #### [![GoodsTrade Lite](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/polang233/GoodsTrade/refs/heads/lite/.github/badges/lite-version.json)](https://github.com/polang233/GoodsTrade/tree/lite)
+- #### [![GoodsTrade Lite](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/polang233/GoodsTrade/refs/heads/master/.github/badges/lite-version.json)](https://github.com/polang233/GoodsTrade/tree/master)
 
-- #### **不想有前置**: [切换到轻量版直装](https://github.com/polang233/GoodsTrade/tree/lite)
+- #### **不想有前置**: [切换到轻量版直装](https://github.com/polang233/GoodsTrade/tree/master)
 - 
 - #### **插件版本**: 1.0.4（双数 NI 版）
 - #### **适用版本**: Minecraft 1.12 - 1.21
