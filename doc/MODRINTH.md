@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/polang233/GoodsTrade/lite/img/logo-96x96.jpg" alt="GoodsTrade logo" width="96" height="96">
+  <img src="https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/logo-96x96.jpg" alt="GoodsTrade logo" width="96" height="96">
 </p>
 
 # GoodsTrade Lite
@@ -8,9 +8,9 @@
 
 GoodsTrade gives players a clear two-sided inventory where they can review each other's offers before anything changes hands. Both players must confirm, offers are locked during confirmation, and a final countdown leaves time to catch a mistake before the exchange completes.
 
-[Download the latest release](https://github.com/polang233/GoodsTrade/releases/latest) · [Source code](https://github.com/polang233/GoodsTrade/tree/lite) · [Report an issue](https://github.com/polang233/GoodsTrade/issues) · [Full English guide](https://github.com/polang233/GoodsTrade/blob/lite/doc/README_EN.md)
+[Download the latest release](https://github.com/polang233/GoodsTrade/releases/latest) · [Source code](https://github.com/polang233/GoodsTrade/tree/master) · [Report an issue](https://github.com/polang233/GoodsTrade/issues) · [Full English guide](https://github.com/polang233/GoodsTrade/blob/master/doc/README_EN.md)
 
-![GoodsTrade menu demonstration](https://raw.githubusercontent.com/polang233/GoodsTrade/lite/img/QQ20260315-190201-HD.gif)
+![GoodsTrade menu demonstration](https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/QQ20260315-190201-HD.gif)
 
 ## Features
 
@@ -30,7 +30,7 @@ GoodsTrade gives players a clear two-sided inventory where they can review each 
 - Built-in Chinese and English messages
 - Administrator sandbox trading with `/gt test`, so the full flow can be checked without a second player
 
-![GoodsTrade secondary preview](https://raw.githubusercontent.com/polang233/GoodsTrade/lite/img/1773587841043.webp)
+![GoodsTrade secondary preview](https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/1773587841043.webp)
 
 ## Compatibility
 
@@ -154,7 +154,7 @@ With PlaceholderAPI installed, `%goodstrade_stats%` returns whether the selected
 - [GitHub issues](https://github.com/polang233/GoodsTrade/issues)
 - QQ group: `620224543`
 
-GoodsTrade is open source under the [GNU GPL v3](https://github.com/polang233/GoodsTrade/blob/lite/LICENSE).
+GoodsTrade is open source under the [GNU GPL v3](https://github.com/polang233/GoodsTrade/blob/master/LICENSE).
 
 ## Support the project
 
