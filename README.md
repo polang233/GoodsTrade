@@ -29,7 +29,7 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 ---
 
 - ## **插件版本**: [![GoodsTrade Lite](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/polang233/GoodsTrade/refs/heads/master/.github/badges/lite-version.json)](https://github.com/polang233/GoodsTrade/tree/master)
-- #### **适用版本**: Minecraft 1.12 - 26.1
+- #### **适用版本**: Minecraft 1.12 - 26.2
 - #### **适用服务端**: Bukkit | Spigot | Paper
 - #### **环境要求**: Java8 及以上
 - #### **前置要求**: (可选)

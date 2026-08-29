@@ -10,6 +10,11 @@ GoodsTrade gives players a clear two-sided inventory where they can review each 
 
 [Download the latest release](https://github.com/polang233/GoodsTrade/releases/latest) · [Source code](https://github.com/polang233/GoodsTrade/tree/master) · [Report an issue](https://github.com/polang233/GoodsTrade/issues) · [Full English guide](https://github.com/polang233/GoodsTrade/blob/master/doc/README_EN.md)
 
+![Version](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/polang233/GoodsTrade/refs/heads/master/.github/badges/lite-version.json)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.12--26.2-62b47a)
+![Servers](https://img.shields.io/badge/servers-Bukkit%20%7C%20Spigot%20%7C%20Paper-f4a940)
+![Java](https://img.shields.io/badge/Java-8%2B-e76f00)
+
 ![GoodsTrade menu demonstration](https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/QQ20260315-190201-HD.gif)
 
 ## Features
@@ -34,12 +39,19 @@ GoodsTrade gives players a clear two-sided inventory where they can review each 
 
 ## Compatibility
 
-- **Minecraft:** 1.12–26.1
+- **Minecraft:** 1.12–26.2
 - **Server software:** Bukkit, Spigot, and Paper
 - **Java:** 8 or newer
-- **Optional dependencies:** PlaceholderAPI; Vault plus a compatible economy plugin for money trading
+- **Optional dependencies:** [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/); [Vault](https://www.spigotmc.org/resources/vault.34315/) plus a compatible economy plugin for money trading
 
 GoodsTrade Lite does **not** currently claim Folia support.
+
+## Installation
+
+1. Download the latest Lite build from [GitHub Releases](https://github.com/polang233/GoodsTrade/releases/latest).
+2. Place the JAR in your server's `plugins` directory.
+3. Start the server once to generate the configuration files.
+4. Edit the files under `plugins/GoodsTrade/` and run `/gt reload`.
 
 ## How trading works
 
@@ -63,6 +75,7 @@ Closing the menu or cancelling the confirmation returns the offered items.
 | `/gt trade <sender> <receiver>` | Open a trade as an administrator |
 | `/gt test [virtual-player-name]` | Run a safe sandbox trade while controlling both sides |
 | `/gt reload` | Reload configuration, menu items, blacklist rules, and language files |
+| `/gt` | Show available subcommands |
 
 ## English and Chinese messages
 
@@ -153,6 +166,8 @@ With PlaceholderAPI installed, `%goodstrade_stats%` returns whether the selected
 
 - [GitHub issues](https://github.com/polang233/GoodsTrade/issues)
 - QQ group: `620224543`
+
+中国用户请加 QQ 群 620224543，反馈最快。其他用户请走 GitHub Issues。
 
 GoodsTrade is open source under the [GNU GPL v3](https://github.com/polang233/GoodsTrade/blob/master/LICENSE).
 
