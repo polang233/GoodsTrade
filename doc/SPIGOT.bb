@@ -38,7 +38,7 @@ It gives both players a shared trade menu with clearly separated offer slots. Pl
 [SIZE=5][B]Plugin Information[/B][/SIZE]
 
 [LIST]
-[*][B]Plugin Version:[/B] [URL='https://github.com/polang233/GoodsTrade/tree/master'][IMG]https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/polang233/GoodsTrade/refs/heads/master/.github/badges/lite-version.json[/IMG][/URL]
+[*][B]Plugin Version:[/B] [URL='https://github.com/polang233/GoodsTrade/releases/latest'][IMG]https://img.shields.io/github/v/release/polang233/GoodsTrade?label=Lite%20轻量版本&color=2ea44f[/IMG][/URL]
 [*][B]Supported Minecraft Versions:[/B] 1.12 - 26.2
 [*][B]Supported Server Software:[/B] Bukkit, Spigot, Paper
 [*][B]Java Requirement:[/B] Java 8 or above

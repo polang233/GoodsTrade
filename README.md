@@ -8,6 +8,12 @@
 
 > English-speaking server owners: read the full [English documentation](doc/README_EN.md).
 
+![Version](https://img.shields.io/github/v/release/polang233/GoodsTrade?label=Lite&color=2ea44f)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.12--26.2-62b47a)
+![Servers](https://img.shields.io/badge/servers-Bukkit%20%7C%20Spigot%20%7C%20Paper-f4a940)
+![Java](https://img.shields.io/badge/Java-8%2B-e76f00)
+[![Powered by OrcaRouter](https://img.shields.io/badge/Powered_by-OrcaRouter-2563eb)](https://www.orcarouter.ai/ref/ref_1095590f527d3ae7ae2f)
+
 ![示例](/img/QQ20260315-190201-HD.gif "交易界面演示")
 ![示例2](/img/1773587841043.webp "交易界面演示2")
 
@@ -26,13 +32,8 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 - 💰 **Vault 金币交易**：双方可在界面中调整支付金额，余额不足时无法报价或结算，改价会重置已有确认
 - ⚙️ **可配置**：支持自定义等待时间、触发方式等
 
----
+### 前置要求（可选）
 
-- ## **插件版本**: [![GoodsTrade Lite](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/polang233/GoodsTrade/refs/heads/master/.github/badges/lite-version.json)](https://github.com/polang233/GoodsTrade/tree/master)
-- #### **适用版本**: Minecraft 1.12 - 26.2
-- #### **适用服务端**: Bukkit | Spigot | Paper
-- #### **环境要求**: Java8 及以上
-- #### **前置要求**: (可选)
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)
 - 金币交易需要 [Vault](https://www.spigotmc.org/resources/vault.34315/) 和一个支持 Vault 的经济插件；未安装时仍可正常交易物品
 
