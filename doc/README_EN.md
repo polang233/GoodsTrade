@@ -12,10 +12,11 @@ GoodsTrade is a lightweight, inventory-based trading plugin for Minecraft server
   <img src="../img/QQ20260315-190201-HD.gif" alt="GoodsTrade trade menu demonstration">
 </p>
 
-![Version](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/polang233/GoodsTrade/lite/.github/badges/lite-version.json)
+![Version](https://img.shields.io/github/v/release/polang233/GoodsTrade?label=Lite&color=2ea44f)
 ![Minecraft](https://img.shields.io/badge/Minecraft-1.12--26.2-62b47a)
 ![Servers](https://img.shields.io/badge/servers-Bukkit%20%7C%20Spigot%20%7C%20Paper-f4a940)
 ![Java](https://img.shields.io/badge/Java-8%2B-e76f00)
+[![Powered by OrcaRouter](https://img.shields.io/badge/Powered_by-OrcaRouter-2563eb)](https://www.orcarouter.ai/ref/ref_1095590f527d3ae7ae2f)
 
 ## Why use GoodsTrade?
 

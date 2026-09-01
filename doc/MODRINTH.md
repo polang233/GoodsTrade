@@ -8,7 +8,7 @@ GoodsTrade gives both players a shared trade menu with clearly separated offer s
 
 [Download the latest release](https://github.com/polang233/GoodsTrade/releases/latest) · [Source code](https://github.com/polang233/GoodsTrade/tree/lite) · [Report an issue](https://github.com/polang233/GoodsTrade/issues) · [Full English guide](https://github.com/polang233/GoodsTrade/blob/lite/doc/README_EN.md)
 
-![Version](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/polang233/GoodsTrade/lite/.github/badges/lite-version.json)
+![Version](https://img.shields.io/github/v/release/polang233/GoodsTrade?label=Lite&color=2ea44f)
 ![Minecraft](https://img.shields.io/badge/Minecraft-1.12--26.2-62b47a)
 ![Servers](https://img.shields.io/badge/servers-Bukkit%20%7C%20Spigot%20%7C%20Paper-f4a940)
 ![Java](https://img.shields.io/badge/Java-8%2B-e76f00)
