@@ -51,11 +51,11 @@ public class MoneyTradeTest {
 
     @Test
     public void vaultRangeRejectsOverflowButAcceptsNormalValues() {
-        assertTrue(MoneyTrade.isVaultAmount(amount("10000.25")));
-        assertTrue(MoneyTrade.isVaultAmount(BigDecimal.ZERO));
-        assertFalse(MoneyTrade.isVaultAmount(amount("1e10000")));
-        assertFalse(MoneyTrade.isVaultAmount(amount("1e-10000")));
-        assertFalse(MoneyTrade.isVaultAmount(amount("-1")));
+        assertTrue(MoneyTrade.isFiniteAmount(amount("10000.25")));
+        assertTrue(MoneyTrade.isFiniteAmount(BigDecimal.ZERO));
+        assertFalse(MoneyTrade.isFiniteAmount(amount("1e10000")));
+        assertFalse(MoneyTrade.isFiniteAmount(amount("1e-10000")));
+        assertFalse(MoneyTrade.isFiniteAmount(amount("-1")));
     }
 
     private static BigDecimal amount(String value) {

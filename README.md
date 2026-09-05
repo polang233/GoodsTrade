@@ -2,9 +2,9 @@
   <img src="img/logo.png" alt="GoodsTrade Logo" width="220">
 </p>
 
-# GoodsTrade - 简单安全的玩家物品交易插件
+# GoodsTrade 玩家交易
 
->  Minecraft 服务器的轻量物品交易插件，提供安全、便捷的玩家间交易功能。
+> 通过箱子界面交换物品、货币和经验等级，支持 Bukkit、Spigot 和 Paper。
 
 > English-speaking server owners: read the full [English documentation](doc/README_EN.md).
 
@@ -21,21 +21,21 @@
 
 ## 📖 简介
 
-GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界面操作。玩家可以安全地交换物品，避免交易诈骗。
+双方在同一个箱子界面中放入物品、设置支付数量，确认后开始倒计时。交易结束前可以取消，关闭界面会返还物品。
 
 ### ✨ 特性
 
-- 🛡️ **安全保护**：支持交易期间可设置免疫伤害和行动限制，物品返还均进行处理防止背包容量不足
-- 🎯 **可视化界面**：直观的 GUI 操作，无需复杂命令，可玩家蹲下右键快捷发起
-- ⏱️ **确认机制**：双方确认后进行倒计时，期间若发现物品不对可取消，确保交易安全
+- 🛡️ **安全保护**：可设置交易期间免疫伤害、限制移动；背包放不下的返还物品会掉落在脚下
+- 🎯 **可视化界面**：通过箱子界面操作，也可蹲下右键玩家发送请求
+- ⏱️ **确认机制**：双方确认后开始倒计时，期间可以取消并重新调整
 - 🔒 **物品锁定**：确认后双方无法更改交易物品，防止受骗
-- 💰 **Vault 金币交易**：双方可在界面中调整支付金额，余额不足时无法报价或结算，改价会重置已有确认
+- 💰 **多货币交易**：支持 Vault、PlayerPoints、ExcellentEconomy 和经验等级，余额不足时无法报价或结算，改价会重置已有确认
 - ⚙️ **可配置**：支持自定义等待时间、触发方式等
 
 ### 前置要求（可选）
 
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)
-- 金币交易需要 [Vault](https://www.spigotmc.org/resources/vault.34315/) 和一个支持 Vault 的经济插件；未安装时仍可正常交易物品
+- 货币交易可选接入 [Vault](https://www.spigotmc.org/resources/vault.34315/) 经济服务、PlayerPoints 或 ExcellentEconomy；未安装时仍可正常交易物品
 
 ## 🚀 命令
 
@@ -46,7 +46,7 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 | `/gt trade [发起者] [接收者]`   | `goodstrade.command.trade`     | 让设定两个玩家进行交易 |
 | `/gt accept`              | `goodstrade.command.accept`    | 接受当前交易请求    |
 | `/gt accept [玩家名]`        | `goodstrade.command.accept`    | 接受指定玩家的交易请求 |
-| `/gt test [虚拟玩家名]`       | `goodstrade.command.test`      | 与虚拟玩家进行沙盒测试交易 |
+| `/gt test [测试名称]`       | `goodstrade.command.test`      | 与虚拟玩家进行测试交易 |
 | `/gt reload`              | `goodstrade.command.reload`    | 重载插件配置文件    |
 | `/gt`                     | `goodstrade.command`           | 查询命令帮助      |
 
@@ -61,7 +61,7 @@ GoodsTrade 是一个简单易用的玩家交易插件，支持可视化 GUI 界�
 | `goodstrade.command.sendtrade` | true | 使用sendTrade指令向其他玩家发起交易请求的权限 |
 | `goodstrade.command.accept`    | true | 同意他人交易请求的权限                 |
 | `goodstrade.command.trade`     | op   | 强制两人交易的权限                   |
-| `goodstrade.command.test`      | op   | 使用虚拟玩家沙盒测试交易界面和完整流程         |
+| `goodstrade.command.test`      | op   | 使用虚拟玩家测试交易界面和完整流程         |
 | `goodstrade.command.reload`    | op   | 重载插件的权限                     |
 
 ---
@@ -93,30 +93,63 @@ Language: system # 自动检测
 
 从旧版本升级时，已有的根目录 `Lang.yml` 会在需要时迁移为 `lang/zh_cn.yml`，原文件不会被删除。
 
-### 💰 Vault 金币交易
+### 货币与经验等级交易
 
-安装 Vault 和经济插件后，玩家可通过交易界面两侧的金币按钮调整报价。左键增加、右键减少；中央分隔板会始终显示双方最终需要支付的金额。任一方改价都会撤销对方已有的确认并发送提示，双方重新确认且倒计时结束后才会结算。
+支持 Vault、PlayerPoints、ExcellentEconomy 和原版经验等级。同一笔交易可以同时包含多种货币，双方也可以支付不同币种。左键金额按钮增加报价，右键减少；左键中央分隔板切换当前调整的币种，已经填写的其它报价会保留。双方必须取消确认后才能切换币种。
+
+中央分隔板列出当前币种和所有非零报价的双方支付金额。修改任何币种的报价都会重置已有确认，倒计时结束后才结算。不同币种不换算、不相互抵扣；每个币种按双方支付差额转账。
 
 ```yaml
 Trade:
   Economy:
     Enable: true
     Allow-Negative: false
-    Amounts:
-      - 1000
-      - 10000
+    Amounts: [1000, 10000]
+    Currencies:
+      vault:
+        Enable: true
+        Provider: vault
+        Name: "金币"
+      levels:
+        Enable: true
+        Provider: experience
+        Name: "级经验"
+        Amounts: [1, 5, 10, 30]
+      points:
+        Enable: true
+        Provider: playerpoints
+        Name: "点券"
+        Amounts: [1, 10, 100, 1000]
+      tokens:
+        Enable: true
+        Provider: excellenteconomy
+        Currency: tokens
+        Name: "代币"
+        Amounts: [1, 10, 100, 1000]
 ```
 
-- `Amounts` 支持 1–4 档正数金额，每档会在双方各生成一个按钮；按钮样式可在 `View.yml` 的 `Money`、`Money-1` 至 `Money-4` 中覆盖，`%amount%` 表示该档金额。
-- `Allow-Negative: false` 时每人的报价最低为 `0`。
-- `Allow-Negative: true` 时，报价可减为负数，负数表示要求对方支付。例如双方从 `0` 开始，玩家 1 右键减少 `10000` 后，中央信息会显示玩家 2 需支付 `10000`。
-- 每次点击、玩家确认及最终结算前都会再次验证双方余额；任何一方余额不足或 Vault 结算失败时，金币不会继续结算，物品会返还。
+- 默认配置仅启用 Vault，点券、代币和经验等级默认关闭。按已安装的插件开启对应条目。旧配置没有 `Currencies` 时，继续使用 Vault 和原有 `Amounts`。
+- `Currencies` 下的键是 GoodsTrade 币种标识。`Provider` 支持 `vault`、`playerpoints`、`excellenteconomy`、`experience`；`Name` 是玩家看到的名称，支持 `&` 颜色代码。
+- ExcellentEconomy 的 `Currency` 必须填写已有币种 ID。复制条目并更换标识、`Currency` 和 `Name` 即可增加其它币种。
+- `experience` 使用原版经验等级，无需前置插件，只接受整数。例如支付 5 级后，30 级变为 25 级，经验条进度不变。
+- 每个币种可配置 1–4 档正数 `Amounts`，省略时继承 `Economy.Amounts`。PlayerPoints 仅接受整数，单次支付不超过 `2147483647`；ExcellentEconomy 的整数币种也拒绝小数。
+- 缺少插件、币种不存在或 API 不兼容时，只跳过对应条目并在后台说明原因。所有币种均不可用时仍可交易物品。
+- 同一底层账户只配置一次。例如 Vault 已连接 ExcellentEconomy 的金币账户时，不要再把该账户作为独立币种加入。
+- `Allow-Negative: false` 时报价最低为 `0`。开启后，负数表示要求对方支付同一币种。
+- 金额按钮样式仍由 `View.yml` 的 `Money`、`Money-1` 至 `Money-4` 控制。`%amount%` 是包含币种名称的金额，`%currency%` 是当前币种名称。
+- `/gt reload` 先取消正在进行的交易并返还物品，再加载新币种配置。
 
-### 🧪 管理员沙盒测试
+每次修改金额校验当前币种，确认和结算时校验全部币种。结算失败则返还物品，尝试退回当前扣款，并按反序撤回已完成的其它币种转账。如果经济插件拒绝退款，双方会收到联系管理员的提示，后台记录币种、双方 UUID 和金额。跨插件操作不是数据库原子事务，服务器进程中断或第三方 API 扣款后抛异常仍需依据经济插件流水人工核对。
 
-拥有 `goodstrade.command.test` 权限的玩家可执行 `/gt test [虚拟玩家名]`。该命令会创建一个不存在的虚拟交易对象，管理员可以操作左右两侧物品格、双方金额按钮和双方确认按钮，用于检查界面、负数金额、确认重置及倒计时流程。
+适配基于 [PlayerPoints UUID API](https://github.com/Rosewood-Development/PlayerPoints/blob/master/src/main/java/org/black_ixx/playerpoints/PlayerPointsAPI.java) 和 [ExcellentEconomy 同步 API](https://github.com/nulli0n/ExcellentEconomy/blob/master/src/main/java/su/nightexpress/excellenteconomy/api/ExcellentEconomyAPI.java)。ExcellentEconomy 需要提供 `getAPI()`、按币种 ID 的 `getBalance/withdraw/deposit` 和币种限制接口的版本；旧 CoinsEngine API 不在此适配范围。GoodsTrade 保留 Java 8 编译目标，经济插件自身的服务端和 Java 要求仍须满足。
 
-沙盒模式不会调用 Vault，也不会实际交换物品；完成、关闭或重载时，放入左右两侧的物品都会返还给管理员。控制台不能执行此命令。
+本地测试覆盖多币种结算、失败回滚和 API 契约替身，不等于实服联调。部署前用两名玩家验证混合报价、改价撤销确认、倒计时内余额不足、关闭界面、重载取消及最终两端余额。
+
+### 🧪 管理员测试模式
+
+在游戏内输入 `/gt test [测试名称]` 可打开测试模式，需要 `goodstrade.command.test` 权限。无需另一名玩家在线，可以检查物品栏、支付按钮、取消确认和倒计时。
+
+测试模式由一名管理员操作双方物品栏和确认按钮。货币与等级保持不变，测试结束、关闭界面或重载时返还所有放入的物品。该命令需要在游戏内执行。
 
 ---
 
@@ -136,7 +169,7 @@ Trade:
 
 4. **确认交易**：点击按钮变绿后确认，双方都确认后进入倒计时
 
-5. **完成交易**：倒计时结束后，金币完成结算且物品自动交换
+5. **完成交易**：倒计时结束后，货币与经验等级完成支付且物品自动交换
 
 ### 💡 交易提示
 
@@ -144,7 +177,7 @@ Trade:
 - ⏰ 双方都确认后开始 5 秒倒计时(配置文件修改)
 - ❌ 倒计时期间可取消，回到初始状态
 - 🎒 交易取消或关闭界面时，物品自动返还
-- 💵 任一方修改金币报价后，已有的确认会被重置，需要双方重新检查并确认
+- 💵 任一方修改支付数量后，已有的确认会被重置，需要双方重新检查并确认
 
 ---
 
@@ -153,13 +186,13 @@ Trade:
 - [x] 物品黑名单系统
 - [x] 权限模块完善
 - [x] 自定义界面材质、描述等
-- [x] 支持 Vault 金币交易
-- [ ] 支持等级等其他交易内容
+- [x] 支持 Vault、PlayerPoints、ExcellentEconomy 多货币交易
+- [x] 支持原版经验等级交易
 - [ ] 交易历史记录
 - [ ] 自定义交易要求，服务器可设置
 - [ ] 交易冷却时间设置
 - [ ] 可疑交易警告系统
-- [ ] 玩家双方距离过远取消交易（似乎没必要）
+- [ ] 玩家双方距离过远取消交易
 
 ---
 
@@ -174,8 +207,7 @@ Trade:
 如遇到问题或有功能建议，请通过以下方式联系：
 
 - 💬 QQ 群：620224543
-- 📝 Issues: [就在这里](https://github.com/polang233/GoodsTrade/issues)
-- 🔧 有问题直接联系我就行
+- 📝 Issues: [提交问题](https://github.com/polang233/GoodsTrade/issues)
 
 ---
 

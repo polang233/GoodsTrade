@@ -141,15 +141,29 @@ public class TradeManager {
         player.setItemOnCursor(null);
     }
 
-    public static void startTrade(Player senderPlayer, Player targetPlayer) {
+    public static boolean hasPendingRequest(Player sender, Player target) {
+        List<TradeRequest> requests = pendingRequests.get(target.getUniqueId());
+        return requests != null && requests.stream().anyMatch(request ->
+                request.isSameSender(sender) && !request.isExpired());
+    }
+
+    public static boolean acceptTrade(Player sender, Player target) {
+        if (!hasPendingRequest(sender, target)) {
+            target.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.no-pending"));
+            return false;
+        }
+        return startTrade(sender, target);
+    }
+
+    public static boolean startTrade(Player senderPlayer, Player targetPlayer) {
+        if (senderPlayer.equals(targetPlayer)) {
+            senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("player.different-players"));
+            return false;
+        }
         if (isTrade(senderPlayer) || isTrade(targetPlayer)) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.already-trading"));
             targetPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.already-trading"));
-            return;
-        }
-        if (!pendingRequests.containsKey(targetPlayer.getUniqueId())) {
-            targetPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.no-pending"));
-            return;
+            return false;
         }
         senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.opening"));
         targetPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.opening"));
@@ -158,9 +172,14 @@ public class TradeManager {
         pendingRequests.remove(targetPlayer.getUniqueId());
         TradeView gui = new TradeView();
         gui.open(senderPlayer, targetPlayer);
+        return true;
     }
 
     public static void sendTradeRequest(Player senderPlayer, Player targetPlayer) {
+        if (senderPlayer.equals(targetPlayer)) {
+            senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("player.self-trade"));
+            return;
+        }
         // 检查目标玩家是否接受交易请求
         if (!GoodsTrade.playerDataManager.isTradeAccept(targetPlayer.getUniqueId())) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.target-closed"));
@@ -168,7 +187,6 @@ public class TradeManager {
         }
 
         if (isInCooldown(senderPlayer, targetPlayer)) {
-//            long remainingSeconds = getRemainingCooldownSeconds(senderPlayer, targetPlayer);
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.cooldown"));
             return;
         }
@@ -216,29 +234,6 @@ public class TradeManager {
 
         return false;
     }
-
-//    private static long getRemainingCooldownSeconds(Player sender, Player target) {
-//        UUID targetId = target.getUniqueId();
-//        List<TradeRequest> requests = pendingRequests.get(targetId);
-//
-//        if (requests == null || requests.isEmpty()) {
-//            return 0;
-//        }
-//
-//        for (TradeRequest request : requests) {
-//            if (request.isSameSender(sender) && !request.isExpired()) {
-//                return (request.getRemainingCooldown() / 1000) + 1;
-//            }
-//        }
-//
-//        return 0;
-//    }
-
-
-//    public static List<TradeRequest> getRequests(Player player) {
-//        List<TradeRequest> requests = pendingRequests.get(player.getUniqueId());
-//        return requests == null ? Collections.emptyList() : requests;
-//    }
 
     /**
      * 清理过期的请求

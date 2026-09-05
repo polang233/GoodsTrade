@@ -23,7 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Events implements Listener {
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (event.getClickedInventory() == null ||
                 event.getClick() == ClickType.UNKNOWN ||
@@ -45,16 +45,6 @@ public class Events implements Listener {
             event.setCancelled(true);
             return;
         }
-        //debug
-//        player.sendMessage("§7点击类型: §b" + event.getClick().toString());
-//        player.sendMessage("§7点击操作: §3" + event.getAction().toString());
-//        player.sendMessage("§7点击格子: §2" + event.getSlot());
-//        player.sendMessage("§7原始格子: §a" + event.getRawSlot());
-//        String itemType = event.getCurrentItem() == null ? "null" : event.getCurrentItem().getType().toString();
-//        String itemType2 = event.getCursor() == null ? "null" : event.getCursor().getType().toString();
-//        player.sendMessage("§7手里物品: §e" + itemType2);
-//        player.sendMessage("§7点击物品: §6" + itemType);
-
         //安全处理
         switch (event.getClick()) {
             //拦截shift快捷放入
@@ -74,14 +64,15 @@ public class Events implements Listener {
             int slot = event.getRawSlot();
             if (gui.buttons[slot] != null) {
                 gui.buttons[slot].onClick(event);
-            } else {
-                event.setCancelled(false);
+            }
+            if (!event.isCancelled() && View.isTradeSlot(slot) && event.getAction() != InventoryAction.NOTHING) {
+                session.getView().onItemOfferChange(player);
             }
         }
 
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
         if (event.getInventory().getHolder() == null) return;
         if (!(event.getInventory().getHolder() instanceof Gui)) return;
@@ -90,8 +81,10 @@ public class Events implements Listener {
         if (session == null) return;
         boolean sender = session.isPlayerSender(player);
         int topSize = event.getView().getTopInventory().getSize();
+        boolean changesOffer = false;
         for (int rawSlot : event.getRawSlots()) {
             if (rawSlot >= topSize) continue;
+            changesOffer = true;
             boolean senderSlot = View.isSenderTradeSlot(rawSlot);
             boolean targetSlot = View.isTargetTradeSlot(rawSlot);
             boolean ownTradeSlot = session.isTestMode()
@@ -111,6 +104,7 @@ public class Events implements Listener {
                 return;
             }
         }
+        if (changesOffer && !event.isCancelled()) session.getView().onItemOfferChange(player);
     }
 
     @EventHandler

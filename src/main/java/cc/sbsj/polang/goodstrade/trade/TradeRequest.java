@@ -6,28 +6,16 @@ import org.bukkit.entity.Player;
 import java.util.UUID;
 
 public class TradeRequest {
-    /**
-     * -- GETTER --
-     *  获取发起者 ID
-     */
+    /** 获取发起者 ID */
     @Getter
     private final UUID senderId;
-    /**
-     * -- GETTER --
-     *  获取目标玩家 ID
-     */
+    /** 获取目标玩家 ID */
     @Getter
     private final UUID targetId;
-    /**
-     * -- GETTER --
-     *  获取发起者名字
-     */
+    /** 获取发起者名字 */
     @Getter
     private final String senderName;
-    /**
-     * -- GETTER --
-     *  获取请求创建时间
-     */
+    /** 获取请求创建时间 */
     @Getter
     private final long timestamp;
     private final long cooldown; // 冷却时间（毫秒）

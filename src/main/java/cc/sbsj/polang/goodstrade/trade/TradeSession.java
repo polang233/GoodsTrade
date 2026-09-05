@@ -6,6 +6,14 @@ import lombok.Setter;
 import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import cc.sbsj.polang.goodstrade.GoodsTrade;
+import cc.sbsj.polang.goodstrade.hook.economy.TradeCurrency;
+import cc.sbsj.polang.goodstrade.hook.economy.provider.TestModeEconomyProvider;
 
 @Getter
 @Setter
@@ -16,31 +24,62 @@ public class TradeSession {
     private boolean senderReady;        // 玩家 1 是否确认
     private boolean targetReady;        // 玩家 2 是否确认
     private boolean isConfirmed;         // 交易是否完成
-    private BigDecimal senderMoney;      // 发起者设置的金额；负数表示由接收者支付
-    private BigDecimal targetMoney;      // 接收者设置的金额；负数表示由发起者支付
-    private boolean testMode;            // 管理员单人控制双方的沙盒测试交易
+    private final List<TradeCurrency> currencies;
+    @Getter(lombok.AccessLevel.NONE)
+    private final Map<TradeCurrency, BigDecimal> senderOffers = new LinkedHashMap<>();
+    @Getter(lombok.AccessLevel.NONE)
+    private final Map<TradeCurrency, BigDecimal> targetOffers = new LinkedHashMap<>();
+    @Setter(lombok.AccessLevel.NONE)
+    private int currencyIndex;
+    private boolean testMode;            // 管理员单人控制双方的测试交易
     private String targetDisplayName;
     private TradeView view;
 
     public TradeSession(Player senderPlayer, Player targetPlayer, TradeView view) {
+        this(senderPlayer, targetPlayer, view, GoodsTrade.currencies);
+    }
+
+    private TradeSession(Player senderPlayer, Player targetPlayer, TradeView view, List<TradeCurrency> currencies) {
         this.senderPlayer = senderPlayer;
         this.targetPlayer = targetPlayer;
         this.senderReady = false;
         this.targetReady = false;
         this.isConfirmed = false;
-        this.senderMoney = BigDecimal.ZERO;
-        this.targetMoney = BigDecimal.ZERO;
+        this.currencies = Collections.unmodifiableList(new ArrayList<>(currencies));
         this.testMode = false;
         this.targetDisplayName = targetPlayer.getName();
         this.view = view;
     }
 
     public static TradeSession createTest(Player administrator, String virtualPlayerName, TradeView view) {
-        TradeSession session = new TradeSession(administrator, administrator, view);
+        List<TradeCurrency> currencies = GoodsTrade.currencies;
+        if (currencies.isEmpty()) {
+            currencies = Collections.singletonList(new TradeCurrency("test", "",
+                    new TestModeEconomyProvider(),
+                    GoodsTrade.config.getEconomyButtonAmounts()));
+        }
+        TradeSession session = new TradeSession(administrator, administrator, view, currencies);
         session.testMode = true;
         session.targetDisplayName = virtualPlayerName;
         return session;
     }
+
+    public TradeCurrency getCurrency() {
+        return currencies.isEmpty() ? null : currencies.get(currencyIndex);
+    }
+
+    public void nextCurrency() {
+        if (!currencies.isEmpty()) currencyIndex = (currencyIndex + 1) % currencies.size();
+    }
+
+    public BigDecimal getOffer(TradeCurrency currency, boolean sender) {
+        return (sender ? senderOffers : targetOffers).getOrDefault(currency, BigDecimal.ZERO);
+    }
+
+    public BigDecimal getSenderMoney() { return getOffer(getCurrency(), true); }
+    public BigDecimal getTargetMoney() { return getOffer(getCurrency(), false); }
+    public void setSenderMoney(BigDecimal amount) { senderOffers.put(getCurrency(), amount); }
+    public void setTargetMoney(BigDecimal amount) { targetOffers.put(getCurrency(), amount); }
 
     public boolean bothReady() {
         return senderReady && targetReady;

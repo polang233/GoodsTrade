@@ -138,8 +138,8 @@ public class View {
 
     public static void defaultItemReadyWait() {
         ItemMeta meta = senderReadyButtonItemWait.getItemMeta();
-        meta.setDisplayName(text("trade-view.countdown-name", "§b确认交易中..."));
-        List<String> lore = lines("trade-view.countdown-lore", Arrays.asList("", "§e可检查对方物品是否符合要求", "§6若存在问题请再次点击以取消确认！"));
+        meta.setDisplayName(text("trade-view.countdown-name", "§b交易倒计时……"));
+        List<String> lore = lines("trade-view.countdown-lore", Arrays.asList("", "§e请核对双方物品和支付数量", "§6点击可取消确认"));
         meta.setLore(lore);
         senderReadyButtonItemWait.setItemMeta(meta);
     }
@@ -162,8 +162,8 @@ public class View {
 
     public static void defaultTargetItemReadyWait() {
         ItemMeta meta = targetReadyButtonItemWait.getItemMeta();
-        meta.setDisplayName(text("trade-view.countdown-name", "§b确认交易中..."));
-        List<String> lore = lines("trade-view.countdown-lore", Arrays.asList("", "§e可检查对方物品是否符合要求", "§6若存在问题请再次点击以取消确认！"));
+        meta.setDisplayName(text("trade-view.countdown-name", "§b交易倒计时……"));
+        List<String> lore = lines("trade-view.countdown-lore", Arrays.asList("", "§e请核对双方物品和支付数量", "§6点击可取消确认"));
         meta.setLore(lore);
         targetReadyButtonItemWait.setItemMeta(meta);
     }
@@ -171,20 +171,20 @@ public class View {
     public static void defaultItemCancelReady() {
         ItemMeta meta = cancelReadyItem.getItemMeta();
         meta.setDisplayName(text("trade-view.other-cancelled-name", "§c对方取消"));
-        List<String> lore = lines("trade-view.restart-confirm-lore", Arrays.asList("", "§e再次点击重新开始，需要双方都确认才可进行交易"));
+        List<String> lore = lines("trade-view.restart-confirm-lore", Arrays.asList("", "§e点击重新确认，双方确认后开始倒计时"));
         meta.setLore(lore);
         cancelReadyItem.setItemMeta(meta);
     }
 
     public static void defaultItemInfo() {
         ItemMeta meta = infoItem.getItemMeta();
-        meta.setDisplayName(text("trade-view.divider-name", "§7分隔板"));
+        meta.setDisplayName(text("trade-view.divider-name", "§7交易说明"));
         List<String> lore = lines("trade-view.divider-lore", Arrays.asList("",
-                "§a交易发起者默认在左侧",
-                "§a被发起者默认在右侧",
-                "§e将想要交易的物品放入后点击下方确认",
-                "§e确认后将锁定物品，待双方确认进行交易",
-                "§e交易过程中等待读秒结束，期间请检查物品"
+                "§a发起者放左侧，接收者放右侧",
+                "§e放入物品后，点击下方按钮确认",
+                "§e物品或数量改变后，需要重新确认",
+                "§e双方确认后开始倒计时",
+                "§7关闭界面可取消交易"
         ));
         meta.setLore(lore);
         infoItem.setItemMeta(meta);
@@ -193,7 +193,7 @@ public class View {
     public static void defaultMoneyButtons() {
         for (ItemStack item : moneyButtonItems) {
             ItemMeta meta = item.getItemMeta();
-            meta.setDisplayName(text("trade-view.money-button-name", "§6调整金币: §e%amount%"));
+            meta.setDisplayName(text("trade-view.money-button-name", "§6调整数量： §e%amount%"));
             meta.setLore(lines("trade-view.money-button-lore", Arrays.asList(
                     "",
                     "§a左键: 增加 %amount%",

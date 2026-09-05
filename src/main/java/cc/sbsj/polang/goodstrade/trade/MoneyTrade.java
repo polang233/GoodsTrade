@@ -3,7 +3,7 @@ package cc.sbsj.polang.goodstrade.trade;
 import java.math.BigDecimal;
 
 /**
- * Pure money-offer calculations. Vault itself uses doubles, while offers are kept as decimals
+ * Pure offer calculations. Providers may use doubles, while offers are kept as decimals
  * so repeated GUI clicks do not accumulate floating-point drift.
  */
 public final class MoneyTrade {
@@ -26,7 +26,7 @@ public final class MoneyTrade {
         return new PaymentPlan(senderPayment, targetPayment);
     }
 
-    public static boolean isVaultAmount(BigDecimal amount) {
+    public static boolean isFiniteAmount(BigDecimal amount) {
         if (amount == null || amount.signum() < 0) return false;
         if (amount.signum() == 0) return true;
         double value = amount.doubleValue();
@@ -59,8 +59,8 @@ public final class MoneyTrade {
             return senderPayment.subtract(targetPayment).stripTrailingZeros();
         }
 
-        public boolean isVaultSafe() {
-            return MoneyTrade.isVaultAmount(senderPayment) && MoneyTrade.isVaultAmount(targetPayment);
+        public boolean isFinite() {
+            return MoneyTrade.isFiniteAmount(senderPayment) && MoneyTrade.isFiniteAmount(targetPayment);
         }
     }
 }

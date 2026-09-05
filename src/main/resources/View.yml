@@ -5,11 +5,11 @@ button:
      material: black_stained_glass_pane # 物品材质，支持 XMaterial/Bukkit
      name: " "                           # 留空白名称，避免背景物品显示额外文字
      lore:                              # 不写会使用默认描述
-       - "&7"                           # 建议默认留一行，不然玩家拿普通玻璃板改个名可以把物品放进去或者有可能抠出来
+       - "&7"                           # 背景物品的说明文字
      custom_model_data: 0               # 资源包自定义模型数据，不写或 0 表示不设置
   # 中间隔离板/提示物品
   "@":
-#需要自定义就自己加
+# 取消注释后可自定义样式
 #    material: iron_bars
 #    name: "中间提示"
 #    lore:
@@ -28,11 +28,11 @@ button:
 
   "CancelReady": # 等待过程中有一方取消后的按钮
 
-  # 金币调整按钮的通用样式，%amount% 会替换为 config.yml 中对应的金额。
+  # 金额调整按钮的通用样式，%amount% 包含金额和币种名，%currency% 是当前币种名称。
   # 也可以通过 Money-1、Money-2、Money-3、Money-4 分别覆盖每档按钮。
   "Money":
 #    material: gold_ingot
-#    name: "&6调整金币: &e%amount%"
+#    name: "&6调整数量： &e%amount%"
 #    lore:
 #      - ""
 #      - "&a左键: 增加 %amount%"

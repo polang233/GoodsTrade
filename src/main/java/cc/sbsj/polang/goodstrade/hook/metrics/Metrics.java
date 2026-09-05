@@ -12,7 +12,7 @@
  *
  * Violations will result in a ban of your plugin and account from bStats.
  */
-package cc.sbsj.polang.goodstrade.hook;
+package cc.sbsj.polang.goodstrade.hook.metrics;
 
 import cc.sbsj.polang.goodstrade.compat.ServerCompatibility;
 import java.io.BufferedReader;

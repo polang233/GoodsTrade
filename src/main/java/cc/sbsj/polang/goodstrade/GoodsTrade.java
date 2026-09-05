@@ -6,10 +6,12 @@ import cc.sbsj.polang.goodstrade.config.Config;
 import cc.sbsj.polang.goodstrade.config.Lang;
 import cc.sbsj.polang.goodstrade.config.PlayerDataManager;
 import cc.sbsj.polang.goodstrade.config.ViewConfig;
-import cc.sbsj.polang.goodstrade.hook.Metrics;
-import cc.sbsj.polang.goodstrade.hook.Papi;
-import cc.sbsj.polang.goodstrade.hook.EconomyProvider;
-import cc.sbsj.polang.goodstrade.hook.VaultEconomyProvider;
+import cc.sbsj.polang.goodstrade.hook.metrics.Metrics;
+import cc.sbsj.polang.goodstrade.hook.placeholder.Papi;
+import cc.sbsj.polang.goodstrade.hook.economy.TradeCurrency;
+import cc.sbsj.polang.goodstrade.hook.economy.CurrencyRegistry;
+import java.util.List;
+import java.util.Collections;
 import cc.sbsj.polang.goodstrade.task.RunTask;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import com.cryptomorin.xseries.XMaterial;
@@ -23,7 +25,7 @@ public final class GoodsTrade extends JavaPlugin {
     public Metrics metrics;
     public static Config config;
     public static Lang lang;
-    public static EconomyProvider economyProvider;
+    public static List<TradeCurrency> currencies = Collections.emptyList();
     
     public static String getPrefix() {
         return lang.getString(PREFIX_KEY);
@@ -38,7 +40,7 @@ public final class GoodsTrade extends JavaPlugin {
             pluginEnabled = true;
         } else {
             pluginEnabled = false;
-            getLogger().severe("§c为了阻止可能出现的错误，插件停止加载功能");
+            getLogger().severe("§c依赖检查失败，GoodsTrade 未启用。");
             return;
         }
         config = new Config(this);
@@ -59,33 +61,11 @@ public final class GoodsTrade extends JavaPlugin {
         //每十分钟运行一次检查
         this.getServer().getScheduler().runTaskTimer(this, new RunTask(), 20L, 12000L);
 
-        getLogger().info(getPrefix() + "§a成功加载了喵~");
+        getLogger().info(getPrefix() + "§aGoodsTrade 已启用。");
     }
 
     public void refreshEconomy() {
-        economyProvider = null;
-        if (config == null || !config.isEconomyEnabled()) {
-            getLogger().info("§7Vault 金币交易已在配置中关闭");
-            return;
-        }
-        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
-            getLogger().warning("未检测到 Vault，金币交易按钮将不会显示，物品交易不受影响。");
-            return;
-        }
-        try {
-            economyProvider = VaultEconomyProvider.hook(this);
-            if (economyProvider == null) {
-                getLogger().warning("Vault 未注册经济服务，金币交易按钮将不会显示。");
-            } else {
-                getLogger().info("§2Vault 经济服务已连接: " + economyProvider.getName());
-            }
-        } catch (NoClassDefFoundError error) {
-            economyProvider = null;
-            getLogger().warning("Vault API 不可用，金币交易按钮将不会显示。");
-        } catch (RuntimeException exception) {
-            economyProvider = null;
-            getLogger().warning("连接 Vault 经济服务失败: " + exception.getMessage());
-        }
+        currencies = CurrencyRegistry.load(this);
     }
 
     private boolean checkDependencies() {
@@ -129,7 +109,7 @@ public final class GoodsTrade extends JavaPlugin {
                 playerDataManager.save();
             }
             metrics.shutdown();
-            getLogger().info("§a插件卸载了喵~");
+            getLogger().info("§aGoodsTrade 已停用。");
         }
     }
 }

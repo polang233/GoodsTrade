@@ -10,74 +10,79 @@ prefix: "&7[&2&lGoods&6&lTrade&7] &r"
 
 # 命令相关
 command:
-  help: "&7可输入以下命令."
+  help: "&7可用命令："
   help-entry: "&e/gt %command% &7- %description%"
-  unknown: "&c未知的子命令."
+  unknown: "&c未知命令，请输入 /gt 查看帮助。"
   no-permission: "&c你没有权限执行此命令！"
   player-only: "&c该命令只能由玩家执行"
   usage:
-    trade: "&a用法：/gt trade [接收人] [发起人]"
+    trade: "&a用法：/gt trade [发起者] [接收者]"
     sendtrade: "&a用法：/gt sendtrade [接收人]"
     toggle: "&c用法：/gt toggle [true|false]"
     toggle-hint: "&7不填参数则切换当前状态"
-    test: "&a用法：/gt test [虚拟玩家名]"
+    test: "&a用法：/gt test [测试名称]"
   description:
-    accept: "接受一个待处理的交易请求"
+    accept: "接受交易请求"
     reload: "重载配置、语言和界面文件"
     sendtrade: "向指定玩家发送交易请求"
-    test: "与虚拟玩家进行不会扣钱或转移物品的沙盒交易"
+    test: "打开测试模式，单人操作交易双方"
     toggle: "开启或关闭接收交易请求"
-    trade: "由管理员指定两名在线玩家开始交易"
+    trade: "为两名在线玩家打开交易界面"
 
 # 交易请求相关
 trade-request:
-  sent: "&7已向玩家 &e%target% &7发起交易"
-  received: "&7玩家 &e%player% &7向你发起交易 &a[点击接受]"
-  hover: "点击可确认"
-  cooldown: "&c发起交易过于频繁，请等待一会再重试"
-  target-closed: "&c该玩家已关闭交易接受，无法向其发起交易"
-  no-pending: "&c你当前没有交易请求！"
-  select-player: "&c请选择一个玩家"
+  sent: "&7已向 &e%target% &7发送交易请求。"
+  received: "&e%player% &7想与你交易。&a[点击接受]"
+  hover: "点击接受交易"
+  cooldown: "&c请求发送过于频繁，请稍后再试。"
+  target-closed: "&c对方暂不接受交易请求。"
+  no-pending: "&c没有可接受的交易请求，请让对方重新发送。"
+  select-player: "&c有多条交易请求，请输入 /gt accept 玩家名。"
 
 # 交易状态
 trade-status:
-  opening: "&2正在为您打开交易界面"
+  money-rollback-failed: "&c交易取消，物品已返还；部分款项未能自动退回，请联系管理员核对。"
+  opening: "&a正在打开交易界面……"
   success: "&a交易成功！"
   cancelled-by-self: "你取消了交易！"
   cancelled-by-other: "对方取消了交易！"
   cancelled-by-reload: "&c功能重载中，交易已取消"
-  already-trading: "&c其中一名玩家已经处于交易或测试交易中。"
+  already-trading: "&c有玩家正在交易，请等待其结束。"
   money-balance-changed: "&c交易取消：倒计时期间有玩家余额不足，物品已返还。"
-  money-settlement-failed: "&c交易取消：经济插件拒绝了金币结算，物品已返还。"
-  test-opening: "&e已打开沙盒测试交易：你可以操作双方区域和确认按钮；不会实际扣款或转移物品。"
-  test-success: "&a测试交易流程完成！Vault 未扣款，界面内物品已全部返还。"
-  test-cancelled: "&e测试交易已关闭，界面内物品已全部返还。"
+  money-settlement-failed: "&c交易取消：支付失败，物品已返还。"
+  test-opening: "&e已进入测试模式，可操作双方物品栏和确认按钮。货币与等级不会扣除，结束后返还物品。"
+  test-success: "&a测试完成，物品已返还，货币和等级未扣除。"
+  test-cancelled: "&e已退出测试模式，物品已返还。"
 
 test-trade:
-  invalid-name: "&c虚拟玩家名只能包含 1-16 个英文字母、数字或下划线。"
-  player-exists: "&c该名称当前属于在线玩家，请换一个不存在的虚拟玩家名。"
-  already-trading: "&c你已经处于交易或测试交易中。"
+  invalid-name: "&c测试名称只能使用 1–16 个字母、数字或下划线。"
+  player-exists: "&c这个名字已有玩家在线，请换一个测试名称。"
+  already-trading: "&c请先结束当前交易或退出测试模式。"
 
 # 交易界面
 trade-gui:
-  confirm: "&a你已确认交易，等待对方确认..."
+  items-offer-changed: "&e%player% &e修改了交易物品，请检查后重新确认。"
+  currency-locked: "&c请双方取消确认后再切换币种。"
+  confirm: "&a已确认，等待对方确认。"
   unconfirm: "&c你已取消确认交易"
   cancel-ready: "&c你已取消确认状态"
-  trade-cancelled: "&c交易已取消，回到初始状态"
-  items-locked: "&c你已确认，物品状态锁定！"
-  self-operation: "&c你只能操作自己的物品"
-  confirm-in-progress: "&c正在交易确认中，若需取消请按取消按钮！"
-  blacklist-hit: "&c你的物品槽有禁止交易的物品！"
-  money-changed: "&a你的金币报价已调整为 &e%amount%&a。"
-  money-offer-changed: "&e%player% &c修改了金币报价，你的确认状态已重置，请重新检查交易。"
-  money-insufficient: "&c%player% 余额不足，无法承担 %amount% 的支付金额。"
-  money-locked: "&c你已确认，金币报价已锁定！"
-  money-minimum: "&c未开启负数报价时，金币报价最小只能为 0。"
-  money-unavailable: "&cVault 金币交易当前不可用。"
-  money-invalid: "&c该金额无效或超出经济插件支持的范围。"
+  trade-cancelled: "&e已取消确认，可以继续调整交易内容。"
+  items-locked: "&c请先取消确认，再修改物品。"
+  self-operation: "&c你只能操作自己一侧的物品和按钮。"
+  confirm-in-progress: "&e正在倒计时，点击下方按钮可取消确认。"
+  blacklist-hit: "&c你放入了禁止交易的物品，请先取出。"
+  money-changed: "&a已调整为 &e%amount%&a。"
+  money-offer-changed: "&e%player% &e修改了支付数量，请检查后重新确认。"
+  money-insufficient: "&c%player% 无法支付 %amount%。"
+  money-locked: "&c请先取消确认，再调整数量。"
+  money-minimum: "&c支付数量不能小于 0。"
+  money-unavailable: "&c当前交易类型暂不可用。"
+  money-invalid: "&c数量无效，请检查是否超出上限或使用了不支持的小数。"
 
 # 默认交易界面按钮；View.yml 中的自定义值会覆盖这些内容
 trade-view:
+  currency-selected: "&b当前类型：%currency%"
+  currency-switch: "&e左键切换类型，已设置的数量会保留"
   unconfirmed-name: "&7当前未确认"
   click-confirm-lore:
     - ""
@@ -86,31 +91,31 @@ trade-view:
   waiting-other-lore:
     - ""
     - "&a等待对方确认"
-  countdown-name: "&b确认交易中..."
+  countdown-name: "&b交易倒计时……"
   countdown-lore:
     - ""
-    - "&e可检查对方物品是否符合要求"
-    - "&6若存在问题请再次点击以取消确认！"
+    - "&e请核对双方物品和支付数量"
+    - "&6点击可取消确认"
   other-cancelled-name: "&c对方取消"
   restart-confirm-lore:
     - ""
-    - "&e再次点击重新开始，需要双方都确认才可进行交易"
-  divider-name: "&7分隔板"
+    - "&e点击重新确认，双方确认后开始倒计时"
+  divider-name: "&7交易说明"
   divider-lore:
     - ""
-    - "&a交易发起者默认在左侧"
-    - "&a被发起者默认在右侧"
-    - "&e将想要交易的物品放入后点击下方确认"
-    - "&e确认后将锁定物品，待双方确认进行交易"
-    - "&e交易过程中等待读秒结束，期间请检查物品"
-  money-button-name: "&6调整金币: &e%amount%"
+    - "&a发起者放左侧，接收者放右侧"
+    - "&e放入物品后，点击下方按钮确认"
+    - "&e物品或数量改变后，需要重新确认"
+    - "&e双方确认后开始倒计时"
+    - "&7关闭界面可取消交易"
+  money-button-name: "&6调整数量：&e%amount%"
   money-button-lore:
     - ""
     - "&a左键: 增加 %amount%"
     - "&c右键: 减少 %amount%"
   sender-payment: "&6%player% 需支付: &e%amount%"
   target-payment: "&6%player% 需支付: &e%amount%"
-  test-mode: "&b沙盒测试模式：不会实际扣款或交换物品"
+  test-mode: "&b测试模式：不扣除货币和等级，结束后返还物品"
 
 # 交易开关
 trade-toggle:
@@ -120,14 +125,14 @@ trade-toggle:
 # 玩家相关
 player:
   offline: "&c该玩家不在线"
-  not-found: "&c输入用户不存在或不在线"
+  not-found: "&c找不到这名在线玩家。"
   self-trade: "&c你不能与自己进行交易！"
   different-players: "&c交易必须两个不同玩家！"
-  inv-full: "&c你的背包已满！多余物品已丢出"
+  inv-full: "&e背包已满，多余物品已掉落在脚下。"
 
 # 控制台相关
 console:
-  need-both-players: "控制台必须输入发起人与被发起人"
+  need-both-players: "请填写发起者和接收者的玩家名。"
 
 # 安全保护
 protection:
@@ -135,7 +140,7 @@ protection:
 
 # 安全违规
 security:
-  exploit-attempt: "&c试图滥发消息被踢出！"
+  exploit-attempt: "&c检测到异常聊天内容，已断开连接。"
 
 # 重载
 reload:

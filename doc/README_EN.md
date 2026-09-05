@@ -23,7 +23,7 @@ GoodsTrade is a lightweight, inventory-based trading plugin for Minecraft server
 - **Two-player confirmation:** the trade only completes after both players approve their offers.
 - **Final countdown:** either side can stop the confirmation before the exchange is committed.
 - **Locked offers:** confirmed players cannot quietly swap items at the last moment.
-- **Vault money offers:** configurable GUI buttons add or subtract money, validate both balances, and reset stale confirmations after a change.
+- **Multiple currencies:** Vault, PlayerPoints, ExcellentEconomy, and Minecraft experience level offers can be combined in one trade. Changes reset existing confirmations.
 - **Safe returns:** cancelling or closing the menu returns offered items; overflow is dropped at the player's location instead of disappearing.
 - **Quick requests:** players can use a command or sneak-right-click another player.
 - **Trade preferences:** each player can disable incoming requests when they want some peace and quiet.
@@ -39,7 +39,7 @@ GoodsTrade is a lightweight, inventory-based trading plugin for Minecraft server
 - Bukkit, Spigot, or Paper
 - Java 8 or newer
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) is optional
-- [Vault](https://www.spigotmc.org/resources/vault.34315/) plus a Vault-compatible economy plugin is required only for money trading
+- Money trading optionally uses a [Vault](https://www.spigotmc.org/resources/vault.34315/) economy service, PlayerPoints, or ExcellentEconomy
 
 GoodsTrade Lite does **not** currently claim Folia support.
 
@@ -68,7 +68,7 @@ GoodsTrade Lite does **not** currently claim Folia support.
 | `/gt accept <player>` | `goodstrade.command.accept` | Accept a request from a specific player |
 | `/gt toggle [true\|false]` | `goodstrade.command.toggle` | Enable, disable, or toggle incoming requests |
 | `/gt trade <sender> <receiver>` | `goodstrade.command.trade` | Open a trade between two players as an administrator |
-| `/gt test [virtual-player-name]` | `goodstrade.command.test` | Open a sandbox trade with a nonexistent virtual player |
+| `/gt test [test-name]` | `goodstrade.command.test` | Open test mode with a test player name |
 | `/gt reload` | `goodstrade.command.reload` | Reload configuration, menu items, blacklist rules, and language messages |
 | `/gt` | `goodstrade.command` | Show available subcommands |
 
@@ -76,7 +76,7 @@ The player-facing command permissions default to everyone. `trade` and `reload` 
 
 ## Language selection
 
-New installations extract every bundled translation from the JAR. Version 1.1.7 includes:
+New installations extract every bundled translation from the JAR. Version 1.1.9 includes:
 
 ```text
 plugins/GoodsTrade/lang/zh_cn.yml
@@ -121,7 +121,7 @@ Trade:
     Move: false
 ```
 
-- `Wait-Time` controls the final confirmation countdown in seconds and is capped at 64.
+- `Wait-Time` controls the final confirmation countdown in seconds and is limited to 0–64; 0 skips the countdown.
 - `Economy.Amounts` defines one to four button steps. Left click adds the step and right click subtracts it.
 - `Allow-Negative` lets an offer cross below zero; a negative offer means the other player must pay. The divider always shows each player's resulting payment obligation.
 - Balance checks run on every amount change, on confirmation, and immediately before settlement. Changing money resets any existing confirmation so both players must review again.
@@ -129,11 +129,58 @@ Trade:
 - `Safe.Damage` cancels damage against players who are currently trading.
 - `Safe.Move` stops block-to-block movement while the trade menu is open.
 
-## Administrator sandbox trade
+## Currencies and experience levels
 
-Players with `goodstrade.command.test` can run `/gt test [virtual-player-name]`. The administrator controls both offer areas, both sets of money buttons, and both confirmation buttons, making it possible to verify negative offers, confirmation resets, and the complete countdown without a second online player.
+Configure `Trade.Economy.Currencies` to enable the accounts used for trading:
 
-Sandbox trades never call Vault or exchange items. Anything placed on either side is returned to the administrator when the test completes, closes, or is interrupted by a reload. The command cannot be run from the console.
+```yaml
+Trade:
+  Economy:
+    Enable: true
+    Allow-Negative: false
+    Amounts: [1000, 10000]
+    Currencies:
+      vault:
+        Enable: true
+        Provider: vault
+        Name: "Coins"
+      levels:
+        Enable: true
+        Provider: experience
+        Name: "Levels"
+        Amounts: [1, 5, 10, 30]
+      points:
+        Enable: true
+        Provider: playerpoints
+        Name: "Points"
+        Amounts: [1, 10, 100, 1000]
+      tokens:
+        Enable: true
+        Provider: excellenteconomy
+        Currency: tokens
+        Name: "Tokens"
+        Amounts: [1, 10, 100, 1000]
+```
+
+The shipped configuration enables only Vault. Older files without `Currencies` retain their Vault provider and existing button amounts. Each entry has a unique local ID, a provider, and a display `Name`. ExcellentEconomy also requires the ID of an existing currency in `Currency`; duplicate the entry to add more currencies. Missing plugins or incompatible APIs disable only the affected entry.
+
+The built-in `experience` provider trades whole Minecraft levels without another plugin. A payment of 5 levels changes level 30 to 25 and preserves the experience bar progress.
+
+Each currency supports one to four positive `Amounts`, falling back to `Economy.Amounts` when omitted. PlayerPoints requires integers up to `2147483647`; ExcellentEconomy integer currencies reject fractions too. Configure each underlying account once, including accounts already exposed through Vault.
+
+Left-click the center divider to switch the currency being edited. Existing offers remain, and the divider lists payments for the current currency plus every nonzero offer. Both players must unconfirm before switching. Changes to any amount reset existing confirmations. Currencies are settled separately, without exchange rates or offsets between different currencies. `View.yml` amount buttons support `%amount%` with the currency name and `%currency%` for the selected name.
+
+All balances are checked before settlement. If a provider rejects payment, items are returned and completed payments are reversed in reverse order. Failed refunds are reported to both players and logged with the currency, player UUIDs, and amount. These operations are not a cross-plugin database transaction. Process crashes and providers that mutate balances before throwing may require manual reconciliation. `/gt reload` cancels active trades before replacing currency configuration.
+
+The adapters use the [PlayerPoints UUID API](https://github.com/Rosewood-Development/PlayerPoints/blob/master/src/main/java/org/black_ixx/playerpoints/PlayerPointsAPI.java) and [ExcellentEconomy synchronous API](https://github.com/nulli0n/ExcellentEconomy/blob/master/src/main/java/su/nightexpress/excellenteconomy/api/ExcellentEconomyAPI.java). ExcellentEconomy must expose `getAPI()`, currency-ID-based balance/deposit/withdraw methods, and currency limit methods. Legacy CoinsEngine APIs are not supported. The GoodsTrade Java 8 target does not lower the requirements of installed economy plugins.
+
+Local tests cover settlement, compensation, and API contract doubles. Before deployment, use two players to verify mixed currencies, confirmation resets, balance changes during the countdown, cancellation, reload, and final balances on the server.
+
+## Administrator test mode
+
+Players with `goodstrade.command.test` can run `/gt test [test-name]`. The administrator controls both offer areas, both sets of money buttons, and both confirmation buttons, making it possible to verify negative offers, confirmation resets, and the complete countdown without a second online player.
+
+Test mode leaves currency and levels unchanged. Items are returned when the test finishes, the menu closes, or the plugin reloads. Run this command in game.
 
 ## Item blacklist
 

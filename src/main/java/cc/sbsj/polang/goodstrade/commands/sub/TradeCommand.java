@@ -49,8 +49,7 @@ public class TradeCommand implements SubCommand {
                 sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("player.different-players"));
                 return false;
             }
-            TradeManager.startTrade(player, player2);
-            return true;
+            return TradeManager.startTrade(player, player2);
         }
 
         return false;

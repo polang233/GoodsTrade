@@ -2,10 +2,10 @@ name: GoodsTrade
 version: '${version}'
 main: cc.sbsj.polang.goodstrade.GoodsTrade
 authors: [ polang ]
-description: 简单安全的玩家物品交易插件
+description: 玩家间的物品、货币与经验等级交易
 website: https://space.bilibili.com/450460661
 api-version: '1.13'
-softdepend: [PlaceholderAPI, Vault]
+softdepend: [PlaceholderAPI, Vault, PlayerPoints, ExcellentEconomy]
 
 permissions:
   goodstrade.command.reload:
@@ -16,7 +16,7 @@ permissions:
     description: 指定两个玩家进行交易
   goodstrade.command.test:
     default: op
-    description: 与虚拟玩家进行沙盒测试交易
+    description: 打开测试模式，单人操作交易双方
   goodstrade.command.sendtrade:
     default: true
     description: 发送交易请求

@@ -22,12 +22,8 @@ public class Config {
     }
 
     public int getWaitTime() {
-        //验证下有没有过64，省的爆掉了物品堆叠
-        int waitTime = config.getInt("Trade.Wait-Time", 5);
-        if (waitTime > 64) {
-            waitTime = 64;
-        }
-        return waitTime;
+        // 倒计时也用作按钮堆叠数量；0 表示直接完成确认。
+        return Math.max(0, Math.min(64, config.getInt("Trade.Wait-Time", 5)));
     }
 
     public void reload() {

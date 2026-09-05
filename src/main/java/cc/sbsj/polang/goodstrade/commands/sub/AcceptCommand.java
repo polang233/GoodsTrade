@@ -24,11 +24,19 @@ public class AcceptCommand implements SubCommand {
     @Override
     public boolean execute(CommandSender sender, Command cmd, String label, String[] args) {
         if (!sender.hasPermission(getPermission())) return false;
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("command.player-only"));
+            return false;
+        }
+        TradeManager.cleanupExpiredRequests();
         if (args.length == 0) {
             Player player = (Player) sender;
 
             List<TradeRequest> requests = TradeManager.pendingRequests.get(player.getUniqueId());
-            if (requests == null || requests.isEmpty()) return false;
+            if (requests == null || requests.isEmpty()) {
+                player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.no-pending"));
+                return false;
+            }
             int acceptCount = requests.size();
             if (acceptCount == 1) {
                 TradeRequest request = requests.get(0);
@@ -37,8 +45,7 @@ public class AcceptCommand implements SubCommand {
                     player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("player.offline"));
                     return false;
                 }
-                TradeManager.startTrade(targetPlayer, player);
-                return true;
+                return TradeManager.acceptTrade(targetPlayer, player);
             }
             player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.select-player"));
             return false;
@@ -49,7 +56,7 @@ public class AcceptCommand implements SubCommand {
                 sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("player.offline"));
                 return false;
             }
-            TradeManager.startTrade(targetPlayer, (Player) sender);
+            return TradeManager.acceptTrade(targetPlayer, (Player) sender);
         }
         return false;
     }

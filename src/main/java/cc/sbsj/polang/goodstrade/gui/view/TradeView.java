@@ -8,6 +8,7 @@ import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import cc.sbsj.polang.goodstrade.trade.TradeSession;
 import cc.sbsj.polang.goodstrade.trade.EconomyTradeService;
 import cc.sbsj.polang.goodstrade.trade.MoneyTrade;
+import cc.sbsj.polang.goodstrade.hook.economy.TradeCurrency;
 import cc.sbsj.polang.goodstrade.util.Utils;
 import com.cryptomorin.xseries.XSound;
 import org.bukkit.Sound;
@@ -31,7 +32,7 @@ import java.util.List;
     ~=操作格
     #=背景物品
     @=中间提示物品
-    M=金币调整按钮（启用 Vault 时）
+    M=当前币种金额调整按钮
     F=交易发起者的确认状态
     T=交易接受者的确认状态
 */
@@ -126,7 +127,7 @@ public class TradeView extends View {
         changeButtons(targetReadyButton, 50, 51, 52);
         //添加中间提示按钮
         changeButtons(infoButton, 4, 13, 22, 31, 40);
-        if (session.isTestMode() || EconomyTradeService.isAvailable()) {
+        if (session.getCurrency() != null) {
             addMoneyButtons();
             updateMoneyInfo();
         }
@@ -255,9 +256,11 @@ public class TradeView extends View {
     }
 
     private void addMoneyButtons() {
-        List<BigDecimal> amounts = GoodsTrade.config.getEconomyButtonAmounts();
+        List<BigDecimal> amounts = session.getCurrency().getAmounts();
         int[] senderSlots = {36, 37, 38, 39};
         int[] targetSlots = {44, 43, 42, 41};
+        for (int slot : senderSlots) gui.addButton(slot, new GuiButton(View.backGround.clone()));
+        for (int slot : targetSlots) gui.addButton(slot, new GuiButton(View.backGround.clone()));
         for (int index = 0; index < amounts.size(); index++) {
             BigDecimal amount = amounts.get(index);
             gui.addButton(senderSlots[index], createMoneyButton(amount, index, true));
@@ -267,7 +270,7 @@ public class TradeView extends View {
 
     private GuiButton createMoneyButton(BigDecimal step, int index, boolean senderSide) {
         ItemStack item = View.moneyButtonItems.get(index).clone();
-        replaceAmountPlaceholder(item, EconomyTradeService.format(step));
+        replaceAmountPlaceholder(item, EconomyTradeService.format(session.getCurrency(), step));
         GuiButton button = new GuiButton(item);
         button.setOnClick(event -> handleMoneyClick((Player) event.getWhoClicked(), step,
                 event.isLeftClick(), event.isRightClick(), senderSide));
@@ -281,10 +284,6 @@ public class TradeView extends View {
             return;
         }
         if (!leftClick && !rightClick) return;
-        if (!session.isTestMode() && !EconomyTradeService.isAvailable()) {
-            rejectMoneyChange(player, "trade-gui.money-unavailable");
-            return;
-        }
         if ((senderSide && session.isSenderReady())
                 || (!senderSide && session.isTargetReady())) {
             rejectMoneyChange(player, "trade-gui.money-locked");
@@ -306,13 +305,15 @@ public class TradeView extends View {
         BigDecimal senderOffer = senderSide ? adjusted : session.getSenderMoney();
         BigDecimal targetOffer = senderSide ? session.getTargetMoney() : adjusted;
         if (session.isTestMode()) {
-            if (!MoneyTrade.calculate(senderOffer, targetOffer).isVaultSafe()) {
+            MoneyTrade.PaymentPlan plan = MoneyTrade.calculate(senderOffer, targetOffer);
+            if (!plan.isFinite() || !session.getCurrency().getProvider().supports(plan.getSenderPayment())
+                    || !session.getCurrency().getProvider().supports(plan.getTargetPayment())) {
                 rejectMoneyChange(player, "trade-gui.money-invalid");
                 return;
             }
         } else {
             EconomyTradeService.BalanceCheck check = EconomyTradeService.checkBalances(
-                    session.getSenderPlayer(), session.getTargetPlayer(), senderOffer, targetOffer);
+                    session.getCurrency(), session.getSenderPlayer(), session.getTargetPlayer(), senderOffer, targetOffer);
             if (!check.isSuccess()) {
                 sendMoneyCheckFailure(player, check);
                 return;
@@ -324,17 +325,21 @@ public class TradeView extends View {
         } else {
             session.setTargetMoney(adjusted);
         }
-        resetConfirmationsAfterMoneyChange(player, senderSide);
+        resetConfirmationsAfterOfferChange(player, senderSide, "trade-gui.money-offer-changed");
         updateMoneyInfo();
         String changed = GoodsTrade.lang.replacePlaceholders(
                 GoodsTrade.lang.getString("trade-gui.money-changed"),
-                "%amount%", EconomyTradeService.format(adjusted)
+                "%amount%", EconomyTradeService.format(session.getCurrency(), adjusted)
         );
         player.sendMessage(GoodsTrade.getPrefix() + changed);
         player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.get(), 1.0f, 1.2f);
     }
 
-    private void resetConfirmationsAfterMoneyChange(Player changer, boolean senderSide) {
+    public void onItemOfferChange(Player changer) {
+        resetConfirmationsAfterOfferChange(changer, session.isPlayerSender(changer), "trade-gui.items-offer-changed");
+    }
+
+    private void resetConfirmationsAfterOfferChange(Player changer, boolean senderSide, String messageKey) {
         if (!session.isSenderReady() && !session.isTargetReady() && cancelledPlayer == null) return;
         if (runnable != null) {
             try {
@@ -352,7 +357,7 @@ public class TradeView extends View {
         changeButtons(targetReadyButton, 50, 51, 52);
 
         String message = GoodsTrade.lang.replacePlaceholders(
-                GoodsTrade.lang.getString("trade-gui.money-offer-changed"),
+                GoodsTrade.lang.getString(messageKey),
                 "%player%", senderSide ? session.getSenderDisplayName() : session.getTargetDisplayName()
         );
         Player other = session.isTestMode() ? changer : TradeManager.getOtherPlayer(changer, session);
@@ -374,7 +379,7 @@ public class TradeView extends View {
             String message = GoodsTrade.lang.replacePlaceholders(
                     GoodsTrade.lang.getString("trade-gui.money-insufficient"),
                     "%player%", check.getPlayer().getName(),
-                    "%amount%", EconomyTradeService.format(check.getAmount())
+                    "%amount%", EconomyTradeService.format(check.getCurrency(), check.getAmount())
             );
             player.sendMessage(GoodsTrade.getPrefix() + message);
         } else if (check.getFailure() == EconomyTradeService.Failure.INVALID_AMOUNT) {
@@ -393,7 +398,6 @@ public class TradeView extends View {
     }
 
     private void updateMoneyInfo() {
-        MoneyTrade.PaymentPlan plan = MoneyTrade.calculate(session.getSenderMoney(), session.getTargetMoney());
         ItemStack item = View.infoItem.clone();
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
@@ -402,32 +406,56 @@ public class TradeView extends View {
         if (session.isTestMode()) {
             lore.add(GoodsTrade.lang.getString("trade-view.test-mode"));
         }
-        lore.add(paymentLine("trade-view.sender-payment", session.getSenderDisplayName(), plan.getSenderPayment()));
-        lore.add(paymentLine("trade-view.target-payment", session.getTargetDisplayName(), plan.getTargetPayment()));
+        lore.add(GoodsTrade.lang.getString("trade-view.currency-selected").replace("%currency%", currencyName()));
+        if (session.getCurrencies().size() > 1) lore.add(GoodsTrade.lang.getString("trade-view.currency-switch"));
+        for (TradeCurrency currency : session.getCurrencies()) {
+            MoneyTrade.PaymentPlan plan = MoneyTrade.calculate(session.getOffer(currency, true), session.getOffer(currency, false));
+            if (currency != session.getCurrency() && plan.getSenderPayment().signum() == 0
+                    && plan.getTargetPayment().signum() == 0) continue;
+            lore.add(paymentLine("trade-view.sender-payment", session.getSenderDisplayName(), currency, plan.getSenderPayment()));
+            lore.add(paymentLine("trade-view.target-payment", session.getTargetDisplayName(), currency, plan.getTargetPayment()));
+        }
         meta.setLore(lore);
         item.setItemMeta(meta);
         infoButton.buttonItemStack = item;
+        infoButton.setOnClick(event -> {
+            if (!event.isLeftClick() || session.getCurrencies().size() < 2) return;
+            Player player = (Player) event.getWhoClicked();
+            if (!session.canControlSide(player, true) && !session.canControlSide(player, false)) return;
+            if (session.isSenderReady() || session.isTargetReady()) {
+                rejectMoneyChange(player, "trade-gui.currency-locked");
+                return;
+            }
+            session.nextCurrency();
+            addMoneyButtons();
+            updateMoneyInfo();
+        });
         changeButtons(infoButton, 4, 13, 22, 31, 40);
     }
 
-    private String paymentLine(String path, String playerName, BigDecimal amount) {
+    private String paymentLine(String path, String playerName, TradeCurrency currency, BigDecimal amount) {
         return GoodsTrade.lang.replacePlaceholders(
                 GoodsTrade.lang.getString(path),
                 "%player%", playerName,
-                "%amount%", EconomyTradeService.format(amount)
+                "%amount%", EconomyTradeService.format(currency, amount)
         );
+    }
+
+    private String currencyName() {
+        TradeCurrency currency = session.getCurrency();
+        return currency.getName().isEmpty() ? currency.getProvider().getName() : currency.getName();
     }
 
     private void replaceAmountPlaceholder(ItemStack item, String amount) {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
         if (meta.hasDisplayName()) {
-            meta.setDisplayName(meta.getDisplayName().replace("%amount%", amount));
+            meta.setDisplayName(meta.getDisplayName().replace("%amount%", amount).replace("%currency%", currencyName()));
         }
         if (meta.hasLore()) {
             List<String> lore = new ArrayList<>();
             for (String line : meta.getLore()) {
-                lore.add(line.replace("%amount%", amount));
+                lore.add(line.replace("%amount%", amount).replace("%currency%", currencyName()));
             }
             meta.setLore(lore);
         }
@@ -480,7 +508,7 @@ public class TradeView extends View {
             return;
         }
 
-        // Vault first validates both displayed obligations, then performs one net transfer.
+        // 所有币种先校验余额，再逐个结算；失败时撤回先前币种。
         // Items do not move if the balance changed or the provider rejects the transaction.
         EconomyTradeService.SettlementResult settlement = EconomyTradeService.settle(session);
         if (!settlement.isSuccess()) {
@@ -538,7 +566,9 @@ public class TradeView extends View {
         backPlayerItems(sender);
         backPlayerItems(target);
 
-        String path = failure == EconomyTradeService.Failure.INSUFFICIENT_BALANCE
+        String path = failure == EconomyTradeService.Failure.ROLLBACK_FAILED
+                ? "trade-status.money-rollback-failed"
+                : failure == EconomyTradeService.Failure.INSUFFICIENT_BALANCE
                 ? "trade-status.money-balance-changed"
                 : "trade-status.money-settlement-failed";
         sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString(path));

@@ -4,7 +4,7 @@
 
 # GoodsTrade Lite
 
-**A lightweight, confirmation-based item trading menu for Bukkit, Spigot, and Paper servers.**
+Trade items, currency, and experience levels through a shared chest menu on Bukkit, Spigot, and Paper.
 
 GoodsTrade gives players a clear two-sided inventory where they can review each other's offers before anything changes hands. Both players must confirm, offers are locked during confirmation, and a final countdown leaves time to catch a mistake before the exchange completes.
 
@@ -23,7 +23,7 @@ GoodsTrade gives players a clear two-sided inventory where they can review each 
 - Confirmation from both players before any items are exchanged
 - Configurable final countdown with a chance to cancel
 - Locked offers after confirmation to prevent last-second item swapping
-- Optional Vault money offers with configurable GUI steps, balance checks, and confirmation resets after price changes
+- Vault, PlayerPoints, ExcellentEconomy, and Minecraft experience level offers, with balance checks before payment
 - Safe item returns when a menu is closed or a trade is cancelled
 - Overflow items are dropped at the player's location instead of being deleted
 - Requests through `/gt sendtrade <player>` or sneak-right-click
@@ -33,7 +33,7 @@ GoodsTrade gives players a clear two-sided inventory where they can review each 
 - Optional movement and damage protection during a trade
 - Optional PlaceholderAPI integration
 - Built-in Chinese and English messages
-- Administrator sandbox trading with `/gt test`, so the full flow can be checked without a second player
+- Administrator test mode with `/gt test`, so the full flow can be checked without a second player
 
 ![GoodsTrade secondary preview](https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/1773587841043.webp)
 
@@ -42,7 +42,7 @@ GoodsTrade gives players a clear two-sided inventory where they can review each 
 - **Minecraft:** 1.12–26.2
 - **Server software:** Bukkit, Spigot, and Paper
 - **Java:** 8 or newer
-- **Optional dependencies:** [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/); [Vault](https://www.spigotmc.org/resources/vault.34315/) plus a compatible economy plugin for money trading
+- **Optional dependencies:** [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/); Vault and a compatible economy plugin, PlayerPoints, or ExcellentEconomy for currency trading. Experience levels need no economy plugin
 
 GoodsTrade Lite does **not** currently claim Folia support.
 
@@ -73,13 +73,13 @@ Closing the menu or cancelling the confirmation returns the offered items.
 | `/gt accept <player>` | Accept a request from a specific player |
 | `/gt toggle [true\|false]` | Toggle or explicitly set incoming requests |
 | `/gt trade <sender> <receiver>` | Open a trade as an administrator |
-| `/gt test [virtual-player-name]` | Run a safe sandbox trade while controlling both sides |
+| `/gt test [test-name]` | Open test mode and control both sides |
 | `/gt reload` | Reload configuration, menu items, blacklist rules, and language files |
 | `/gt` | Show available subcommands |
 
 ## English and Chinese messages
 
-GoodsTrade extracts every bundled translation from the JAR. Version 1.1.7 includes:
+GoodsTrade extracts every bundled translation from the JAR. Version 1.1.9 includes:
 
 ```text
 plugins/GoodsTrade/lang/zh_cn.yml
@@ -100,25 +100,17 @@ On future updates, any new translation bundled under `lang/` is generated automa
 
 The `/gt` help text is read from the active language file, so server owners can customize command descriptions without changing the plugin.
 
-## Vault money trading
+## Currencies and experience levels
 
-When Vault and a compatible economy plugin are installed, players can adjust their money offers directly in the trade menu. Changing an offer resets both confirmations, and balances are checked again before settlement.
+Configure `Trade.Economy.Currencies` to select Vault, PlayerPoints, ExcellentEconomy, or the built-in `experience` provider. Each entry has a name and one to four amount buttons. ExcellentEconomy entries also need an existing currency ID.
 
-```yaml
-Trade:
-  Economy:
-    Enable: true
-    Allow-Negative: false
-    Amounts:
-      - 1000
-      - 10000
-```
+Left-click the center divider to switch the currency being edited. Existing amounts remain, and the divider lists every payment. Changing items or payment amounts resets the other player's confirmation. Experience is traded in whole levels, preserving experience bar progress.
 
-`Amounts` defines one to four GUI steps. Negative offers can be enabled when one player should receive money instead of paying it. If a balance check or settlement fails, the trade is cancelled safely and the items are returned.
+Only Vault is enabled by default. See the [configuration examples](https://github.com/polang233/GoodsTrade/blob/master/doc/README_EN.md#currencies-and-experience-levels) to enable other providers. Failed payments cancel the trade and return items; the plugin attempts to reverse completed payments and reports refunds that need an administrator's attention.
 
-## Administrator sandbox trade
+## Administrator test mode
 
-Players with `goodstrade.command.test` can run `/gt test [virtual-player-name]` to control both sides of a trade. This is useful for checking item offers, money buttons, confirmation resets, and the countdown without a second online player. Sandbox trades never call Vault or exchange items, and anything placed in the menu is returned when the test ends.
+Players with `goodstrade.command.test` can run `/gt test [test-name]` to control both sides of a trade. This is useful for checking item offers, money buttons, confirmation resets, and the countdown without a second online player. Test mode leaves currency and levels unchanged and returns all items, and anything placed in the menu is returned when the test ends.
 
 ## Item blacklist
 

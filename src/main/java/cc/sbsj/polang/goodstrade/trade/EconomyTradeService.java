@@ -1,130 +1,147 @@
 package cc.sbsj.polang.goodstrade.trade;
 
 import cc.sbsj.polang.goodstrade.GoodsTrade;
-import cc.sbsj.polang.goodstrade.hook.EconomyProvider;
-import cc.sbsj.polang.goodstrade.hook.EconomyTransactionResult;
+import cc.sbsj.polang.goodstrade.hook.economy.EconomyProvider;
+import cc.sbsj.polang.goodstrade.hook.economy.EconomyTransactionResult;
+import cc.sbsj.polang.goodstrade.hook.economy.TradeCurrency;
 import org.bukkit.entity.Player;
-
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class EconomyTradeService {
-    private EconomyTradeService() {
-    }
+    private EconomyTradeService() { }
 
-    public static boolean isAvailable() {
-        return GoodsTrade.config != null
-                && GoodsTrade.config.isEconomyEnabled()
-                && GoodsTrade.economyProvider != null;
+    private static java.util.logging.Logger logger() {
+        return GoodsTrade.instance == null ? java.util.logging.Logger.getLogger("GoodsTrade")
+                : GoodsTrade.instance.getLogger();
     }
 
     public static BalanceCheck checkBalances(TradeSession session) {
-        return checkBalances(
-                session.getSenderPlayer(),
-                session.getTargetPlayer(),
-                session.getSenderMoney(),
-                session.getTargetMoney()
-        );
+        for (TradeCurrency currency : session.getCurrencies()) {
+            BalanceCheck check = checkBalances(currency, session.getSenderPlayer(), session.getTargetPlayer(),
+                    session.getOffer(currency, true), session.getOffer(currency, false));
+            if (!check.isSuccess()) return check;
+        }
+        return BalanceCheck.success(MoneyTrade.calculate(BigDecimal.ZERO, BigDecimal.ZERO));
     }
 
-    public static BalanceCheck checkBalances(Player sender, Player target,
+    public static BalanceCheck checkBalances(TradeCurrency currency, Player sender, Player target,
                                              BigDecimal senderOffer, BigDecimal targetOffer) {
+        BalanceCheck check = checkCurrency(currency, sender, target, senderOffer, targetOffer);
+        check.currency = currency;
+        return check;
+    }
+
+    private static BalanceCheck checkCurrency(TradeCurrency currency, Player sender, Player target,
+                                              BigDecimal senderOffer, BigDecimal targetOffer) {
         MoneyTrade.PaymentPlan plan = MoneyTrade.calculate(senderOffer, targetOffer);
-        if (!plan.isVaultSafe()) {
-            return BalanceCheck.failure(Failure.INVALID_AMOUNT, null, BigDecimal.ZERO);
+        if (!plan.isFinite()) return BalanceCheck.failure(Failure.INVALID_AMOUNT, null, BigDecimal.ZERO);
+        if (plan.getSenderPayment().signum() == 0 && plan.getTargetPayment().signum() == 0) {
+            return BalanceCheck.success(plan);
         }
-
-        EconomyProvider provider = GoodsTrade.economyProvider;
-        boolean hasMoney = plan.getSenderPayment().signum() > 0 || plan.getTargetPayment().signum() > 0;
-        if (provider == null || GoodsTrade.config == null || !GoodsTrade.config.isEconomyEnabled()) {
-            return hasMoney
-                    ? BalanceCheck.failure(Failure.UNAVAILABLE, null, BigDecimal.ZERO)
-                    : BalanceCheck.success(plan);
-        }
-
+        if (currency == null) return BalanceCheck.failure(Failure.UNAVAILABLE, null, BigDecimal.ZERO);
+        EconomyProvider provider = currency.getProvider();
         try {
-            if (plan.getSenderPayment().signum() > 0
-                    && !provider.has(sender, plan.getSenderPayment())) {
+            if (!provider.isAvailable()) return BalanceCheck.failure(Failure.UNAVAILABLE, null, BigDecimal.ZERO);
+            if (!provider.supports(plan.getSenderPayment()) || !provider.supports(plan.getTargetPayment())
+                    || !provider.supports(plan.getSenderNetPayment().abs())) {
+                return BalanceCheck.failure(Failure.INVALID_AMOUNT, null, BigDecimal.ZERO);
+            }
+            if (plan.getSenderPayment().signum() > 0 && !provider.has(sender, plan.getSenderPayment())) {
                 return BalanceCheck.failure(Failure.INSUFFICIENT_BALANCE, sender, plan.getSenderPayment());
             }
-            if (plan.getTargetPayment().signum() > 0
-                    && !provider.has(target, plan.getTargetPayment())) {
+            if (plan.getTargetPayment().signum() > 0 && !provider.has(target, plan.getTargetPayment())) {
                 return BalanceCheck.failure(Failure.INSUFFICIENT_BALANCE, target, plan.getTargetPayment());
             }
-        } catch (RuntimeException exception) {
-            GoodsTrade.instance.getLogger().warning("Vault 余额校验失败: " + exception.getMessage());
+        } catch (RuntimeException | LinkageError exception) {
+            logger().warning("货币 " + currency.getId() + " 余额校验失败: " + exception);
             return BalanceCheck.failure(Failure.UNAVAILABLE, null, BigDecimal.ZERO);
         }
         return BalanceCheck.success(plan);
     }
 
     public static SettlementResult settle(TradeSession session) {
+        if (session.isTestMode()) return SettlementResult.success();
         BalanceCheck check = checkBalances(session);
-        if (!check.isSuccess()) {
-            return SettlementResult.failure(check.getFailure());
+        if (!check.isSuccess()) return SettlementResult.failure(check.getFailure());
+        List<Transfer> completed = new ArrayList<>();
+        for (TradeCurrency currency : session.getCurrencies()) {
+            BigDecimal net = MoneyTrade.calculate(session.getOffer(currency, true),
+                    session.getOffer(currency, false)).getSenderNetPayment();
+            if (net.signum() == 0) continue;
+            Transfer transfer = new Transfer(currency,
+                    net.signum() > 0 ? session.getSenderPlayer() : session.getTargetPlayer(),
+                    net.signum() > 0 ? session.getTargetPlayer() : session.getSenderPlayer(), net.abs());
+            SettlementResult result = transfer.perform();
+            if (!result.isSuccess()) {
+                boolean rollbackFailed = result.getFailure() == Failure.ROLLBACK_FAILED;
+                // 后续币种失败时，按反序撤回已完成的转账。
+                for (int index = completed.size() - 1; index >= 0; index--) {
+                    Transfer previous = completed.get(index);
+                    if (!previous.reverse().perform().isSuccess()) {
+                        rollbackFailed = true;
+                        previous.log("跨币种回滚失败，需要人工核对");
+                    }
+                }
+                return SettlementResult.failure(rollbackFailed ? Failure.ROLLBACK_FAILED : result.getFailure());
+            }
+            completed.add(transfer);
         }
-
-        BigDecimal senderNetPayment = check.getPlan().getSenderNetPayment();
-        if (senderNetPayment.signum() == 0) {
-            return SettlementResult.success();
-        }
-
-        Player payer = senderNetPayment.signum() > 0 ? session.getSenderPlayer() : session.getTargetPlayer();
-        Player receiver = senderNetPayment.signum() > 0 ? session.getTargetPlayer() : session.getSenderPlayer();
-        BigDecimal amount = senderNetPayment.abs();
-        EconomyProvider provider = GoodsTrade.economyProvider;
-
-        EconomyTransactionResult withdrawal;
-        try {
-            withdrawal = provider.withdraw(payer, amount);
-        } catch (RuntimeException exception) {
-            return transactionFailure("withdraw", payer, amount, exception.getMessage());
-        }
-        if (!withdrawal.isSuccess()) {
-            return transactionFailure("withdraw", payer, amount, withdrawal.getErrorMessage());
-        }
-
-        EconomyTransactionResult deposit;
-        try {
-            deposit = provider.deposit(receiver, amount);
-        } catch (RuntimeException exception) {
-            deposit = EconomyTransactionResult.failure(exception.getMessage());
-        }
-        if (deposit.isSuccess()) {
-            return SettlementResult.success();
-        }
-
-        // No items have moved yet. Restore the withdrawal if the receiving account rejected it.
-        EconomyTransactionResult refund;
-        try {
-            refund = provider.deposit(payer, amount);
-        } catch (RuntimeException exception) {
-            refund = EconomyTransactionResult.failure(exception.getMessage());
-        }
-        if (!refund.isSuccess()) {
-            GoodsTrade.instance.getLogger().severe("Vault 交易回滚失败！玩家=" + payer.getName()
-                    + ", 金额=" + amount.toPlainString() + ", 原因=" + refund.getErrorMessage());
-        }
-        return transactionFailure("deposit", receiver, amount, deposit.getErrorMessage());
+        return SettlementResult.success();
     }
 
-    public static String format(BigDecimal amount) {
-        EconomyProvider provider = GoodsTrade.economyProvider;
-        if (provider != null && MoneyTrade.isVaultAmount(amount)) {
+    private static final class Transfer {
+        private final TradeCurrency currency;
+        private final Player payer;
+        private final Player receiver;
+        private final BigDecimal amount;
+        private Transfer(TradeCurrency currency, Player payer, Player receiver, BigDecimal amount) {
+            this.currency = currency;
+            this.payer = payer;
+            this.receiver = receiver;
+            this.amount = amount;
+        }
+        private Transfer reverse() { return new Transfer(currency, receiver, payer, amount); }
+        private EconomyTransactionResult change(Player player, boolean deposit) {
             try {
-                return provider.format(amount);
-            } catch (RuntimeException ignored) {
-                // Fall through to a stable provider-independent representation.
+                EconomyProvider provider = currency.getProvider();
+                if (!provider.isAvailable()) return EconomyTransactionResult.failure("提供者已停用");
+                EconomyTransactionResult result = deposit ? provider.deposit(player, amount) : provider.withdraw(player, amount);
+                return result == null ? EconomyTransactionResult.failure("空响应") : result;
+            } catch (RuntimeException | LinkageError exception) {
+                return EconomyTransactionResult.failure(exception.toString());
             }
         }
-        BigDecimal normalized = amount.stripTrailingZeros();
-        return normalized.signum() == 0 ? "0" : normalized.toPlainString();
+        private SettlementResult perform() {
+            EconomyTransactionResult withdrawal = change(payer, false);
+            if (!withdrawal.isSuccess()) {
+                log("扣款失败: " + withdrawal.getErrorMessage());
+                return SettlementResult.failure(Failure.TRANSACTION_FAILED);
+            }
+            EconomyTransactionResult deposit = change(receiver, true);
+            if (deposit.isSuccess()) return SettlementResult.success();
+            log("入账失败: " + deposit.getErrorMessage());
+            EconomyTransactionResult refund = change(payer, true);
+            if (!refund.isSuccess()) {
+                log("退款失败，需要人工核对: " + refund.getErrorMessage());
+                return SettlementResult.failure(Failure.ROLLBACK_FAILED);
+            }
+            return SettlementResult.failure(Failure.TRANSACTION_FAILED);
+        }
+        private void log(String message) {
+            logger().severe("货币=" + currency.getId() + ", 付款=" + payer.getUniqueId()
+                    + ", 收款=" + receiver.getUniqueId() + ", 金额=" + amount.toPlainString() + ", " + message);
+        }
     }
 
-    private static SettlementResult transactionFailure(String action, Player player,
-                                                       BigDecimal amount, String error) {
-        GoodsTrade.instance.getLogger().warning("Vault " + action + " 失败: 玩家=" + player.getName()
-                + ", 金额=" + amount.toPlainString() + ", 原因=" + error);
-        return SettlementResult.failure(Failure.TRANSACTION_FAILED);
+    public static String format(TradeCurrency currency, BigDecimal amount) {
+        if (currency != null) {
+            if (!currency.getName().isEmpty()) return currency.format(amount);
+            try { return currency.getProvider().format(amount); }
+            catch (RuntimeException | LinkageError ignored) { }
+        }
+        return amount.stripTrailingZeros().toPlainString();
     }
 
     public enum Failure {
@@ -132,7 +149,8 @@ public final class EconomyTradeService {
         INSUFFICIENT_BALANCE,
         INVALID_AMOUNT,
         UNAVAILABLE,
-        TRANSACTION_FAILED
+        TRANSACTION_FAILED,
+        ROLLBACK_FAILED
     }
 
     public static final class BalanceCheck {
@@ -141,6 +159,9 @@ public final class EconomyTradeService {
         private final Player player;
         private final BigDecimal amount;
         private final MoneyTrade.PaymentPlan plan;
+        private TradeCurrency currency;
+
+        public TradeCurrency getCurrency() { return currency; }
 
         private BalanceCheck(boolean success, Failure failure, Player player,
                              BigDecimal amount, MoneyTrade.PaymentPlan plan) {

@@ -48,7 +48,10 @@ public class SendTradeCommand implements SubCommand {
             }
         }
         if (args.length == 2) {
-            if (!sender.hasPermission(getPermission())) return false;
+            if (!sender.hasPermission("goodstrade.command.trade")) {
+                sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("command.no-permission"));
+                return false;
+            }
             Player player = Bukkit.getPlayerExact(args[0]);
             Player player2 = Bukkit.getPlayerExact(args[1]);
             if (player == null || player2 == null) {

@@ -1,4 +1,4 @@
-package cc.sbsj.polang.goodstrade.hook;
+package cc.sbsj.polang.goodstrade.hook.economy;
 
 public final class EconomyTransactionResult {
     private final boolean success;

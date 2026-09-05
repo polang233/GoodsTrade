@@ -1,14 +1,14 @@
 [CENTER]
 [SIZE=7][B]GoodsTrade[/B]
 [/SIZE]
-[SIZE=4]A lightweight, confirmation-based item trading plugin for Minecraft servers[/SIZE]
+[SIZE=4]Trade items, currency, and experience levels through a chest menu[/SIZE]
 [IMG]https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/logo-96x96.jpg[/IMG][/CENTER]
 [IMG]https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/演示.gif[/IMG]
 
 
 [SIZE=5][B]Overview[/B][/SIZE]
 
-GoodsTrade is a lightweight item trading plugin for Minecraft servers.
+GoodsTrade lets players exchange items, currency, and experience levels in Minecraft.
 
 It gives both players a shared trade menu with clearly separated offer slots. Players can review, confirm, and cancel before anything changes hands. Offers are locked once confirmed, and a final countdown leaves time to catch a mistake or a last-second item swap.
 
@@ -22,11 +22,11 @@ It gives both players a shared trade menu with clearly separated offer slots. Pl
 [*][B]Two-player confirmation[/B] - The trade only completes after both players approve their offers.
 [*][B]Final countdown[/B] - Either side can still stop the confirmation before the exchange is committed.
 [*][B]Locked offers[/B] - Confirmed players cannot quietly swap items at the last moment.
-[*][B]Visual GUI[/B] - Simple and intuitive GUI trading interface. No complicated commands are required.
+[*][B]Visual GUI[/B] - Place items and set amounts in a shared chest menu.
 [*][B]Quick trade request[/B] - Players can start a trade with a command, or by sneaking and right-clicking another player if enabled in the configuration.
-[*][B]Vault money offers[/B] - Configurable GUI buttons add or subtract money, validate both balances, and reset stale confirmations after a change.
+[*][B]Multiple currencies and levels[/B] - Use Vault, PlayerPoints, ExcellentEconomy, or Minecraft experience levels. Both balances are checked before payment.
 [*][B]Safe returns[/B] - Cancelling or closing the menu returns offered items. Overflow is dropped at the player's location instead of disappearing.
-[*][B]Trade preferences[/B] - Each player can disable incoming requests when they want some peace and quiet.
+[*][B]Trade preferences[/B] - Each player can enable or disable incoming requests.
 [*][B]Item rules[/B] - Block items by display name, lore text, an NBT path, or an NBT path/value pair.
 [*][B]Custom menus[/B] - Change button materials, names, lore, and custom model data in View.yml.
 [*][B]Optional protection[/B] - Prevent damage or block movement while a trade is open.
@@ -81,9 +81,9 @@ Enable, disable, or toggle receiving trade requests. Leave out the value to swit
 Permission: goodstrade.command.trade
 Force two specified players to start a trade.
 
-[B]/gt test [virtual-player-name][/B]
+[B]/gt test [test-name][/B]
 Permission: goodstrade.command.test
-Open a sandbox trade with a nonexistent virtual player. The administrator controls both sides; no real money or items are exchanged.
+Open test mode with a test player name. The administrator controls both sides; no real money or items are exchanged.
 
 [B]/gt reload[/B]
 Permission: goodstrade.command.reload
@@ -118,7 +118,7 @@ Allows forcing two players to start a trade.
 
 [B]goodstrade.command.test[/B]
 Default: OP
-Allows opening a sandbox trade with a virtual player to test the menu and full confirmation flow.
+Allows opening test mode to test the menu and full confirmation flow.
 
 [B]goodstrade.command.reload[/B]
 Default: OP
@@ -140,7 +140,7 @@ The configuration files are located at:
 
 [SIZE=4][B]Language selection[/B][/SIZE]
 
-New installations extract every bundled translation from the JAR. Version 1.1.7 includes zh_cn and en_us.
+New installations extract every bundled translation from the JAR. Version 1.1.9 includes zh_cn and en_us.
 
 By default, GoodsTrade follows the server JVM/operating-system locale. Older configs without a Language key behave the same way. If no matching translation is available, the console explains the fallback and GoodsTrade uses Simplified Chinese.
 
@@ -182,7 +182,7 @@ Trade:
 [/QUOTE]
 
 [LIST]
-[*][B]Wait-Time[/B] controls the final confirmation countdown in seconds and is capped at 64.
+[*][B]Wait-Time[/B] controls the final confirmation countdown in seconds, from 0 to 64. Set 0 to skip the countdown.
 [*][B]Economy.Amounts[/B] defines one to four button steps. Left click adds the step and right click subtracts it.
 [*][B]Allow-Negative[/B] lets an offer cross below zero; a negative offer means the other player must pay. The divider always shows each player's resulting payment obligation.
 [*]Balance checks run on every amount change, on confirmation, and immediately before settlement. Changing money resets any existing confirmation so both players must review again.
@@ -225,11 +225,19 @@ View.yml controls the background, separator, ready buttons, countdown button, ca
 Materials are resolved through XMaterial where possible, which keeps names usable across a wide range of Minecraft versions. Unsupported custom model data is skipped on older servers.
 
 
-[SIZE=5][B]Administrator sandbox trade[/B][/SIZE]
+[SIZE=5][B]Currencies and experience levels[/B][/SIZE]
 
-Players with goodstrade.command.test can run [B]/gt test [virtual-player-name][/B]. The administrator controls both offer areas, both sets of money buttons, and both confirmation buttons, making it possible to verify negative offers, confirmation resets, and the complete countdown without a second online player.
+Set Trade.Economy.Currencies to enable vault, playerpoints, excellenteconomy, or experience. Each entry supports a display name and one to four amount buttons. ExcellentEconomy also requires its currency ID. Experience trades whole levels and preserves experience bar progress.
 
-Sandbox trades never call Vault or exchange items. Anything placed on either side is returned to the administrator when the test completes, closes, or is interrupted by a reload. The command cannot be run from the console.
+Left-click the center divider to switch types. Existing amounts remain, and every payment appears in the divider. Item or amount changes require another confirmation. Only Vault is enabled by default.
+
+[URL='https://github.com/polang233/GoodsTrade/blob/master/doc/README_EN.md#currencies-and-experience-levels']Full configuration examples[/URL]
+
+[SIZE=5][B]Administrator test mode[/B][/SIZE]
+
+Players with goodstrade.command.test can run [B]/gt test [test-name][/B]. The administrator controls both offer areas, both sets of money buttons, and both confirmation buttons, making it possible to verify negative offers, confirmation resets, and the complete countdown without a second online player.
+
+Test mode leaves currency and levels unchanged. Items are returned when the test finishes, the menu closes, or the plugin reloads. Run this command in game.
 
 
 [SIZE=5][B]How to Use[/B][/SIZE]
@@ -292,7 +300,6 @@ It returns true when the player accepts trade requests and false when requests a
 [*][B]Done:[/B] Improved permission module
 [*][B]Done:[/B] Custom GUI materials, lore, and display options
 [*][B]Done:[/B] Vault money trading
-[*]Support for levels and other currencies
 [*]Trade history records
 [*]Custom trade requirements configurable by the server
 [*]Trade cooldown settings

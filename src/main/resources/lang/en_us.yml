@@ -18,12 +18,12 @@ command:
     sendtrade: "&aUsage: /gt sendtrade <player>"
     toggle: "&cUsage: /gt toggle [true|false]"
     toggle-hint: "&7Leave out the value to switch your current setting."
-    test: "&aUsage: /gt test [virtual-player-name]"
+    test: "&aUsage: /gt test [test-name]"
   description:
     accept: "Accept a pending trade request"
     reload: "Reload configuration, language, and menu files"
     sendtrade: "Send a trade request to a player"
-    test: "Run a sandbox trade with a virtual player without moving money or items"
+    test: "Open test mode and control both sides of a trade"
     toggle: "Enable or disable incoming trade requests"
     trade: "Start a trade between two online players as an administrator"
 
@@ -37,24 +37,27 @@ trade-request:
   select-player: "&cChoose which player's request you want to accept."
 
 trade-status:
+  money-rollback-failed: "&cTrade cancelled and items returned. Some payments could not be refunded; contact an administrator."
   opening: "&2Opening the trade menu..."
   success: "&aTrade complete!"
   cancelled-by-self: "&cYou cancelled the trade."
   cancelled-by-other: "&cThe other player cancelled the trade."
   cancelled-by-reload: "&cThe plugin is reloading, so your trade was cancelled."
-  already-trading: "&cOne of the players is already in a real or sandbox trade."
+  already-trading: "&cOne of the players is already in a trade or test mode."
   money-balance-changed: "&cTrade cancelled: a player's balance changed during the countdown. All items were returned."
-  money-settlement-failed: "&cTrade cancelled: the economy provider rejected the payment. All items were returned."
-  test-opening: "&eSandbox trade opened. You control both sides and both confirmation buttons; no real money or items will move."
-  test-success: "&aSandbox trade completed! Vault was not charged and all menu items were returned."
-  test-cancelled: "&eSandbox trade closed. All menu items were returned."
+  money-settlement-failed: "&cTrade cancelled: the payment failed. All items were returned."
+  test-opening: "&eTest mode enabled. You control both sides. Currency and levels stay unchanged; items are returned when you finish."
+  test-success: "&aTest complete. Items returned; currency and levels unchanged."
+  test-cancelled: "&eTest mode closed. All items returned."
 
 test-trade:
-  invalid-name: "&cThe virtual player name must contain 1-16 letters, numbers, or underscores."
-  player-exists: "&cThat name belongs to an online player. Choose a nonexistent virtual player name."
-  already-trading: "&cYou are already in a real or sandbox trade."
+  invalid-name: "&cThe test name must contain 1-16 letters, numbers, or underscores."
+  player-exists: "&cThat name belongs to an online player. Choose another test name."
+  already-trading: "&cYou are already in a trade or test mode."
 
 trade-gui:
+  items-offer-changed: "&e%player% &echanged the items. Check the trade and confirm again."
+  currency-locked: "&cBoth players must unconfirm before switching currencies."
   confirm: "&aOffer confirmed. Waiting for the other player..."
   unconfirm: "&cYou withdrew your confirmation."
   cancel-ready: "&cYou stopped the final confirmation countdown."
@@ -68,11 +71,13 @@ trade-gui:
   money-insufficient: "&c%player% cannot cover the required payment of %amount%."
   money-locked: "&cYour money offer is locked while confirmed."
   money-minimum: "&cMoney offers cannot go below zero while negative offers are disabled."
-  money-unavailable: "&cVault money trading is currently unavailable."
-  money-invalid: "&cThat amount is invalid or outside the economy provider's supported range."
+  money-unavailable: "&cCurrency trading is currently unavailable."
+  money-invalid: "&cThat amount is invalid or outside the supported range."
 
 # Default trade menu labels. Explicit values in View.yml take priority.
 trade-view:
+  currency-selected: "&bCurrent type: %currency%"
+  currency-switch: "&eLeft-click the center column to switch; existing offers are kept"
   unconfirmed-name: "&7Not confirmed"
   click-confirm-lore:
     - ""
@@ -98,14 +103,14 @@ trade-view:
     - "&eAdd your offer, then use the buttons below"
     - "&eConfirmed offers are locked until the trade completes"
     - "&eUse the countdown to double-check every item"
-  money-button-name: "&6Adjust money: &e%amount%"
+  money-button-name: "&6Adjust amount: &e%amount%"
   money-button-lore:
     - ""
     - "&aLeft click: add %amount%"
     - "&cRight click: subtract %amount%"
   sender-payment: "&6%player% must pay: &e%amount%"
   target-payment: "&6%player% must pay: &e%amount%"
-  test-mode: "&bSandbox mode: no real money or items will move"
+  test-mode: "&bTest mode: currency and levels stay unchanged; items are returned"
 
 trade-toggle:
   enabled: "&aTrade requests are now &2enabled&a."

@@ -1,4 +1,4 @@
-package cc.sbsj.polang.goodstrade.hook;
+package cc.sbsj.polang.goodstrade.hook.placeholder;
 
 import cc.sbsj.polang.goodstrade.GoodsTrade;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;

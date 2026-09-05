@@ -21,12 +21,12 @@ public class ReloadCommand implements SubCommand {
     @Override
     public boolean execute(CommandSender sender, Command cmd, String label, String[] args) {
         if (!sender.hasPermission(getPermission())) return false;
+        TradeManager.stopAllTrades();
         GoodsTrade.config.reload();
         // 重载时保存并重新加载玩家数据
         GoodsTrade.playerDataManager.save();
         GoodsTrade.playerDataManager.load();
         TradeManager.pendingRequests.clear();
-        TradeManager.stopAllTrades();
         sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("reload.success"));
 
         return true;
