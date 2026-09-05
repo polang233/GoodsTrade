@@ -1,6 +1,7 @@
 package cc.sbsj.polang.goodstrade.config;
 
 import cc.sbsj.polang.goodstrade.GoodsTrade;
+import cc.sbsj.polang.goodstrade.hook.economy.TradeCurrency;
 import cc.sbsj.polang.goodstrade.gui.view.View;
 import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.ChatColor;
@@ -32,7 +33,6 @@ public class ViewConfig {
         YamlConfiguration viewItemsConfig = YamlConfiguration.loadConfiguration(viewItemsFile);
         if (!viewItemsConfig.isConfigurationSection("button")) {
             plugin.getLogger().warning(VIEW_ITEMS_FILE + " 缺少 button 配置节点，界面物品将使用默认值。");
-            return;
         }
 
         View.backGround = loadButtonItem(viewItemsConfig, "#", View.backGround);
@@ -48,6 +48,16 @@ public class ViewConfig {
 
         View.cancelReadyItem = loadButtonItem(viewItemsConfig, "CancelReady", View.cancelReadyItem);
 
+        // 每个币种缓存独立模板，切换时只克隆物品并替换文字。
+        for (TradeCurrency currency : GoodsTrade.currencies) {
+            List<ItemStack> buttons = new ArrayList<>();
+            for (int index = 0; index < View.moneyButtonItems.size(); index++) {
+                buttons.add(loadCurrencyButton(viewItemsConfig, currency.getProviderType(), currency.getId(),
+                        index, View.moneyButtonItems.get(index)));
+            }
+            View.currencyMoneyButtonItems.put(currency.getId(), Collections.unmodifiableList(buttons));
+        }
+
         ItemStack baseMoneyButton = loadButtonItem(viewItemsConfig, "Money", View.moneyButtonItems.get(0));
         for (int index = 0; index < View.moneyButtonItems.size(); index++) {
             View.moneyButtonItems.set(index, loadButtonItem(
@@ -59,7 +69,30 @@ public class ViewConfig {
     }
 
     static ItemStack loadButtonItem(YamlConfiguration config, String key, ItemStack defaultItem) {
-        String path = "button." + key;
+        return loadItem(config, "button." + key, defaultItem);
+    }
+
+    static ItemStack loadCurrencyButton(YamlConfiguration config, String providerType, String currencyId,
+                                       int index, ItemStack defaultItem) {
+        XMaterial material;
+        switch (providerType) {
+            case "experience": material = XMaterial.EXPERIENCE_BOTTLE; break;
+            case "playerpoints": material = XMaterial.EMERALD; break;
+            case "excellenteconomy": material = XMaterial.SUNFLOWER; break;
+            default: material = XMaterial.GOLD_INGOT;
+        }
+        ItemStack item = material.parseItem();
+        if (item == null) item = defaultItem.clone();
+        item.setItemMeta(defaultItem.getItemMeta());
+        item.setAmount(defaultItem.getAmount());
+        item = loadItem(config, "currency-defaults." + providerType, item);
+        item = loadButtonItem(config, "Money", item);
+        item = loadButtonItem(config, "Money-" + (index + 1), item);
+        item = loadItem(config, "currency-buttons." + currencyId + ".Money", item);
+        return loadItem(config, "currency-buttons." + currencyId + ".Money-" + (index + 1), item);
+    }
+
+    private static ItemStack loadItem(YamlConfiguration config, String path, ItemStack defaultItem) {
         if (!config.isConfigurationSection(path)) {
             if (config.get(path) != null) {
                 warnConfig(path + " 必须是配置节点，已使用默认值。");
@@ -74,7 +107,7 @@ public class ViewConfig {
             ItemStack configuredItem = parseMaterialItem(material);
             if (configuredItem != null) {
                 if (configuredItem.getItemMeta() == null) {
-                    warnConfig("button." + key + ".material 无法显示按钮说明，已保留默认物品。");
+                    warnConfig(path + ".material 无法显示按钮说明，已保留默认物品。");
                 } else {
                     // 换材质时保留基础样式，再由下方的显式配置逐项覆盖。
                     // Money-1 等分档按钮也由此继承 Money 的名称、Lore 和模型数据。
@@ -83,15 +116,15 @@ public class ViewConfig {
                     item = configuredItem;
                 }
             } else {
-                warnConfig("button." + key + ".material 的材质无效: " + material);
+                warnConfig(path + ".material 的材质无效: " + material);
             }
         }
 
-        int customModelData = getCustomModelData(section, key);
+        int customModelData = getCustomModelData(section, path);
         ItemMeta meta = item.getItemMeta();
         if (meta == null) {
             if (hasMetaConfig(section, customModelData)) {
-                warnConfig("button." + key + " 使用的材质没有可编辑的物品数据，name/lore/custom_model_data 已跳过。");
+                warnConfig(path + " 使用的材质没有可编辑的物品数据，name/lore/custom_model_data 已跳过。");
             }
             return item;
         }
@@ -109,7 +142,7 @@ public class ViewConfig {
         }
 
         if (customModelData > 0) {
-            setCustomModelData(meta, customModelData, key);
+            setCustomModelData(meta, customModelData, path);
         }
 
         item.setItemMeta(meta);
@@ -146,15 +179,15 @@ public class ViewConfig {
         return Collections.singletonList(value);
     }
 
-    private static int getCustomModelData(ConfigurationSection section, String key) {
+    private static int getCustomModelData(ConfigurationSection section, String path) {
         if (section.contains("custom_model_data")) {
-            return parsePositiveInt(section.get("custom_model_data"), "button." + key + ".custom_model_data");
+            return parsePositiveInt(section.get("custom_model_data"), path + ".custom_model_data");
         }
         if (section.contains("custom-model-data")) {
-            return parsePositiveInt(section.get("custom-model-data"), "button." + key + ".custom-model-data");
+            return parsePositiveInt(section.get("custom-model-data"), path + ".custom-model-data");
         }
         if (section.contains("model")) {
-            return parsePositiveInt(section.get("model"), "button." + key + ".model");
+            return parsePositiveInt(section.get("model"), path + ".model");
         }
         return 0;
     }
@@ -188,14 +221,14 @@ public class ViewConfig {
         }
     }
 
-    private static void setCustomModelData(ItemMeta meta, int customModelData, String key) {
+    private static void setCustomModelData(ItemMeta meta, int customModelData, String path) {
         try {
             Method method = meta.getClass().getMethod("setCustomModelData", Integer.class);
             method.invoke(meta, customModelData);
         } catch (NoSuchMethodException ignored) {
-            warnConfig("当前服务端版本不支持 custom_model_data，已跳过 button." + key);
+            warnConfig("当前服务端版本不支持 custom_model_data，已跳过 " + path);
         } catch (Exception e) {
-            warnConfig("设置 button." + key + " 的 custom_model_data 失败: " + e.getMessage());
+            warnConfig("设置 " + path + " 的 custom_model_data 失败: " + e.getMessage());
         }
     }
 

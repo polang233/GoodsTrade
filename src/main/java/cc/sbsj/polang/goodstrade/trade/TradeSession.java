@@ -54,7 +54,7 @@ public class TradeSession {
     public static TradeSession createTest(Player administrator, String virtualPlayerName, TradeView view) {
         List<TradeCurrency> currencies = GoodsTrade.currencies;
         if (currencies.isEmpty()) {
-            currencies = Collections.singletonList(new TradeCurrency("test", "",
+            currencies = Collections.singletonList(new TradeCurrency("test", "test", "",
                     new TestModeEconomyProvider(),
                     GoodsTrade.config.getEconomyButtonAmounts()));
         }

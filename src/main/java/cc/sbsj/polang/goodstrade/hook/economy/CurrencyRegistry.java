@@ -91,7 +91,7 @@ public final class CurrencyRegistry {
                 else plugin.getLogger().warning("币种 " + id + " 不支持按钮金额: " + amount);
             }
             if (valid.isEmpty()) throw new IllegalArgumentException("没有可用的按钮金额");
-            currencies.add(new TradeCurrency(id, ChatColor.translateAlternateColorCodes('&', name), provider, valid));
+            currencies.add(new TradeCurrency(id, type, ChatColor.translateAlternateColorCodes('&', name), provider, valid));
             plugin.getLogger().info("交易货币已连接: " + id + " -> " + provider.getName());
         } catch (ReflectiveOperationException | RuntimeException | LinkageError exception) {
             plugin.getLogger().warning("交易货币 " + id + " 不可用，已跳过: " + exception);

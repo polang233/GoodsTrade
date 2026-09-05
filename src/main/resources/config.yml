@@ -18,6 +18,7 @@ Trade:
       - 10000
     # 旧配置未填写 Currencies 时仍使用 Vault 和上面的 Amounts。
     # 每种货币可单独配置 1-4 档 Amounts；省略则继承上面的金额。
+    # 按钮外观在 View.yml 的 currency-defaults / currency-buttons 中设置。
     # 同一底层账户只配置一次，Vault 和 ExcellentEconomy 主币也不要重复配置。
     Currencies:
       vault:

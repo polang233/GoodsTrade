@@ -29,6 +29,7 @@ public class View {
     public static ItemStack cancelReadyItem = XMaterial.YELLOW_STAINED_GLASS_PANE.parseItem();
     public static ItemStack infoItem = XMaterial.IRON_BARS.parseItem();
     public static final List<ItemStack> moneyButtonItems = new ArrayList<>();
+    public static final Map<String, List<ItemStack>> currencyMoneyButtonItems = new HashMap<>();
 
 
     public final GuiButton senderReadyButton = new GuiButton(senderReadyButtonItem.clone());
@@ -64,6 +65,7 @@ public class View {
         cancelReadyItem = XMaterial.YELLOW_STAINED_GLASS_PANE.parseItem();
         infoItem = XMaterial.IRON_BARS.parseItem();
         moneyButtonItems.clear();
+        currencyMoneyButtonItems.clear();
         for (int i = 0; i < 4; i++) {
             moneyButtonItems.add(XMaterial.GOLD_INGOT.parseItem());
         }

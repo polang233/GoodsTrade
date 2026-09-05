@@ -129,6 +129,70 @@ public class ViewConfigTest {
         assertTrue(actual.getItemMeta().hasDisplayName());
     }
 
+    @Test public void builtInMaterialsFollowProviderWithoutNewConfig() {
+        YamlConfiguration config = new YamlConfiguration();
+        assertEquals(Material.GOLD_INGOT, ViewConfig.loadCurrencyButton(config, "vault", "coins", 0, defaultButton()).getType());
+        assertEquals(Material.EMERALD, ViewConfig.loadCurrencyButton(config, "playerpoints", "points", 0, defaultButton()).getType());
+        assertEquals(Material.EXPERIENCE_BOTTLE, ViewConfig.loadCurrencyButton(config, "experience", "levels", 0, defaultButton()).getType());
+        assertEquals(Material.SUNFLOWER, ViewConfig.loadCurrencyButton(config, "excellenteconomy", "tokens", 0, defaultButton()).getType());
+    }
+
+    @Test public void providerDefaultsCanBeCustomizedWithoutLosingText() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("currency-defaults.experience.material", "lapis_lazuli");
+        ItemStack actual = ViewConfig.loadCurrencyButton(config, "experience", "levels", 0, defaultButton());
+        assertEquals(Material.LAPIS_LAZULI, actual.getType());
+        assertEquals(defaultButton().getItemMeta().getDisplayName(), actual.getItemMeta().getDisplayName());
+        assertEquals(defaultButton().getItemMeta().getLore(), actual.getItemMeta().getLore());
+    }
+
+    @Test public void existingGlobalStylesOverrideProviderDefaults() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("button.Money.material", "diamond");
+        config.set("button.Money.name", "&d支付 %amount%");
+        config.set("button.Money-2.material", "diamond_block");
+        assertEquals(Material.DIAMOND, ViewConfig.loadCurrencyButton(config, "experience", "levels", 0, defaultButton()).getType());
+        ItemStack tier = ViewConfig.loadCurrencyButton(config, "experience", "levels", 1, defaultButton());
+        assertEquals(Material.DIAMOND_BLOCK, tier.getType());
+        assertEquals("§d支付 %amount%", tier.getItemMeta().getDisplayName());
+    }
+
+    @Test public void currencyOverridesAreIsolatedByConfiguredId() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("currency-buttons.gems.Money.material", "diamond");
+        config.set("currency-buttons.gems.Money.name", "&b%currency%");
+        ItemStack gems = ViewConfig.loadCurrencyButton(config, "excellenteconomy", "gems", 0, defaultButton());
+        ItemStack coins = ViewConfig.loadCurrencyButton(config, "excellenteconomy", "coins", 0, defaultButton());
+        assertEquals(Material.DIAMOND, gems.getType());
+        assertEquals("§b%currency%", gems.getItemMeta().getDisplayName());
+        assertEquals(Material.SUNFLOWER, coins.getType());
+        assertEquals(defaultButton().getItemMeta().getDisplayName(), coins.getItemMeta().getDisplayName());
+    }
+
+    @Test public void currencyTierOverridesGlobalTierAndInheritsOtherFields() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("button.Money-2.material", "iron_ingot");
+        config.set("button.Money-2.lore", Collections.singletonList("&e%amount%"));
+        config.set("currency-buttons.points.Money.material", "emerald");
+        config.set("currency-buttons.points.Money.custom_model_data", 123);
+        config.set("currency-buttons.points.Money-2.material", "emerald_block");
+        ItemStack tier = ViewConfig.loadCurrencyButton(config, "playerpoints", "points", 1, defaultButton());
+        assertEquals(Material.EMERALD_BLOCK, tier.getType());
+        assertEquals(Collections.singletonList("§e%amount%"), tier.getItemMeta().getLore());
+        assertEquals(123, tier.getItemMeta().getCustomModelData());
+        assertEquals(Material.EMERALD, ViewConfig.loadCurrencyButton(config, "playerpoints", "points", 0, defaultButton()).getType());
+    }
+
+    @Test public void reloadingStyleDoesNotReusePreviousCurrencyTemplate() {
+        YamlConfiguration config = new YamlConfiguration();
+        ItemStack base = defaultButton();
+        config.set("currency-buttons.points.Money.material", "diamond");
+        assertEquals(Material.DIAMOND, ViewConfig.loadCurrencyButton(config, "playerpoints", "points", 0, base).getType());
+        config.set("currency-buttons.points", null);
+        assertEquals(Material.EMERALD, ViewConfig.loadCurrencyButton(config, "playerpoints", "points", 0, base).getType());
+        assertEquals(Material.GOLD_INGOT, base.getType());
+    }
+
     private static final class Meta implements InvocationHandler {
         private String name;
         private List<String> lore;

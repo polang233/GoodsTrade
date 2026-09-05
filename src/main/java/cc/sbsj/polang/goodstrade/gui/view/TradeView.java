@@ -269,7 +269,8 @@ public class TradeView extends View {
     }
 
     private GuiButton createMoneyButton(BigDecimal step, int index, boolean senderSide) {
-        ItemStack item = View.moneyButtonItems.get(index).clone();
+        List<ItemStack> items = View.currencyMoneyButtonItems.getOrDefault(session.getCurrency().getId(), View.moneyButtonItems);
+        ItemStack item = items.get(index).clone();
         replaceAmountPlaceholder(item, EconomyTradeService.format(session.getCurrency(), step));
         GuiButton button = new GuiButton(item);
         button.setOnClick(event -> handleMoneyClick((Player) event.getWhoClicked(), step,

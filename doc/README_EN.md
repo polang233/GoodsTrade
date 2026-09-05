@@ -168,7 +168,26 @@ The built-in `experience` provider trades whole Minecraft levels without another
 
 Each currency supports one to four positive `Amounts`, falling back to `Economy.Amounts` when omitted. PlayerPoints requires integers up to `2147483647`; ExcellentEconomy integer currencies reject fractions too. Configure each underlying account once, including accounts already exposed through Vault.
 
-Left-click the center divider to switch the currency being edited. Existing offers remain, and the divider lists payments for the current currency plus every nonzero offer. Both players must unconfirm before switching. Changes to any amount reset existing confirmations. Currencies are settled separately, without exchange rates or offsets between different currencies. `View.yml` amount buttons support `%amount%` with the currency name and `%currency%` for the selected name. Changing only the material preserves the default name and lore. Individual `Money-1` to `Money-4` entries inherit omitted fields from `Money`. The center divider appends currency selection, switching instructions, and payment details after custom lore.
+Left-click the center divider to switch the currency being edited. Existing offers remain, and the divider lists payments for the current currency plus every nonzero offer. Both players must unconfirm before switching. Changes to any amount reset existing confirmations. Currencies are settled separately, without exchange rates or offsets between different currencies. Button appearance is configured in `View.yml`. Vault uses gold ingots, PlayerPoints uses emeralds, experience levels use experience bottles, and ExcellentEconomy uses sunflowers by default. These defaults also apply when older files omit the new sections.
+
+Use `currency-defaults.<Provider>` for provider defaults and `currency-buttons.<currency ID>.Money` for a specific currency. The ID matches the key under `Trade.Economy.Currencies`, such as `points` or `levels`. `Money-1` through `Money-4` override individual amount buttons.
+
+Each section supports `material`, `name`, `lore`, and `custom_model_data`. Later layers override only fields they specify: provider defaults → `button.Money` → `button.Money-1…4` → currency `Money` → currency `Money-1…4`. Existing global material settings still take priority over provider defaults; remove that field or use `@default@` to retain different materials per provider.
+
+```yaml
+currency-defaults:
+  playerpoints:
+    material: paper
+currency-buttons:
+  tokens:
+    Money:
+      material: diamond
+      name: "&b%currency% &7| &e%amount%"
+    Money-4:
+      material: diamond_block
+```
+
+`%amount%` includes the amount and currency name; `%currency%` is the current name. Both sides update when switching types, and the center divider appends payment details after custom lore. Use `/gt reload` to apply configuration changes.
 
 All balances are checked before settlement. If a provider rejects payment, items are returned and completed payments are reversed in reverse order. Failed refunds are reported to both players and logged with the currency, player UUIDs, and amount. These operations are not a cross-plugin database transaction. Process crashes and providers that mutate balances before throwing may require manual reconciliation. `/gt reload` cancels active trades before replacing currency configuration.
 

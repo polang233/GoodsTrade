@@ -28,6 +28,7 @@ button:
 
   "CancelReady": # 等待过程中有一方取消后的按钮
 
+  # 所有币种的通用样式。这里显式设置的字段会覆盖下方的 currency-defaults。
   # 金额调整按钮的通用样式，%amount% 包含金额和币种名，%currency% 是当前币种名称。
   # 也可以通过 Money-1、Money-2、Money-3、Money-4 分别覆盖每档按钮。
   # 只填写 material 时保留默认名称和 Lore；分档按钮省略的字段继承 Money。
@@ -48,3 +49,33 @@ button:
   "Money-3":
 
   "Money-4":
+
+# 按 Provider 设置默认外观。旧文件未写此节时，也会使用以下默认材质。
+# 每一项都支持 material、name、lore、custom_model_data。
+currency-defaults:
+  vault:
+    material: gold_ingot
+  playerpoints:
+    material: emerald
+  experience:
+    material: experience_bottle
+  excellenteconomy:
+    material: sunflower
+
+# 按币种 ID 自定义外观。ID 对应 config.yml 的 Trade.Economy.Currencies 下的键，
+# 例如 levels、points、tokens；不是 Name，也不是 ExcellentEconomy 的 Currency 值。
+# 未设置的字段继承上一层；后面的配置优先级更高：
+# currency-defaults → button.Money → button.Money-1…4 → 币种 Money → 币种 Money-1…4。
+currency-buttons: {}
+# 示例：把下面内容写在 currency-buttons 下，替换上面的空配置。
+# currency-buttons:
+#   tokens:
+#     Money:
+#       material: diamond
+#       name: "&b%currency% &7| &e%amount%"
+#       lore:
+#         - "&a左键：增加 %amount%"
+#         - "&c右键：减少 %amount%"
+#       custom_model_data: 123
+#     Money-4:
+#       material: diamond_block

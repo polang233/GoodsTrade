@@ -40,7 +40,7 @@ public class EconomyTradeServiceTest {
         for (int i = 0; i < providers.length; i++) {
             providers[i].balances.put(sender, new BigDecimal("100"));
             providers[i].balances.put(target, new BigDecimal("100"));
-            currencies.add(new TradeCurrency("currency" + i, "币" + i, providers[i], Collections.singletonList(BigDecimal.ONE)));
+            currencies.add(new TradeCurrency("currency" + i, "test", "币" + i, providers[i], Collections.singletonList(BigDecimal.ONE)));
         }
         GoodsTrade.currencies = currencies;
         return new TradeSession(sender, target, null);
@@ -157,7 +157,7 @@ public class EconomyTradeServiceTest {
     @Test public void experienceCanBeCombinedWithMoneyAndRefunded() {
         Account account = new Account();
         session(account);
-        TradeCurrency levels = new TradeCurrency("levels", "级经验", new ExperienceEconomyProvider(),
+        TradeCurrency levels = new TradeCurrency("levels", "experience", "级经验", new ExperienceEconomyProvider(),
                 Collections.singletonList(BigDecimal.ONE));
         GoodsTrade.currencies = Arrays.asList(levels, GoodsTrade.currencies.get(0));
         TradeSession session = new TradeSession(sender, target, null);
@@ -177,7 +177,7 @@ public class EconomyTradeServiceTest {
     }
 
     @Test public void experienceLossBeforeSettlementCancelsTrade() {
-        GoodsTrade.currencies = Collections.singletonList(new TradeCurrency("levels", "级经验",
+        GoodsTrade.currencies = Collections.singletonList(new TradeCurrency("levels", "experience", "级经验",
                 new ExperienceEconomyProvider(), Collections.singletonList(BigDecimal.ONE)));
         TradeSession session = new TradeSession(sender, target, null);
         session.setSenderMoney(BigDecimal.TEN);
@@ -200,7 +200,7 @@ public class EconomyTradeServiceTest {
     }
 
     @Test public void testModeLeavesExperienceUnchanged() {
-        GoodsTrade.currencies = Collections.singletonList(new TradeCurrency("levels", "级经验",
+        GoodsTrade.currencies = Collections.singletonList(new TradeCurrency("levels", "experience", "级经验",
                 new ExperienceEconomyProvider(), Collections.singletonList(BigDecimal.ONE)));
         TradeSession session = TradeSession.createTest(sender, "TestPlayer", null);
         session.setSenderMoney(BigDecimal.TEN);

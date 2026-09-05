@@ -136,8 +136,28 @@ Trade:
 - 缺少插件、币种不存在或 API 不兼容时，只跳过对应条目并在后台说明原因。所有币种均不可用时仍可交易物品。
 - 同一底层账户只配置一次。例如 Vault 已连接 ExcellentEconomy 的金币账户时，不要再把该账户作为独立币种加入。
 - `Allow-Negative: false` 时报价最低为 `0`。开启后，负数表示要求对方支付同一币种。
-- 金额按钮样式由 `View.yml` 的 `Money`、`Money-1` 至 `Money-4` 控制。只改材质会保留默认名称和 Lore，分档按钮省略的字段继承 `Money`。中央栏的当前类型、切换提示和双方支付内容追加在自定义 Lore 后。`%amount%` 是包含币种名称的金额，`%currency%` 是当前币种名称。
+- 按钮外观统一在 `View.yml` 配置，切换类型后左右两侧按钮一起更新。默认金币使用金锭、点券使用绿宝石、经验等级使用经验瓶、ExcellentEconomy 代币使用向日葵。
+- `currency-defaults.<Provider>` 修改一类经济系统的默认样式；`currency-buttons.<币种ID>.Money` 修改某个币种的样式，`Money-1` 至 `Money-4` 可单独修改其分档按钮。币种 ID 是 `config.yml` 中 `Trade.Economy.Currencies` 下的键，例如 `levels`、`points`。
+- 各层均支持 `material`、`name`、`lore`、`custom_model_data`。覆盖顺序为：类型默认 → `button.Money` → `button.Money-1…4` → 币种 `Money` → 币种 `Money-1…4`。后面的配置只覆盖显式填写的字段；原有通用材质仍有效，要使用按类型的默认物品，可移除通用 `material` 或将其设为 `@default@`。
+- 名称和 Lore 中 `%amount%` 是包含单位的数量，`%currency%` 是当前类型名称。中央栏的切换提示和双方支付内容追加在自定义 Lore 后。
 - `/gt reload` 先取消正在进行的交易并返还物品，再加载新币种配置。
+
+例如在 `View.yml` 中把点券默认物品改成纸，再把 `tokens` 这个币种单独改为钻石：
+
+```yaml
+currency-defaults:
+  playerpoints:
+    material: paper
+currency-buttons:
+  tokens:
+    Money:
+      material: diamond
+      name: "&b%currency% &7| &e%amount%"
+    Money-4:
+      material: diamond_block
+```
+
+旧 `View.yml` 未包含新增配置节时也会使用按类型的默认物品；需要自定义时添加对应配置节，执行 `/gt reload` 生效。
 
 每次修改金额校验当前币种，确认和结算时校验全部币种。结算失败则返还物品，尝试退回当前扣款，并按反序撤回已完成的其它币种转账。如果经济插件拒绝退款，双方会收到联系管理员的提示，后台记录币种、双方 UUID 和金额。跨插件操作不是数据库原子事务，服务器进程中断或第三方 API 扣款后抛异常仍需依据经济插件流水人工核对。
 
