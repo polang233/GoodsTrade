@@ -7,7 +7,7 @@ button:
      lore:                              # 不写会使用默认描述
        - "&7"                           # 背景物品的说明文字
      custom_model_data: 0               # 资源包自定义模型数据，不写或 0 表示不设置
-  # 中间隔离板/提示物品
+  # 中间隔离板/提示物品；自定义 Lore 后仍会追加当前类型、切换提示和双方支付内容。
   "@":
 # 取消注释后可自定义样式
 #    material: iron_bars
@@ -30,6 +30,8 @@ button:
 
   # 金额调整按钮的通用样式，%amount% 包含金额和币种名，%currency% 是当前币种名称。
   # 也可以通过 Money-1、Money-2、Money-3、Money-4 分别覆盖每档按钮。
+  # 只填写 material 时保留默认名称和 Lore；分档按钮省略的字段继承 Money。
+  # lore: [] 可清空基础 Lore。中央栏的动态交易内容仍会追加显示。
   "Money":
 #    material: gold_ingot
 #    name: "&6调整数量： &e%amount%"

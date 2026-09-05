@@ -58,7 +58,7 @@ public class ViewConfig {
         }
     }
 
-    private static ItemStack loadButtonItem(YamlConfiguration config, String key, ItemStack defaultItem) {
+    static ItemStack loadButtonItem(YamlConfiguration config, String key, ItemStack defaultItem) {
         String path = "button." + key;
         if (!config.isConfigurationSection(path)) {
             if (config.get(path) != null) {
@@ -73,8 +73,15 @@ public class ViewConfig {
         if (isConfigured(material)) {
             ItemStack configuredItem = parseMaterialItem(material);
             if (configuredItem != null) {
-                configuredItem.setAmount(item.getAmount());
-                item = configuredItem;
+                if (configuredItem.getItemMeta() == null) {
+                    warnConfig("button." + key + ".material 无法显示按钮说明，已保留默认物品。");
+                } else {
+                    // 换材质时保留基础样式，再由下方的显式配置逐项覆盖。
+                    // Money-1 等分档按钮也由此继承 Money 的名称、Lore 和模型数据。
+                    configuredItem.setItemMeta(item.getItemMeta());
+                    configuredItem.setAmount(item.getAmount());
+                    item = configuredItem;
+                }
             } else {
                 warnConfig("button." + key + ".material 的材质无效: " + material);
             }
