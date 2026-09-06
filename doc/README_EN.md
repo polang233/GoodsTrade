@@ -1,8 +1,4 @@
-<p align="center">
-  <img src="../img/logo.png" alt="GoodsTrade Logo" width="220">
-</p>
-
-# GoodsTrade Lite
+# GoodsTrade
 
 GoodsTrade is a lightweight, inventory-based trading plugin for Minecraft servers. It gives both players a shared trade menu, locks offers once they are confirmed, and waits through a final countdown before exchanging the items.
 
@@ -12,7 +8,7 @@ GoodsTrade is a lightweight, inventory-based trading plugin for Minecraft server
   <img src="../img/QQ20260315-190201-HD.gif" alt="GoodsTrade trade menu demonstration">
 </p>
 
-![Version](https://img.shields.io/github/v/release/polang233/GoodsTrade?label=Lite&color=2ea44f)
+![Version](https://img.shields.io/github/v/release/polang233/GoodsTrade?label=Version&color=2ea44f)
 ![Minecraft](https://img.shields.io/badge/Minecraft-1.12--26.2-62b47a)
 ![Servers](https://img.shields.io/badge/servers-Bukkit%20%7C%20Spigot%20%7C%20Paper-f4a940)
 ![Java](https://img.shields.io/badge/Java-8%2B-e76f00)
@@ -41,7 +37,7 @@ GoodsTrade is a lightweight, inventory-based trading plugin for Minecraft server
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) is optional
 - Money trading optionally uses a [Vault](https://www.spigotmc.org/resources/vault.34315/) economy service, PlayerPoints, or ExcellentEconomy
 
-GoodsTrade Lite does **not** currently claim Folia support.
+GoodsTrade does **not** currently claim Folia support.
 
 ## Installation
 
@@ -250,19 +246,17 @@ When PlaceholderAPI is installed, GoodsTrade provides:
 
 It returns `true` when the player accepts trade requests and `false` when requests are disabled.
 
-## Metrics
-
-GoodsTrade uses bStats to collect anonymous usage statistics. Server owners can disable bStats globally in `plugins/bStats/config.yml`.
-
-![GoodsTrade bStats](https://bstats.org/signatures/bukkit/GoodsTrade.svg)
-
 ## Support
 
 - [GitHub issues](https://github.com/polang233/GoodsTrade/issues)
 - QQ group: `620224543`
 
-If GoodsTrade fits your server, consider leaving a [GitHub star](https://github.com/polang233/GoodsTrade).
+If GoodsTrade fits your server, consider leaving a [⭐ GitHub Star](https://github.com/polang233/GoodsTrade).
 
 ## License
 
 GoodsTrade is released under the [GNU General Public License v3.0](https://github.com/polang233/GoodsTrade/blob/master/LICENSE).
+
+## Usage statistics
+
+[![GoodsTrade bStats](https://bstats.org/signatures/bukkit/GoodsTrade.svg)](https://bstats.org/plugin/bukkit/GoodsTrade/30110)

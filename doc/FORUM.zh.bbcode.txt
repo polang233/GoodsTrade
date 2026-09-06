@@ -1,0 +1,92 @@
+[b]GoodsTrade[/b]
+
+[b]通过箱子界面交换物品、货币和经验等级，双方确认后倒计时结算。支持 Bukkit、Spigot 和 Paper。[/b]
+
+
+[img]https://img.shields.io/github/v/release/polang233/GoodsTrade?label=Version&color=2ea44f[/img]
+[img]https://img.shields.io/badge/Minecraft-1.12--26.2-62b47a[/img]
+[img]https://img.shields.io/badge/servers-Bukkit%20%7C%20Spigot%20%7C%20Paper-f4a940[/img]
+[img]https://img.shields.io/badge/Java-8%2B-e76f00[/img]
+
+[b]交易界面[/b]
+
+[img]https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/QQ20260315-190201-HD.gif[/img]
+[img]https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/1773587841043.webp[/img]
+
+
+[b]简介[/b]
+
+双方在同一个箱子界面中放入物品、设置支付数量，确认后开始倒计时。交易结束前可以取消，关闭界面会返还物品。
+
+[b]特性[/b]
+
+[list]
+[*]🛡️ [b]安全保护[/b]：可设置交易期间免疫伤害、限制移动；背包放不下的返还物品会掉落在脚下
+[*]🎯 [b]可视化界面[/b]：通过箱子界面操作，也可蹲下右键玩家发送请求
+[*]⏱️ [b]确认机制[/b]：双方确认后开始倒计时，期间可以取消并重新调整
+[*]🔒 [b]物品锁定[/b]：确认后双方无法更改交易物品，防止受骗
+[*]💰 [b]多货币交易[/b]：支持 Vault、PlayerPoints、ExcellentEconomy 和经验等级，余额不足时无法报价或结算，改价会重置已有确认
+[*]⚙️ [b]可配置[/b]：支持自定义等待时间、触发方式等
+[/list]
+
+[b]前置要求（可选）[/b]
+
+[list]
+[*][url=https://www.spigotmc.org/resources/placeholderapi.6245/]PlaceholderAPI[/url]
+[*]货币交易可选接入 [url=https://www.spigotmc.org/resources/vault.34315/]Vault[/url] 经济服务、PlayerPoints 或 ExcellentEconomy；未安装时仍可正常交易物品
+[/list]
+
+[b]命令[/b]
+
+[list]
+[*][b]/gt sendtrade [玩家名][/b] — [b]goodstrade.command.sendtrade[/b] — 向指定玩家发起交易
+[*][b]/gt toggle (true/false)[/b] — [b]goodstrade.command.toggle[/b] — 更改是否接受交易状态
+[*][b]/gt trade [发起者] [接收者][/b] — [b]goodstrade.command.trade[/b] — 让设定两个玩家进行交易
+[*][b]/gt accept[/b] — [b]goodstrade.command.accept[/b] — 接受当前交易请求
+[*][b]/gt accept [玩家名][/b] — [b]goodstrade.command.accept[/b] — 接受指定玩家的交易请求
+[*][b]/gt test [测试名称][/b] — [b]goodstrade.command.test[/b] — 与虚拟玩家进行测试交易
+[*][b]/gt reload[/b] — [b]goodstrade.command.reload[/b] — 重载插件配置文件
+[*][b]/gt[/b] — [b]goodstrade.command[/b] — 查询命令帮助
+[/list]
+
+
+[b]权限节点[/b]
+
+[list]
+[*][b]goodstrade.command.toggle[/b] — true — 切换是否接受交易的状态（防骚扰）
+[*][b]goodstrade.command[/b] — true — 使用指令的权限, 无此权限无法使用任何指令
+[*][b]goodstrade.command.sendtrade[/b] — true — 使用sendTrade指令向其他玩家发起交易请求的权限
+[*][b]goodstrade.command.accept[/b] — true — 同意他人交易请求的权限
+[*][b]goodstrade.command.trade[/b] — op — 强制两人交易的权限
+[*][b]goodstrade.command.test[/b] — op — 使用虚拟玩家测试交易界面和完整流程
+[*][b]goodstrade.command.reload[/b] — op — 重载插件的权限
+[/list]
+
+[b]货币与菜单[/b]
+
+在 [b]Trade.Economy.Currencies[/b] 中配置 Vault、PlayerPoints、ExcellentEconomy 或经验等级。每个币种可设置名称和 1–4 档金额按钮；默认只启用 Vault，其它提供方需要自行开启。
+
+左键金额按钮增加报价，右键减少。左键中央分隔板切换币种，已有报价保留；确认后需要先取消确认再切换。不同币种分别结算，不进行汇率换算。
+
+[b]View.yml[/b] 可设置菜单背景、确认按钮、金额按钮，以及各币种的默认外观或单独外观。完整配置见[url=https://github.com/polang233/GoodsTrade/blob/master/README.md#配置说明]使用说明[/url]。
+
+[b]语言与使用[/b]
+
+默认跟随服务器系统语言，缺少对应翻译时回退简体中文。可以设置 [b]Language: zh_cn[/b] 或 [b]Language: en_us[/b]，修改后执行 [b]/gt reload[/b]。
+
+1. 使用 [b]/gt sendtrade 玩家名[/b] 或蹲下右键发送请求。
+2. 对方通过聊天提示或 [b]/gt accept[/b] 接受。
+3. 双方放入物品、设置需要支付的金额或等级。
+4. 双方确认，倒计时结束后完成交易。
+
+取消交易或关闭界面会返还物品；背包放不下的物品掉落在玩家脚下。管理员可使用 [b]/gt test[/b] 单人检查交易流程。
+
+[b]支持与反馈[/b]
+
+[url=https://github.com/polang233/GoodsTrade/issues]GitHub Issues[/url] · QQ 群：620224543
+
+如果插件对你有帮助，欢迎给[url=https://github.com/polang233/GoodsTrade]项目[/url]点个 ⭐ Star。
+
+[b]使用统计[/b]
+
+[url=https://bstats.org/plugin/bukkit/GoodsTrade/30110][img]https://bstats.org/signatures/bukkit/GoodsTrade.svg[/img][/url]

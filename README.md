@@ -1,29 +1,33 @@
-<p align="center">
-  <img src="img/logo.png" alt="GoodsTrade Logo" width="220">
-</p>
+# GoodsTrade
 
-# GoodsTrade 玩家交易
+**通过箱子界面交换物品、货币和经验等级，双方确认后倒计时结算。支持 Bukkit、Spigot 和 Paper。**
 
-> 通过箱子界面交换物品、货币和经验等级，支持 Bukkit、Spigot 和 Paper。
+[English](doc/README_EN.md) · [使用反馈](https://github.com/polang233/GoodsTrade/issues)
 
-> English-speaking server owners: read the full [English documentation](doc/README_EN.md).
-
-![Version](https://img.shields.io/github/v/release/polang233/GoodsTrade?label=Lite&color=2ea44f)
+![Version](https://img.shields.io/github/v/release/polang233/GoodsTrade?label=Version&color=2ea44f)
 ![Minecraft](https://img.shields.io/badge/Minecraft-1.12--26.2-62b47a)
 ![Servers](https://img.shields.io/badge/servers-Bukkit%20%7C%20Spigot%20%7C%20Paper-f4a940)
 ![Java](https://img.shields.io/badge/Java-8%2B-e76f00)
 [![Powered by OrcaRouter](https://img.shields.io/badge/Powered_by-OrcaRouter-2563eb)](https://www.orcarouter.ai/ref/ref_1095590f527d3ae7ae2f)
 
-![示例](/img/QQ20260315-190201-HD.gif "交易界面演示")
-![示例2](/img/1773587841043.webp "交易界面演示2")
+## 下载与发布平台
+
+[![GitHub Releases](https://img.shields.io/badge/GitHub-Releases-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/polang233/GoodsTrade/releases)
+[![Modrinth](https://img.shields.io/badge/Modrinth-Download-1BD96A?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/plugin/goodstrade)
+[![MineBBS](https://img.shields.io/badge/MineBBS-Download-2E7D32?style=for-the-badge)](https://www.minebbs.com/resources/goodstrade.15705/)
+
+## 交易界面
+
+![双方确认与交易倒计时](img/QQ20260315-190201-HD.gif)
+![双方物品报价界面](img/1773587841043.webp)
 
 ---
 
-## 📖 简介
+## 简介
 
 双方在同一个箱子界面中放入物品、设置支付数量，确认后开始倒计时。交易结束前可以取消，关闭界面会返还物品。
 
-### ✨ 特性
+### 特性
 
 - 🛡️ **安全保护**：可设置交易期间免疫伤害、限制移动；背包放不下的返还物品会掉落在脚下
 - 🎯 **可视化界面**：通过箱子界面操作，也可蹲下右键玩家发送请求
@@ -37,7 +41,7 @@
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)
 - 货币交易可选接入 [Vault](https://www.spigotmc.org/resources/vault.34315/) 经济服务、PlayerPoints 或 ExcellentEconomy；未安装时仍可正常交易物品
 
-## 🚀 命令
+## 命令
 
 | 命令                        | 权限                             | 说明          |
 |---------------------------|--------------------------------|-------------|
@@ -52,7 +56,7 @@
 
 ---
 
-## 🔐 权限节点
+## 权限节点
 
 | 权限                             | 默认   | 说明                          |
 |--------------------------------|------|-----------------------------|
@@ -66,11 +70,11 @@
 
 ---
 
-## ⚙️ 配置说明
+## 配置说明
 
 配置文件位置：`plugins/GoodsTrade/config.yml`
 
-### 🌐 语言切换
+### 语言切换
 
 首次启动后会生成：
 
@@ -165,7 +169,7 @@ currency-buttons:
 
 本地测试覆盖多币种结算、失败回滚和 API 契约替身，不等于实服联调。部署前用两名玩家验证混合报价、改价撤销确认、倒计时内余额不足、关闭界面、重载取消及最终两端余额。
 
-### 🧪 管理员测试模式
+### 管理员测试模式
 
 在游戏内输入 `/gt test [测试名称]` 可打开测试模式，需要 `goodstrade.command.test` 权限。无需另一名玩家在线，可以检查物品栏、支付按钮、取消确认和倒计时。
 
@@ -173,7 +177,7 @@ currency-buttons:
 
 ---
 
-## 🎮 使用方法
+## 使用方法
 
 ### 基础交易流程
 
@@ -191,7 +195,7 @@ currency-buttons:
 
 5. **完成交易**：倒计时结束后，货币与经验等级完成支付且物品自动交换
 
-### 💡 交易提示
+### 交易提示
 
 - ✅ 确认后将锁定物品，无法再修改
 - ⏰ 双方都确认后开始 5 秒倒计时(配置文件修改)
@@ -201,7 +205,7 @@ currency-buttons:
 
 ---
 
-## 📋 待办功能
+## 待办功能
 
 - [x] 物品黑名单系统
 - [x] 权限模块完善
@@ -216,13 +220,13 @@ currency-buttons:
 
 ---
 
-## 🐛 已知问题
+## 已知问题
 
 - 玩家名字过长时标题显示可能有点奇怪
 
 ---
 
-## 📞 支持与反馈
+## 支持与反馈
 
 如遇到问题或有功能建议，请通过以下方式联系：
 
@@ -231,12 +235,8 @@ currency-buttons:
 
 ---
 
-![统计](https://bstats.org/signatures/bukkit/GoodsTrade.svg "使用统计")
----
-
-
-<div style="text-align: center">
-
 **如果觉得好用，请给个 ⭐ Star 支持一下！**
 
-</div>
+## 使用统计
+
+[![GoodsTrade bStats](https://bstats.org/signatures/bukkit/GoodsTrade.svg)](https://bstats.org/plugin/bukkit/GoodsTrade/30110)

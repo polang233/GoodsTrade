@@ -1,22 +1,18 @@
-[CENTER]
-[SIZE=7][B]GoodsTrade[/B]
-[/SIZE]
-[SIZE=4]Trade items, currency, and experience levels through a chest menu[/SIZE]
-[IMG]https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/logo-96x96.jpg[/IMG][/CENTER]
+[B]GoodsTrade[/B]
+
+Trade items, currency, and experience levels through a shared chest menu.
+
 [IMG]https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/演示.gif[/IMG]
 
-
-[SIZE=5][B]Overview[/B][/SIZE]
+[B]Overview[/B]
 
 GoodsTrade lets players exchange items, currency, and experience levels in Minecraft.
 
 It gives both players a shared trade menu with clearly separated offer slots. Players can review, confirm, and cancel before anything changes hands. Offers are locked once confirmed, and a final countdown leaves time to catch a mistake or a last-second item swap.
 
-
 [IMG]https://raw.githubusercontent.com/polang233/GoodsTrade/master/img/1773587841043.webp[/IMG]
 
-
-[SIZE=5][B]Features[/B][/SIZE]
+[B]Features[/B]
 
 [LIST]
 [*][B]Two-player confirmation[/B] - The trade only completes after both players approve their offers.
@@ -34,8 +30,7 @@ It gives both players a shared trade menu with clearly separated offer slots. Pl
 [*][B]Chinese and English messages[/B] - Switch languages from config.yml and edit either language file freely.
 [/LIST]
 
-
-[SIZE=5][B]Plugin Information[/B][/SIZE]
+[B]Plugin Information[/B]
 
 [LIST]
 [*][B]Plugin Version:[/B] [URL='https://github.com/polang233/GoodsTrade/releases/latest'][IMG]https://img.shields.io/github/v/release/polang233/GoodsTrade?label=Lite%20轻量版本&color=2ea44f[/IMG][/URL]
@@ -48,8 +43,7 @@ It gives both players a shared trade menu with clearly separated offer slots. Pl
 [*][B]Folia:[/B] GoodsTrade Lite does not currently claim Folia support.
 [/LIST]
 
-
-[SIZE=5][B]Installation[/B][/SIZE]
+[B]Installation[/B]
 
 [LIST=1]
 [*]Download the latest Lite build from [URL='https://github.com/polang233/GoodsTrade/releases/latest']GitHub Releases[/URL].
@@ -58,8 +52,7 @@ It gives both players a shared trade menu with clearly separated offer slots. Pl
 [*]Edit the files under plugins/GoodsTrade/ and run [B]/gt reload[/B].
 [/LIST]
 
-
-[SIZE=5][B]Commands[/B][/SIZE]
+[B]Commands[/B]
 
 [B]/gt sendtrade [player][/B]
 Permission: goodstrade.command.sendtrade
@@ -93,8 +86,7 @@ Reload configuration, menu items, blacklist rules, and language messages.
 Permission: goodstrade.command
 Show command help.
 
-
-[SIZE=5][B]Permissions[/B][/SIZE]
+[B]Permissions[/B]
 
 [B]goodstrade.command[/B]
 Default: true
@@ -124,8 +116,7 @@ Allows opening test mode to test the menu and full confirmation flow.
 Default: OP
 Allows reloading the plugin configuration.
 
-
-[SIZE=5][B]Configuration[/B][/SIZE]
+[B]Configuration[/B]
 
 The configuration files are located at:
 
@@ -137,8 +128,7 @@ The configuration files are located at:
 
 [B]plugins/GoodsTrade/lang/en_us.yml[/B]
 
-
-[SIZE=4][B]Language selection[/B][/SIZE]
+[B]Language selection[/B]
 
 New installations extract every bundled translation from the JAR. Version 1.1.9 includes zh_cn and en_us.
 
@@ -160,8 +150,7 @@ When upgrading from an older published version, the root-level Lang.yml is migra
 
 The command list shown by [B]/gt[/B] reads its layout and descriptions from command.help-entry and command.description in the active language file.
 
-
-[SIZE=4][B]Main configuration[/B][/SIZE]
+[B]Main configuration[/B]
 
 [QUOTE]
 [FONT=Courier New]Language: en_us
@@ -191,8 +180,7 @@ Trade:
 [*][B]Safe.Move[/B] stops block-to-block movement while the trade menu is open.
 [/LIST]
 
-
-[SIZE=4][B]Item blacklist[/B][/SIZE]
+[B]Item blacklist[/B]
 
 The blacklist checks the items a player placed in their offer when they confirm it.
 
@@ -217,15 +205,13 @@ The blacklist checks the items a player placed in their offer when they confirm 
 [*]Nested paths use dots. Escape a literal dot in a key with \.
 [/LIST]
 
-
-[SIZE=4][B]Menu customization[/B][/SIZE]
+[B]Menu customization[/B]
 
 View.yml controls the background, separator, ready buttons, countdown button, cancellation state, and money buttons. Money sets the shared money-button style; Money-1 through Money-4 can override individual steps, and %amount% is replaced at runtime.
 
 Materials are resolved through XMaterial where possible, which keeps names usable across a wide range of Minecraft versions. Unsupported custom model data is skipped on older servers.
 
-
-[SIZE=5][B]Currencies and experience levels[/B][/SIZE]
+[B]Currencies and experience levels[/B]
 
 Set Trade.Economy.Currencies to enable vault, playerpoints, excellenteconomy, or experience. Each entry supports a display name and one to four amount buttons. ExcellentEconomy also requires its currency ID. Experience trades whole levels and preserves experience bar progress.
 
@@ -233,16 +219,15 @@ Left-click the center divider to switch types. Existing amounts remain, and ever
 
 [URL='https://github.com/polang233/GoodsTrade/blob/master/doc/README_EN.md#currencies-and-experience-levels']Full configuration examples[/URL]
 
-[SIZE=5][B]Administrator test mode[/B][/SIZE]
+[B]Administrator test mode[/B]
 
 Players with goodstrade.command.test can run [B]/gt test [test-name][/B]. The administrator controls both offer areas, both sets of money buttons, and both confirmation buttons, making it possible to verify negative offers, confirmation resets, and the complete countdown without a second online player.
 
 Test mode leaves currency and levels unchanged. Items are returned when the test finishes, the menu closes, or the plugin reloads. Run this command in game.
 
+[B]How to Use[/B]
 
-[SIZE=5][B]How to Use[/B][/SIZE]
-
-[SIZE=4][B]Basic Trading Process[/B][/SIZE]
+[B]Basic Trading Process[/B]
 
 [LIST=1]
 [*][B]Start a trade[/B]
@@ -272,8 +257,7 @@ Click the confirmation button. When both players confirm, the countdown starts.
 After the countdown ends, money is settled if enabled and the items are exchanged automatically.
 [/LIST]
 
-
-[SIZE=4][B]Trading Notes[/B][/SIZE]
+[B]Trading Notes[/B]
 
 [LIST]
 [*]After confirming, trade items are locked and cannot be changed.
@@ -283,8 +267,7 @@ After the countdown ends, money is settled if enabled and the items are exchange
 [*]Changing a money offer resets any existing confirmation. Both players must review and confirm again.
 [/LIST]
 
-
-[SIZE=5][B]PlaceholderAPI[/B][/SIZE]
+[B]PlaceholderAPI[/B]
 
 When PlaceholderAPI is installed, GoodsTrade provides:
 
@@ -292,8 +275,7 @@ When PlaceholderAPI is installed, GoodsTrade provides:
 
 It returns true when the player accepts trade requests and false when requests are disabled.
 
-
-[SIZE=5][B]Planned Features[/B][/SIZE]
+[B]Planned Features[/B]
 
 [LIST]
 [*][B]Done:[/B] Item blacklist system
@@ -307,15 +289,13 @@ It returns true when the player accepts trade requests and false when requests a
 [*]Cancel trades when players are too far away
 [/LIST]
 
-
-[SIZE=5][B]Known Issues[/B][/SIZE]
+[B]Known Issues[/B]
 
 [LIST]
 [*]The GUI title may look strange when player names are too long.
 [/LIST]
 
-
-[SIZE=5][B]Support and Feedback[/B][/SIZE]
+[B]Support and Feedback[/B]
 
 If you encounter any issues or have feature suggestions, feel free to contact me:
 
@@ -328,9 +308,8 @@ If you encounter any issues or have feature suggestions, feel free to contact me
 
 GoodsTrade is released under the [URL='https://github.com/polang233/GoodsTrade/blob/master/LICENSE']GNU General Public License v3.0[/URL].
 
+If GoodsTrade fits your server, consider leaving a [URL=https://github.com/polang233/GoodsTrade]⭐ GitHub Star[/URL].
 
-[CENTER]
-[IMG]https://bstats.org/signatures/bukkit/GoodsTrade.svg[/IMG]
+[B]Usage statistics[/B]
 
-[SIZE=4][B][URL='https://github.com/polang233/GoodsTrade']⭐ this plugin is free! please consider giving it a star on GitHub! ⭐[/URL][/B][/SIZE]
-[/CENTER]
+[URL=https://bstats.org/plugin/bukkit/GoodsTrade/30110][IMG]https://bstats.org/signatures/bukkit/GoodsTrade.svg[/IMG][/URL]
