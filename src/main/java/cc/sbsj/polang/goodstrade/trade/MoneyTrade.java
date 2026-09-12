@@ -3,8 +3,8 @@ package cc.sbsj.polang.goodstrade.trade;
 import java.math.BigDecimal;
 
 /**
- * Pure offer calculations. Providers may use doubles, while offers are kept as decimals
- * so repeated GUI clicks do not accumulate floating-point drift.
+ * 纯报价计算。经济接口可以使用双精度浮点数，报价内部使用十进制数，
+ * 避免反复点击界面按钮时累积浮点误差。
  */
 public final class MoneyTrade {
     private static final BigDecimal ZERO = BigDecimal.ZERO;
@@ -54,7 +54,7 @@ public final class MoneyTrade {
             return targetPayment;
         }
 
-        /** Positive means sender pays target; negative means target pays sender. */
+        /** 正数表示发起者支付给接收者，负数表示接收者支付给发起者。 */
         public BigDecimal getSenderNetPayment() {
             return senderPayment.subtract(targetPayment).stripTrailingZeros();
         }

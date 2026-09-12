@@ -1,15 +1,36 @@
-# Language locale to use. "system" follows the server JVM/operating-system locale.
-# 使用的语言区域。"system" 会跟随服务器 JVM/操作系统语言。
+# 语言设为 system 时，优先读取进程 LC_ALL、LC_MESSAGES、LANG，再使用 JVM 默认语言。
+# 自动模式会在后台输出中英文设置提示；固定使用中文请填写 zh_cn。
 # Examples / 示例: system, zh_cn, en_us
 Language: system
 
 Trade:
+  # 默认 "*" 允许所有世界；填写世界名称列表可限制生效世界，空列表禁用所有世界。
+  # 限制世界示例：Enabled-Worlds: [world, world_nether, world_the_end]
+  Enabled-Worlds: ["*"]
+
+  Request:
+    # 成功发出请求后，向任意玩家再次发送前的冷却（秒）；0 关闭，最大 86400。
+    Cooldown: 5
+    # 对方接受请求的有效期（秒）；1-86400。无效数值使用默认值。
+    Expire: 30
+
+  Distance:
+    # 是否要求双方处于同一世界。
+    Same-World: true
+    # 发起请求、接受请求和管理员打开交易时的最大距离（格）。
+    Start: 4
+    # 交易期间的最大距离（格），超出后取消交易并返还物品。
+    Trading: 8
+    # 距离包含高度差，0 表示不限制；负数或非有限数使用默认值。
+    # 跨世界交易需要 Same-World: false 且 Start、Trading 均为 0。
+
   #交易双方确认后的等待时间（单位秒）
   Wait-Time: 5
 
   # 货币与经验等级交易。按需启用下面的条目。
   Economy:
-    Enable: true
+    # 关闭后隐藏全部金额按钮和货币提示，测试模式也遵循此配置。
+    Enable: false
     # 开启后，玩家可把自己的报价减为负数；负数等价于要求对方支付。
     Allow-Negative: true
     # 从小到大配置 1-4 档按钮金额；左键增加，右键减少。
@@ -51,7 +72,10 @@ Trade:
 
   #安全处理
   Safe:
-    #是否开启交易期间玩家不受会伤害
+    # 任一方实际受到伤害时取消交易、关闭双方界面并返还物品。
+    # 已被取消或最终伤害为 0 的事件不触发；Damage 免伤优先。
+    Close-On-Damage: false
+    #是否开启交易期间玩家不受伤害
     Damage: false
     #交易期间玩家是否阻止移动、被推动等
     Move: false

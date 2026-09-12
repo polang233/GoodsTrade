@@ -28,6 +28,7 @@ command:
     trade: "Start a trade between two online players as an administrator"
 
 trade-request:
+  already-pending: "&cA request to this player is still pending. Wait for acceptance or expiration."
   sent: "&7Trade request sent to &e%target%&7."
   received: "&e%player% &7wants to trade with you. &a[Click to accept]"
   hover: "Click to accept this trade"
@@ -37,6 +38,11 @@ trade-request:
   select-player: "&cChoose which player's request you want to accept."
 
 trade-status:
+  same-world-required: "&cBoth players must be in the same world. Trading cannot continue."
+  start-too-far: "&cToo far apart to request or accept a trade. Move closer and try again."
+  cancelled-by-distance: "&cTrade cancelled: players moved too far apart. Items returned."
+  world-disabled: "&cBoth players must be in enabled worlds. Trading has been stopped."
+  cancelled-by-damage: "&cA player took damage. Trade cancelled and items returned."
   money-rollback-failed: "&cTrade cancelled and items returned. Some payments could not be refunded; contact an administrator."
   opening: "&2Opening the trade menu..."
   success: "&aTrade complete!"

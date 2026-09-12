@@ -46,6 +46,16 @@ public class EconomyTradeServiceTest {
         return new TradeSession(sender, target, null);
     }
 
+    @Test public void itemOnlyTestModeDoesNotInventCurrency() {
+        GoodsTrade.currencies = Collections.emptyList();
+        TradeSession session = TradeSession.createTest(sender, "TestPlayer", null);
+        assertTrue(session.isTestMode());
+        assertTrue(session.getCurrencies().isEmpty());
+        assertNull(session.getCurrency());
+        assertTrue(EconomyTradeService.checkBalances(session).isSuccess());
+        assertTrue(EconomyTradeService.settle(session).isSuccess());
+    }
+
     @Test public void settlesMultipleCurrenciesInOppositeDirections() {
         Account first = new Account(), second = new Account();
         TradeSession session = session(first, second);

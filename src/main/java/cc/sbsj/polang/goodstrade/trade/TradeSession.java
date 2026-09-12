@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import cc.sbsj.polang.goodstrade.GoodsTrade;
 import cc.sbsj.polang.goodstrade.hook.economy.TradeCurrency;
-import cc.sbsj.polang.goodstrade.hook.economy.provider.TestModeEconomyProvider;
 
 @Getter
 @Setter
@@ -53,11 +52,6 @@ public class TradeSession {
 
     public static TradeSession createTest(Player administrator, String virtualPlayerName, TradeView view) {
         List<TradeCurrency> currencies = GoodsTrade.currencies;
-        if (currencies.isEmpty()) {
-            currencies = Collections.singletonList(new TradeCurrency("test", "test", "",
-                    new TestModeEconomyProvider(),
-                    GoodsTrade.config.getEconomyButtonAmounts()));
-        }
         TradeSession session = new TradeSession(administrator, administrator, view, currencies);
         session.testMode = true;
         session.targetDisplayName = virtualPlayerName;

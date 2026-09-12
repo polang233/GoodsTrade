@@ -31,6 +31,7 @@ command:
 
 # 交易请求相关
 trade-request:
+  already-pending: "&c已向该玩家发送请求，请等待对方接受或请求过期。"
   sent: "&7已向 &e%target% &7发送交易请求。"
   received: "&e%player% &7想与你交易。&a[点击接受]"
   hover: "点击接受交易"
@@ -41,6 +42,11 @@ trade-request:
 
 # 交易状态
 trade-status:
+  same-world-required: "&c交易双方必须在同一个世界，交易无法继续。"
+  start-too-far: "&c双方距离过远，无法发起或接受交易，请靠近后重试。"
+  cancelled-by-distance: "&c双方距离超过交易范围，交易已取消，物品已返还。"
+  world-disabled: "&c交易双方必须位于允许交易的世界中，当前交易已停止。"
+  cancelled-by-damage: "&c交易一方受到伤害，交易已取消，物品已返还。"
   money-rollback-failed: "&c交易取消，物品已返还；部分款项未能自动退回，请联系管理员核对。"
   opening: "&a正在打开交易界面……"
   success: "&a交易成功！"

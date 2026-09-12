@@ -36,6 +36,7 @@ public class TestTradeCommand implements SubCommand {
         }
 
         Player administrator = (Player) sender;
+        if (!TradeManager.checkStartLocations(administrator, administrator)) return false;
         String virtualPlayerName = args.length == 0 ? DEFAULT_VIRTUAL_PLAYER : args[0];
         if (!virtualPlayerName.matches("[A-Za-z0-9_]{1,16}")) {
             sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("test-trade.invalid-name"));

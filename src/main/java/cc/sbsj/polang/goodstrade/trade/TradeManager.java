@@ -13,11 +13,13 @@ import java.util.*;
 public class TradeManager {
     private static final Map<UUID, TradeSession> sessions = new HashMap<>();
     public static final Map<UUID, List<TradeRequest>> pendingRequests = new HashMap<>();
-    private static final long DEFAULT_COOLDOWN = 30000; // 默认冷却 30 秒
+    private static final RequestCooldown requestCooldown = new RequestCooldown();
 
 
     //创建交易
     public static TradeSession createSession(Player sender, Player target, TradeView view) {
+        cancelAllRequests(sender);
+        cancelAllRequests(target);
         TradeSession session = new TradeSession(sender, target, view);
 
         sessions.put(sender.getUniqueId(), session);
@@ -26,6 +28,7 @@ public class TradeManager {
     }
 
     public static TradeSession createTestSession(Player administrator, String virtualPlayerName, TradeView view) {
+        cancelAllRequests(administrator);
         TradeSession session = TradeSession.createTest(administrator, virtualPlayerName, view);
         sessions.put(administrator.getUniqueId(), session);
         return session;
@@ -76,7 +79,7 @@ public class TradeManager {
                 try {
                     session.getView().runnable.cancel();
                 } catch (IllegalStateException ignored) {
-                    // The countdown was not scheduled or has already stopped.
+                    // 倒计时尚未调度，或者已经停止。
                 }
             }
             session.getView().backPlayerItems(player);
@@ -156,6 +159,7 @@ public class TradeManager {
     }
 
     public static boolean startTrade(Player senderPlayer, Player targetPlayer) {
+        if (!checkStartLocations(senderPlayer, targetPlayer)) return false;
         if (senderPlayer.equals(targetPlayer)) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("player.different-players"));
             return false;
@@ -167,17 +171,19 @@ public class TradeManager {
         }
         senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.opening"));
         targetPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.opening"));
-        //打开界面后移除他俩的交易请求
-        pendingRequests.remove(senderPlayer.getUniqueId());
-        pendingRequests.remove(targetPlayer.getUniqueId());
         TradeView gui = new TradeView();
         gui.open(senderPlayer, targetPlayer);
         return true;
     }
 
     public static void sendTradeRequest(Player senderPlayer, Player targetPlayer) {
+        if (!checkStartLocations(senderPlayer, targetPlayer)) return;
         if (senderPlayer.equals(targetPlayer)) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("player.self-trade"));
+            return;
+        }
+        if (isTrade(senderPlayer) || isTrade(targetPlayer)) {
+            senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.already-trading"));
             return;
         }
         // 检查目标玩家是否接受交易请求
@@ -186,12 +192,17 @@ public class TradeManager {
             return;
         }
 
-        if (isInCooldown(senderPlayer, targetPlayer)) {
+        if (requestCooldown.remaining(senderPlayer.getUniqueId()) > 0) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.cooldown"));
             return;
         }
 
+        if (hasPendingRequest(senderPlayer, targetPlayer)) {
+            senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.already-pending"));
+            return;
+        }
         addRequest(senderPlayer, targetPlayer);
+        requestCooldown.record(senderPlayer.getUniqueId(), GoodsTrade.config.getRequestCooldownMillis());
 
         String receivedMsg = GoodsTrade.lang.replacePlaceholders(
                 GoodsTrade.lang.getString("trade-request.received"),
@@ -211,34 +222,66 @@ public class TradeManager {
         senderPlayer.sendMessage(GoodsTrade.getPrefix() + sentMsg);
     }
 
-    private static void addRequest(Player sender, Player target) {
-        UUID targetId = target.getUniqueId();
-        TradeRequest request = new TradeRequest(sender, target, DEFAULT_COOLDOWN);
-
-        pendingRequests.computeIfAbsent(targetId, k -> new ArrayList<>()).add(request);
+    public static boolean checkStartLocations(Player sender, Player target) {
+        String reason = GoodsTrade.config.checkTradeLocations(sender.getLocation(), target.getLocation(), false);
+        if (reason == null) return true;
+        String message = GoodsTrade.getPrefix() + GoodsTrade.lang.getString(reason);
+        sender.sendMessage(message);
+        if (!sender.equals(target)) target.sendMessage(message);
+        return false;
     }
 
-    private static boolean isInCooldown(Player sender, Player target) {
-        UUID targetId = target.getUniqueId();
-        List<TradeRequest> requests = pendingRequests.get(targetId);
+    public static boolean validateActiveTrade(TradeSession session) {
+        if (getSession(session.getSenderPlayer()) != session) return false;
+        String reason = GoodsTrade.config.checkTradeLocations(session.getSenderPlayer().getLocation(),
+                session.getTargetPlayer().getLocation(), true);
+        if (reason == null) return true;
+        abortTrade(session.getSenderPlayer(), reason);
+        return false;
+    }
 
-        if (requests == null || requests.isEmpty()) {
-            return false;
-        }
+    public static void checkActiveTrades() {
+        for (TradeSession session : getAllSessions()) validateActiveTrade(session);
+    }
 
-        for (TradeRequest request : requests) {
-            if (request.isSameSender(sender) && !request.isExpired()) {
-                return true;
+    /** 由外部事件取消交易，同时关闭双方界面并停止倒计时。 */
+    public static void abortTrade(Player player, String reasonKey) {
+        TradeSession session = getSession(player);
+        if (session == null) return;
+        removeSession(player);
+        if (session.getView().runnable != null) {
+            try {
+                session.getView().runnable.cancel();
+            } catch (IllegalStateException ignored) {
+                // 倒计时尚未调度，或者已经停止。
             }
         }
+        Player sender = session.getSenderPlayer();
+        Player target = session.getTargetPlayer();
+        session.getView().backPlayerItems(sender);
+        if (!session.isTestMode()) session.getView().backPlayerItems(target);
+        returnCursorItem(sender);
+        ServerCompatibility.closeInventory(sender);
+        sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString(reasonKey));
+        if (!session.isTestMode()) {
+            returnCursorItem(target);
+            ServerCompatibility.closeInventory(target);
+            target.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString(reasonKey));
+        }
+    }
 
-        return false;
+    private static void addRequest(Player sender, Player target) {
+        UUID targetId = target.getUniqueId();
+        TradeRequest request = new TradeRequest(sender, target, GoodsTrade.config.getRequestExpiryMillis());
+
+        pendingRequests.computeIfAbsent(targetId, k -> new ArrayList<>()).add(request);
     }
 
     /**
      * 清理过期的请求
      */
     public static void cleanupExpiredRequests() {
+        requestCooldown.cleanup();
         Iterator<Map.Entry<UUID, List<TradeRequest>>> iterator = pendingRequests.entrySet().iterator();
 
         while (iterator.hasNext()) {
@@ -257,7 +300,8 @@ public class TradeManager {
      * 关闭所有正在交易的玩家界面并返还物品（用于 reload 或服务器关闭）
      */
     public static void stopAllTrades() {
-        if (sessions.isEmpty()) return;
+        pendingRequests.clear();
+        requestCooldown.clear();
 
         // 复制一份避免并发修改异常
         Set<TradeSession> sessionList = new HashSet<>(sessions.values());

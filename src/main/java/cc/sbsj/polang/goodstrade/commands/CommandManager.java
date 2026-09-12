@@ -78,14 +78,12 @@ public class CommandManager {
     public void registerAnnotatedCommands(String packageName, JavaPlugin plugin) {
         try {
             Set<Class<?>> classes = getClasses(packageName, plugin);
-            GoodsTrade.instance.getLogger().info("扫描到 " + classes.size() + " 个子命令类");
 
             for (Class<?> clazz : classes) {
                 if (SubCommand.class.isAssignableFrom(clazz) && clazz.isAnnotationPresent(SubCommandAnnotation.class)) {
                     try {
                         SubCommand instance = (SubCommand) clazz.getDeclaredConstructor().newInstance();
                         registerCommand(instance);
-                        GoodsTrade.instance.getLogger().info("已注册子命令: " + clazz.getSimpleName());
                     } catch (Exception e) {
                         GoodsTrade.instance.getLogger().warning(GoodsTrade.getPrefix() + "无法实例化命令类: " + clazz.getName() + " - " + e.getMessage());
                     }

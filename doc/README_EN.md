@@ -79,7 +79,11 @@ plugins/GoodsTrade/lang/zh_cn.yml
 plugins/GoodsTrade/lang/en_us.yml
 ```
 
-By default, GoodsTrade follows the server JVM/operating-system locale. Older configs without a `Language` key behave the same way. If no matching translation is available, the console explains the fallback and GoodsTrade uses Simplified Chinese.
+### Automatic language detection
+
+With `Language: system` (also when missing or blank), GoodsTrade reads the first nonempty process variable in this order: `LC_ALL`, `LC_MESSAGES`, `LANG`. Locale forms such as `zh_CN.UTF-8` are normalized. Neutral `C`/`POSIX`, invalid values or no variables fall back to the JVM default. Exact installed translations take priority; Chinese and English can use `zh_cn` and `en_us`, while other languages require a unique regional match. Unsupported languages fall back to Simplified Chinese. Explicit language settings still require an exact translation filename.
+
+Automatic mode prints both Chinese and English configuration hints on startup and reload, including the selected language, configuration path and reload command. Explicit language settings suppress these hints. Detection is local and performs no network requests. The server's location does not determine the process locale; services and containers can inherit a different environment than an interactive terminal. Use `Language: zh_cn` for deterministic Chinese output. Process environment changes require restarting Java.
 
 You can also choose a locale explicitly in `config.yml`:
 
@@ -103,9 +107,14 @@ When upgrading from an older published version, the root-level `Lang.yml` is mig
 Language: en_us
 
 Trade:
+  Enabled-Worlds: ["*"]
+  Distance:
+    Same-World: true
+    Start: 4
+    Trading: 8
   Wait-Time: 5
   Economy:
-    Enable: true
+    Enable: false
     Allow-Negative: false
     Amounts:
       - 1000
@@ -113,6 +122,7 @@ Trade:
   Triggers:
     Shift-Right-Click: true
   Safe:
+    Close-On-Damage: false
     Damage: false
     Move: false
 ```
@@ -124,6 +134,20 @@ Trade:
 - `Shift-Right-Click` enables the quick request gesture.
 - `Safe.Damage` cancels damage against players who are currently trading.
 - `Safe.Move` stops block-to-block movement while the trade menu is open.
+
+`Enabled-Worlds` defaults to `["*"]`, allowing all worlds, including custom and newly created worlds. Existing explicit world lists remain effective; use `["*"]` to allow all worlds. Both participants must be in `Enabled-Worlds` to request, accept or open a trade, including administrator and test commands. Entering a disabled world clears related requests and cancels the active trade. An empty world list disables trading everywhere.
+
+`Distance.Same-World` defaults to true. `Start` defaults to 4 blocks for requests and opening, and `Trading` defaults to 8 blocks during trading. Distances include height; 0 disables the corresponding distance limit. Cross-world trading requires Same-World false and both distances 0. A shared task checks actual positions every 5 ticks, and settlement rechecks the rules. Exceeding the active limit cancels the countdown, returns items, closes both menus and notifies both players.
+
+`Safe.Close-On-Damage` defaults to false. When enabled, uncancelled positive damage cancels the trade and returns items. Trading damage immunity takes priority. Existing explicit configuration values are preserved on upgrade.
+
+Planned: persistent trade history with transaction IDs, timestamps, participant UUIDs/names, item snapshots, currency amounts, outcomes and refund failures, plus administrator lookup and retention settings.
+
+## Trade requests
+
+`Trade.Request.Cooldown` defaults to 5 seconds, shared across all recipients for each sender. Only successful requests consume it; 0 disables it. `Trade.Request.Expire` independently defaults to 30 seconds. An existing request to the same player cannot be duplicated or extended. Cooldown accepts 0–86400 seconds and expiry accepts 1–86400; invalid values use defaults.
+
+Busy players cannot send or receive new requests. Creating a trade or test session clears all incoming and outgoing requests for its participants, preserving unrelated requests and sender cooldowns. Old chat links cannot reopen these cleared requests after the trade finishes. Reload clears requests and cooldowns.
 
 ## Currencies and experience levels
 
@@ -158,7 +182,7 @@ Trade:
         Amounts: [1, 10, 100, 1000]
 ```
 
-The shipped configuration enables only Vault. Older files without `Currencies` retain their Vault provider and existing button amounts. Each entry has a unique local ID, a provider, and a display `Name`. ExcellentEconomy also requires the ID of an existing currency in `Currency`; duplicate the entry to add more currencies. Missing plugins or incompatible APIs disable only the affected entry.
+The shipped configuration disables the economy master switch. Once enabled, its default currency entry is Vault. Disabled or unavailable currencies have no buttons, including in test mode. Older files without `Currencies` retain their Vault provider and existing button amounts. Each entry has a unique local ID, a provider, and a display `Name`. ExcellentEconomy also requires the ID of an existing currency in `Currency`; duplicate the entry to add more currencies. Missing plugins or incompatible APIs disable only the affected entry.
 
 The built-in `experience` provider trades whole Minecraft levels without another plugin. A payment of 5 levels changes level 30 to 25 and preserves the experience bar progress.
 

@@ -6,6 +6,8 @@ import org.bukkit.configuration.Configuration;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import cc.sbsj.polang.goodstrade.trade.TradeRestrictions;
+import org.bukkit.Location;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,6 +38,19 @@ public class Config {
         loadItemBlackList();
     }
 
+    public long getRequestCooldownMillis() {
+        return requestSeconds("Trade.Request.Cooldown", 5, 0) * 1000L;
+    }
+
+    public long getRequestExpiryMillis() {
+        return requestSeconds("Trade.Request.Expire", 30, 1) * 1000L;
+    }
+
+    private long requestSeconds(String path, long fallback, long minimum) {
+        long seconds = config.getLong(path, fallback);
+        return seconds < minimum || seconds > 86400 ? fallback : seconds;
+    }
+
     public boolean isEnabledShiftClick() {
         return config.getBoolean("Trade.Triggers.Shift-Right-Click", true);
     }
@@ -44,12 +59,24 @@ public class Config {
         return config.getBoolean("Trade.Safe.Damage", false);
     }
 
+    public boolean isCloseOnDamage() {
+        return config.getBoolean("Trade.Safe.Close-On-Damage", false);
+    }
+
+    public boolean isWorldEnabled(String worldName) {
+        return TradeRestrictions.isWorldEnabled(config, worldName);
+    }
+
+    public String checkTradeLocations(Location sender, Location target, boolean active) {
+        return TradeRestrictions.check(config, sender, target, active);
+    }
+
     public boolean isSafeMove() {
         return config.getBoolean("Trade.Safe.Move", false);
     }
 
     public boolean isEconomyEnabled() {
-        return config.getBoolean("Trade.Economy.Enable", true);
+        return config.getBoolean("Trade.Economy.Enable", false);
     }
 
     public boolean isNegativeEconomyAllowed() {

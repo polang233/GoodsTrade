@@ -8,6 +8,7 @@ import cc.sbsj.polang.goodstrade.trade.TradeSession;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -15,6 +16,7 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
 import java.util.Collections;
@@ -90,8 +92,8 @@ public class Events implements Listener {
             boolean ownTradeSlot = session.isTestMode()
                     ? senderSlot || targetSlot
                     : sender ? senderSlot : targetSlot;
-            // Only the player's own offer slots accept dragged items. This also protects
-            // divider, ready, and economy buttons from drag-based replacement.
+            // 只有玩家自己的交易物品槽允许拖入物品，同时保护
+            // 分隔栏、确认按钮和金额按钮，避免它们被拖拽物品替换。
             if (!ownTradeSlot) {
                 event.setCancelled(true);
                 return;
@@ -215,6 +217,23 @@ public class Events implements Listener {
                 event.setCancelled(true);
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onDamageCloseTrade(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player) || event.getFinalDamage() <= 0
+                || !GoodsTrade.config.isCloseOnDamage()) return;
+        TradeManager.abortTrade((Player) event.getEntity(), "trade-status.cancelled-by-damage");
+    }
+
+    @EventHandler
+    public void onWorldChange(PlayerChangedWorldEvent event) {
+        Player player = event.getPlayer();
+        if (!GoodsTrade.config.isWorldEnabled(player.getWorld().getName())) {
+            TradeManager.cancelAllRequests(player);
+        }
+        TradeSession session = TradeManager.getSession(player);
+        if (session != null) TradeManager.validateActiveTrade(session);
     }
 
     // 移动保护事件

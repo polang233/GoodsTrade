@@ -14,7 +14,7 @@
 
 [![GitHub Releases](https://img.shields.io/badge/GitHub-Releases-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/polang233/GoodsTrade/releases)
 [![Modrinth](https://img.shields.io/badge/Modrinth-Download-1BD96A?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/plugin/goodstrade)
-[![MineBBS](https://img.shields.io/badge/MineBBS-Download-2E7D32?style=for-the-badge)](https://www.minebbs.com/resources/goodstrade.15705/)
+[![MineBBS](https://img.shields.io/badge/MineBBS-Download-2196F3?style=for-the-badge)](https://www.minebbs.com/resources/goodstrade.15705/)
 
 ## 交易界面
 
@@ -81,7 +81,11 @@
 - `plugins/GoodsTrade/lang/zh_cn.yml`
 - `plugins/GoodsTrade/lang/en_us.yml`
 
-默认使用服务器 JVM/操作系统语言。`config.yml` 中没有 `Language` 的旧配置也会使用系统语言；若没有对应翻译，控制台会提示并回退到简体中文。
+`Language: system`（包括字段缺失或留空）自动选择语言。依次读取 Java 进程的 `LC_ALL`、`LC_MESSAGES`、`LANG`，使用第一个非空值，支持 `zh_CN.UTF-8` 等格式；没有具体语言、值为 `C`／`POSIX` 或格式无效时，使用 JVM 默认语言。高优先级变量会覆盖低优先级变量。自动模式每次启动或重载都会在后台同时输出中英文设置提示，显示当前语言、配置位置及 `/gt reload` 命令；明确指定语言时不输出这组提示。
+
+语言文件先精确匹配；未找到区域版本时，中文使用 `zh_cn`，英语使用 `en_us`，其它语言只在同语言的区域版本唯一时匹配。仍没有对应翻译时提示并回退到简体中文。明确配置的语言代码仍按文件名精确匹配。
+
+Linux 的进程语言取决于服务、面板或容器的启动环境，服务器所在地区不能决定语言。即使登录终端是中文，启动 Minecraft 的服务也可能继承英语或 `C.UTF-8`。本插件仅读取本地环境，不进行网络定位。固定使用中文最可靠的方式是设置 `Language: zh_cn`；修改进程环境后需要重启 Java 进程，仅重载插件不会改变其已继承的环境。JVM 默认语言只在上述环境未提供具体语言时使用。
 
 也可以指定语言，然后执行 `/gt reload`：
 
@@ -96,6 +100,42 @@ Language: system # 自动检测
 直接输入 `/gt` 时显示的命令功能说明来自语言文件中的 `command.help-entry` 和 `command.description`，服主可自行修改措辞。
 
 从旧版本升级时，已有的根目录 `Lang.yml` 会在需要时迁移为 `lang/zh_cn.yml`，原文件不会被删除。
+
+### 生效世界、距离与受伤取消
+
+```yaml
+Trade:
+  Enabled-Worlds: ["*"]
+  Distance:
+    Same-World: true
+    Start: 4
+    Trading: 8
+  Safe:
+    Close-On-Damage: false
+    Damage: false
+    Move: false
+```
+
+`Enabled-Worlds` 默认 `["*"]`，允许所有世界（包括自定义及后续新增世界）。也可填写具体世界名称列表进行限制，空列表禁用所有世界；已有配置中的具体世界列表仍生效，要开放全部世界请改为 `["*"]`。发起请求和打开交易时都会检查双方，管理员强制交易和测试模式同样遵循限制。玩家进入禁用世界时清除相关请求并取消当前交易、返还物品。
+
+`Distance.Same-World` 默认要求双方在同一世界；`Start` 是发起请求、接受请求及管理员打开交易时的距离上限，默认 4 格；`Trading` 是交易期间上限，默认 8 格。距离按包含高度差的直线距离计算，恰好达到上限仍允许。两项距离独立生效，各设为 `0` 可关闭对应限制；负数或非有限数使用默认值。跨世界交易需同时设置 `Same-World: false`、`Start: 0`、`Trading: 0`，且双方世界都在允许列表内。
+
+交易期间每 5 tick 共享检查一次实际位置，水流、推挤或传送导致超距时会停止倒计时、关闭双方界面、返还物品并提示；结算前再次检查。禁用世界中无法发送请求、接受请求或打开交易，管理员交易和测试模式同样受限。
+
+`Close-On-Damage` 默认关闭。开启后，任一方实际受到伤害时停止倒计时、关闭双方界面并返还物品，包括环境伤害。被其它插件取消或最终伤害为零时不会关闭；`Damage: true` 的交易免伤优先，因此不会触发受伤取消。已有配置缺少新增字段时使用上述默认值；添加字段后执行 `/gt reload` 生效。
+
+### 请求冷却与有效期
+
+```yaml
+Trade:
+  Request:
+    Cooldown: 5
+    Expire: 30
+```
+
+`Cooldown` 是成功发送请求后，向任意玩家再次发送前的等待秒数，默认 5 秒；设为 0 关闭发送冷却。`Expire` 是对方可以接受这条请求的时间，默认 30 秒。两者独立，例如 A 给 B 发请求，5 秒后可以给 C 发，而 B 的请求仍有效到第 30 秒。同一对玩家已有有效请求时不能重复发送，也不会刷新有效期。冷却范围为 0–86400 秒，有效期为 1–86400 秒，无效值使用默认值。
+
+发送或接受时，只要任一方正在交易就拒绝。开始交易（包括测试模式）会清除双方所有发出和收到的请求，不影响其他玩家彼此之间的请求。因此 C 接受 A 后，B 再点 A 的旧请求会提示没有有效请求，A、C 结束交易后也不会恢复旧请求。请求清除不重置发送冷却；重载会清空请求和冷却。
 
 ### 货币与经验等级交易
 
@@ -132,7 +172,8 @@ Trade:
         Amounts: [1, 10, 100, 1000]
 ```
 
-- 默认配置仅启用 Vault，点券、代币和经验等级默认关闭。按已安装的插件开启对应条目。旧配置没有 `Currencies` 时，继续使用 Vault 和原有 `Amounts`。
+- `Trade.Economy.Enable: false` 关闭全部货币与等级交易，同时隐藏金额按钮和动态货币提示，原按钮位置显示背景；无需修改或注释 `View.yml`。单独关闭币种后该币种不再参与交易或切换，所有币种均不可用时仅交易物品。测试模式使用相同的可用币种列表。
+- 经济总开关默认关闭。启用 `Trade.Economy.Enable` 后，默认币种条目为 Vault；点券、代币和经验等级需按需开启。旧配置没有 `Currencies` 时，继续使用 Vault 和原有 `Amounts`。
 - `Currencies` 下的键是 GoodsTrade 币种标识。`Provider` 支持 `vault`、`playerpoints`、`excellenteconomy`、`experience`；`Name` 是玩家看到的名称，支持 `&` 颜色代码。
 - ExcellentEconomy 的 `Currency` 必须填写已有币种 ID。复制条目并更换标识、`Currency` 和 `Name` 即可增加其它币种。
 - `experience` 使用原版经验等级，无需前置插件，只接受整数。例如支付 5 级后，30 级变为 25 级，经验条进度不变。
@@ -212,11 +253,11 @@ currency-buttons:
 - [x] 自定义界面材质、描述等
 - [x] 支持 Vault、PlayerPoints、ExcellentEconomy 多货币交易
 - [x] 支持原版经验等级交易
-- [ ] 交易历史记录
+- [ ] 交易流水（已列入计划）：记录时间、交易 ID、双方 UUID／名称、物品快照、各币种金额、成功／取消／结算失败及退款异常；提供管理员查询、保留期限和清理配置。
 - [ ] 自定义交易要求，服务器可设置
-- [ ] 交易冷却时间设置
+- [x] 独立配置玩家全局请求冷却和请求有效期
 - [ ] 可疑交易警告系统
-- [ ] 玩家双方距离过远取消交易
+- [x] 同世界限制、发起／接受距离及交易期间超距取消
 
 ---
 

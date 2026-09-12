@@ -46,6 +46,7 @@ public class TradeView extends View {
     }
 
     public void open(Player sender, Player target) {
+        if (!TradeManager.checkStartLocations(sender, target)) return;
         // 创建交易会话
         session = TradeManager.createSession(sender, target, this);
         initializeGui(sender, sender.getName(), target.getName());
@@ -56,6 +57,7 @@ public class TradeView extends View {
     }
 
     public void openTest(Player administrator, String virtualPlayerName) {
+        if (!TradeManager.checkStartLocations(administrator, administrator)) return;
         session = TradeManager.createTestSession(administrator, virtualPlayerName, this);
         initializeGui(administrator, administrator.getName(), virtualPlayerName);
         gui.open(administrator);
@@ -346,7 +348,7 @@ public class TradeView extends View {
             try {
                 runnable.cancel();
             } catch (IllegalStateException ignored) {
-                // It was created but not scheduled, or has already stopped.
+                // 倒计时已创建但尚未调度，或者已经停止。
             }
             runnable = null;
         }
@@ -501,6 +503,7 @@ public class TradeView extends View {
     }
 
     public void executeTrade(TradeSession session) {
+        if (!TradeManager.validateActiveTrade(session)) return;
         Player sender = session.getSenderPlayer();
         Player receiver = session.getTargetPlayer();
 
@@ -510,7 +513,7 @@ public class TradeView extends View {
         }
 
         // 所有币种先校验余额，再逐个结算；失败时撤回先前币种。
-        // Items do not move if the balance changed or the provider rejects the transaction.
+        // 余额发生变化或经济接口拒绝结算时，不交换物品。
         EconomyTradeService.SettlementResult settlement = EconomyTradeService.settle(session);
         if (!settlement.isSuccess()) {
             abortFailedMoneyTrade(settlement.getFailure());

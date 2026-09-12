@@ -18,21 +18,29 @@ public class TradeRequest {
     /** 获取请求创建时间 */
     @Getter
     private final long timestamp;
-    private final long cooldown; // 冷却时间（毫秒）
+    private final long expiryMillis; // 请求有效期（毫秒）
 
-    public TradeRequest(Player sender, Player target, long cooldown) {
+    public TradeRequest(Player sender, Player target, long expiryMillis) {
+        this(sender, target, expiryMillis, System.currentTimeMillis());
+    }
+
+    TradeRequest(Player sender, Player target, long expiryMillis, long timestamp) {
         this.senderId = sender.getUniqueId();
         this.targetId = target.getUniqueId();
         this.senderName = sender.getName();
-        this.timestamp = System.currentTimeMillis();
-        this.cooldown = cooldown;
+        this.timestamp = timestamp;
+        this.expiryMillis = expiryMillis;
     }
 
     /**
      * 检查请求是否已过期
      */
     public boolean isExpired() {
-        return System.currentTimeMillis() - timestamp > cooldown;
+        return isExpired(System.currentTimeMillis());
+    }
+
+    boolean isExpired(long now) {
+        return now - timestamp >= expiryMillis;
     }
 
     /**
@@ -50,10 +58,10 @@ public class TradeRequest {
     }
 
     /**
-     * 获取剩余冷却时间（毫秒）
+     * 获取请求剩余有效期（毫秒）；保留旧方法名以兼容调用方
      */
     public long getRemainingCooldown() {
         long elapsed = System.currentTimeMillis() - timestamp;
-        return Math.max(0, cooldown - elapsed);
+        return Math.max(0, expiryMillis - elapsed);
     }
 }

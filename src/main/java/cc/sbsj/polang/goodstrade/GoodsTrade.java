@@ -60,6 +60,8 @@ public final class GoodsTrade extends JavaPlugin {
         getLogger().info("§2事件监听器成功注册");
         //每十分钟运行一次检查
         this.getServer().getScheduler().runTaskTimer(this, new RunTask(), 20L, 12000L);
+        // 使用一个共享主线程任务检查实际位置，覆盖推挤、水流和传送。
+        this.getServer().getScheduler().runTaskTimer(this, TradeManager::checkActiveTrades, 5L, 5L);
 
         getLogger().info(getPrefix() + "§aGoodsTrade 已启用。");
     }
@@ -87,7 +89,7 @@ public final class GoodsTrade extends JavaPlugin {
             return false;
         }
 
-        // Hook PlaceholderAPI
+        // 接入 PlaceholderAPI
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new Papi(this).register();
             getLogger().info("§2PlaceholderAPI 变量已注册");

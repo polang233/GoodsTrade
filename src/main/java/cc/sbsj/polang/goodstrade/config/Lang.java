@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
@@ -56,6 +57,9 @@ public class Lang {
         bundledLangConfig = loadBundledLanguage(activeLanguage);
         bundledFallbackConfig = loadBundledLanguage(DEFAULT_LANGUAGE);
         plugin.getLogger().info("Loaded language: " + activeLanguage);
+        if (isSystemLanguage(plugin.getConfig().getString("Language"))) {
+            for (String hint : systemLanguageHints(activeLanguage)) plugin.getLogger().info(hint);
+        }
     }
 
     public String getString(String path) {
@@ -147,15 +151,13 @@ public class Lang {
 
     private String resolveLanguage(Set<String> availableLanguages) {
         String configured = plugin.getConfig().getString("Language");
-        if (configured == null || configured.trim().isEmpty() || SYSTEM_LANGUAGE.equalsIgnoreCase(configured.trim())) {
-            String systemLanguage = toLocaleCode(Locale.getDefault());
-            if (availableLanguages.contains(systemLanguage)) {
-                return systemLanguage;
-            }
-            warnUnsupported("system language " + systemLanguage, availableLanguages);
+        if (isSystemLanguage(configured)) {
+            String detected = detectSystemLanguage(Locale.getDefault(), System.getenv());
+            String matched = matchSystemLanguage(detected, availableLanguages);
+            if (matched != null) return matched;
+            warnUnsupported("system language " + detected, availableLanguages);
             return DEFAULT_LANGUAGE;
         }
-
         String requested = normalizeLanguageCode(configured);
         if (availableLanguages.contains(requested)) {
             return requested;
@@ -271,6 +273,50 @@ public class Lang {
         plugin.getLogger().warning("Missing language entry in lang/" + activeLanguage + ".yml: " + path);
     }
 
+    static boolean isSystemLanguage(String configured) {
+        return configured == null || configured.trim().isEmpty()
+                || SYSTEM_LANGUAGE.equalsIgnoreCase(configured.trim());
+    }
+
+    static List<String> systemLanguageHints(String language) {
+        List<String> hints = new ArrayList<>();
+        hints.add("[语言设置] 当前为自动模式，已选择 " + language
+                + "。如果当前语言不是您想要的语言，请修改 plugins/GoodsTrade/config.yml 中的 Language（如 zh_cn 或 en_us），然后执行 /gt reload。");
+        hints.add("[Language] Automatic mode selected " + language
+                + ". If this is not your preferred language, set Language to zh_cn or en_us in plugins/GoodsTrade/config.yml, then run /gt reload.");
+        return hints;
+    }
+
+    /** 按进程消息语言的优先级读取本地环境，未指定具体语言时使用 JVM 默认语言。 */
+    static String detectSystemLanguage(Locale jvmLocale, Map<String, String> environment) {
+        for (String key : new String[]{"LC_ALL", "LC_MESSAGES", "LANG"}) {
+            String value = environment.get(key);
+            if (value == null || value.trim().isEmpty()) continue;
+            String code = normalizeLanguageCode(value).split("[.@]", 2)[0];
+            // C、POSIX 只表示通用运行环境，不能据此判断服主的语言偏好。
+            // 高优先级变量存在时，不再读取被其覆盖的低优先级变量。
+            if ("c".equals(code) || "posix".equals(code)) break;
+            if (code.matches("[a-z]{2,8}(_[a-z0-9]{2,8})*")) return code;
+            break;
+        }
+        return toLocaleCode(jvmLocale);
+    }
+
+    /** 优先精确匹配；英语、中文使用内置区域版本，其它语言仅在区域版本唯一时匹配。 */
+    static String matchSystemLanguage(String code, Set<String> available) {
+        if (available.contains(code)) return code;
+        String base = code.split("_", 2)[0];
+        if (available.contains(base)) return base;
+        String preferred = "zh".equals(base) ? "zh_cn" : "en".equals(base) ? "en_us" : null;
+        if (preferred != null && available.contains(preferred)) return preferred;
+        String match = null;
+        for (String candidate : available) {
+            if (!candidate.startsWith(base + "_")) continue;
+            if (match != null) return null;
+            match = candidate;
+        }
+        return match;
+    }
     private static String toLocaleCode(Locale locale) {
         String language = locale.getLanguage().toLowerCase(Locale.ROOT);
         String country = locale.getCountry().toLowerCase(Locale.ROOT);
