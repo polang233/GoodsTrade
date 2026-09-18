@@ -1,24 +1,30 @@
 # GoodsTrade English messages
 # Supports legacy & color codes
 # Placeholders:
-#   %prefix% - plugin prefix
-#   %player% - player name
-#   %target% - target player name
+#   %prefix%      plugin prefix (usually added by the plugin, not in the sentence)
+#   %player%      player name
+#   %target%      target player name
+#   %amount%      payment amount with its unit
+#   %currency%    selected currency name
+#   %command%     subcommand name
+#   %description% subcommand description
+#   %label%       the main command the player typed (goodstrade or gt)
 
 prefix: "&7[&2&lGoods&6&lTrade&7] &r"
 
 command:
   help: "&7Available commands:"
-  help-entry: "&e/gt %command% &7- %description%"
-  unknown: "&cUnknown subcommand."
+  help-entry: "&e/%label% %command% &7- %description%"
+  unknown: "&cUnknown subcommand. Use /%label% for help."
   no-permission: "&cYou don't have permission to use this command."
   player-only: "&cOnly players can use this command."
   usage:
-    trade: "&aUsage: /gt trade <sender> <receiver>"
-    sendtrade: "&aUsage: /gt sendtrade <player>"
-    toggle: "&cUsage: /gt toggle [true|false]"
+    trade: "&eUsage: /%label% trade <sender> <receiver>"
+    sendtrade: "&eUsage: /%label% sendtrade <player>"
+    accept: "&eUsage: /%label% accept [player]"
+    toggle: "&eUsage: /%label% toggle [true|false]"
     toggle-hint: "&7Leave out the value to switch your current setting."
-    test: "&aUsage: /gt test [test-name]"
+    test: "&eUsage: /%label% test [test-name]"
   description:
     accept: "Accept a pending trade request"
     reload: "Reload configuration, language, and menu files"
@@ -31,11 +37,13 @@ trade-request:
   already-pending: "&cA request to this player is still pending. Wait for acceptance or expiration."
   sent: "&7Trade request sent to &e%target%&7."
   received: "&e%player% &7wants to trade with you. &a[Click to accept]"
+  received-shift-hint: " &7(Sneak + right-click them to reply)"
   hover: "Click to accept this trade"
+  hover-shift: "Click this message, or sneak + right-click them to reply"
   cooldown: "&cYou're sending trade requests too quickly. Try again in a moment."
   target-closed: "&cThat player isn't accepting trade requests."
   no-pending: "&cYou don't have any pending trade requests."
-  select-player: "&cChoose which player's request you want to accept."
+  select-player: "&cMultiple requests pending. Use /%label% accept <player>."
 
 trade-status:
   same-world-required: "&cBoth players must be in the same world. Trading cannot continue."
@@ -44,7 +52,7 @@ trade-status:
   world-disabled: "&cBoth players must be in enabled worlds. Trading has been stopped."
   cancelled-by-damage: "&cA player took damage. Trade cancelled and items returned."
   money-rollback-failed: "&cTrade cancelled and items returned. Some payments could not be refunded; contact an administrator."
-  opening: "&2Opening the trade menu..."
+  opening: "&aOpening the trade menu..."
   success: "&aTrade complete!"
   cancelled-by-self: "&cYou cancelled the trade."
   cancelled-by-other: "&cThe other player cancelled the trade."
@@ -62,21 +70,21 @@ test-trade:
   already-trading: "&cYou are already in a trade or test mode."
 
 trade-gui:
-  items-offer-changed: "&e%player% &echanged the items. Check the trade and confirm again."
+  items-offer-changed: "&e%player% &7changed the items. Check the trade and confirm again."
   currency-locked: "&cBoth players must unconfirm before switching currencies."
   confirm: "&aOffer confirmed. Waiting for the other player..."
   unconfirm: "&cYou withdrew your confirmation."
   cancel-ready: "&cYou stopped the final confirmation countdown."
-  trade-cancelled: "&cConfirmation cancelled. You can edit your offer again."
+  trade-cancelled: "&eConfirmation cancelled. You can edit your offer again."
   items-locked: "&cYour offer is locked while confirmed."
   self-operation: "&cYou can only edit your own offer slots."
-  confirm-in-progress: "&cThe trade is being confirmed. Use the cancel button if you need to stop it."
+  confirm-in-progress: "&eThe trade is being confirmed. Use the cancel button if you need to stop it."
   blacklist-hit: "&cYour offer contains an item that cannot be traded."
   money-changed: "&aYour money offer is now &e%amount%&a."
-  money-offer-changed: "&e%player% &cchanged the money offer. Your confirmation was reset; review the trade again."
+  money-offer-changed: "&e%player% &7changed the money offer. Check the trade and confirm again."
   money-insufficient: "&c%player% cannot cover the required payment of %amount%."
   money-locked: "&cYour money offer is locked while confirmed."
-  money-minimum: "&cMoney offers cannot go below zero while negative offers are disabled."
+  money-minimum: "&cMoney offers cannot go below zero."
   money-unavailable: "&cCurrency trading is currently unavailable."
   money-invalid: "&cThat amount is invalid or outside the supported range."
 
@@ -107,15 +115,15 @@ trade-view:
     - "&aThe sender places items on the left"
     - "&aThe receiver places items on the right"
     - "&eAdd your offer, then use the buttons below"
-    - "&eConfirmed offers are locked until the trade completes"
-    - "&eUse the countdown to double-check every item"
+    - "&eChanging items or amounts requires confirmation again"
+    - "&eBoth players must confirm before the countdown starts"
+    - "&7Close the menu to cancel the trade"
   money-button-name: "&6Adjust amount: &e%amount%"
   money-button-lore:
     - ""
     - "&aLeft click: add %amount%"
     - "&cRight click: subtract %amount%"
-  sender-payment: "&6%player% must pay: &e%amount%"
-  target-payment: "&6%player% must pay: &e%amount%"
+  payment: "&6%player% must pay: &e%amount%"
   test-mode: "&bTest mode: currency and levels stay unchanged; items are returned"
 
 trade-toggle:
@@ -127,7 +135,7 @@ player:
   not-found: "&cThat player could not be found or is offline."
   self-trade: "&cYou can't trade with yourself."
   different-players: "&cA trade needs two different players."
-  inv-full: "&cYour inventory was full, so the remaining items were dropped at your feet."
+  inv-full: "&eYour inventory was full, so the remaining items were dropped at your feet."
 
 console:
   need-both-players: "Console must specify both the sender and receiver."

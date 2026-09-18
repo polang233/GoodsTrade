@@ -30,6 +30,15 @@ public class TradeRequestLifecycleTest {
         for (Player p : new Player[]{a, b, c, d}) TradeManager.removeSession(p);
         TradeManager.pendingRequests.clear();
     }
+    @Test public void incomingRequestIsPreferredWhenShiftClickingTheSender() {
+        request(a, b);
+        assertTrue(TradeManager.hasPendingRequest(a, b));
+        assertFalse(TradeManager.hasPendingRequest(b, a));
+        TradeManager.pendingRequests.computeIfAbsent(d.getUniqueId(), key -> new java.util.ArrayList<>())
+                .add(new TradeRequest(c, d, 1, 0));
+        assertFalse(TradeManager.hasPendingRequest(c, d));
+    }
+
     @Test public void acceptingOneTradeInvalidatesAllParticipantRequestsOnly() {
         request(a, b); request(a, c); request(d, a); request(c, d); request(b, d);
         TradeManager.createSession(a, c, null);

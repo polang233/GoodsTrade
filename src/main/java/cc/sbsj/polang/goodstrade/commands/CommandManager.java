@@ -31,6 +31,7 @@ public class CommandManager {
                 if (!sender.hasPermission(command.getPermission())) continue;
                 String entry = GoodsTrade.lang.replacePlaceholders(
                         GoodsTrade.lang.getString("command.help-entry"),
+                        "%label%", label,
                         "%command%", command.getName(),
                         "%description%", GoodsTrade.lang.getString("command.description." + command.getName())
                 );
@@ -45,7 +46,7 @@ public class CommandManager {
             System.arraycopy(args, 1, subArgs, 0, args.length - 1);
             return subCommand.execute(sender, cmd, label, subArgs);
         } else {
-            sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("command.unknown"));
+            sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.labeled("command.unknown", label));
             return false;
         }
     }

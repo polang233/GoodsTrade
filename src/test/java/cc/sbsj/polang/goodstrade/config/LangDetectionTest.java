@@ -1,5 +1,6 @@
 package cc.sbsj.polang.goodstrade.config;
 
+import org.bukkit.configuration.MemoryConfiguration;
 import org.junit.Test;
 import java.util.*;
 import static org.junit.Assert.*;
@@ -57,5 +58,29 @@ public class LangDetectionTest {
             assertTrue(hint.contains("plugins/GoodsTrade/config.yml"));
             assertTrue(hint.contains("/gt reload"));
         }
+    }
+
+    @Test public void missingLanguageKeysAreCopiedWithoutChangingExistingValues() {
+        MemoryConfiguration current = new MemoryConfiguration();
+        current.set("trade-request.received", "custom");
+        current.set("trade-request.hover", "");
+        MemoryConfiguration bundled = new MemoryConfiguration();
+        bundled.set("trade-request.received", "default");
+        bundled.set("trade-request.hover", "default-hover");
+        bundled.set("trade-request.received-shift-hint", "hint");
+        bundled.set("trade-view.click-confirm-lore", Arrays.asList("", "click"));
+        List<String> added = Lang.fillMissingKeys(current, bundled);
+        assertEquals(Arrays.asList("trade-request.received-shift-hint", "trade-view.click-confirm-lore"), added);
+        assertEquals("custom", current.getString("trade-request.received"));
+        assertEquals("", current.getString("trade-request.hover"));
+        assertEquals("hint", current.getString("trade-request.received-shift-hint"));
+        assertEquals(Arrays.asList("", "click"), current.getStringList("trade-view.click-confirm-lore"));
+        assertTrue(Lang.fillMissingKeys(current, bundled).isEmpty());
+    }
+
+    @Test public void addedLanguageKeyLogTruncatesLongLists() {
+        assertEquals("a, b", Lang.formatAddedKeys(Arrays.asList("a", "b")));
+        List<String> keys = Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9");
+        assertEquals("1, 2, 3, 4, 5, 6, 7, 8 ...", Lang.formatAddedKeys(keys));
     }
 }

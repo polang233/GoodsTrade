@@ -2,6 +2,7 @@ package cc.sbsj.polang.goodstrade.gui.view;
 
 import cc.sbsj.polang.goodstrade.GoodsTrade;
 import cc.sbsj.polang.goodstrade.gui.GuiButton;
+import cc.sbsj.polang.goodstrade.util.TradeSounds;
 import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -218,6 +219,7 @@ public class View {
     public boolean isBlackList(InventoryClickEvent event, Player player, boolean senderSide) {
         if (GoodsTrade.config.getItemBlackList().contains(player, senderSide)) {
             player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.blacklist-hit"));
+            TradeSounds.denied(player);
             event.setCancelled(true);
             return true;
         }

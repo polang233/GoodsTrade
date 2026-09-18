@@ -10,8 +10,8 @@ import cc.sbsj.polang.goodstrade.trade.EconomyTradeService;
 import cc.sbsj.polang.goodstrade.trade.MoneyTrade;
 import cc.sbsj.polang.goodstrade.hook.economy.TradeCurrency;
 import cc.sbsj.polang.goodstrade.util.Utils;
+import cc.sbsj.polang.goodstrade.util.TradeSounds;
 import com.cryptomorin.xseries.XSound;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -52,8 +52,10 @@ public class TradeView extends View {
         initializeGui(sender, sender.getName(), target.getName());
         // 给发送者打开界面
         gui.open(sender);
+        TradeSounds.opened(sender);
         // 接收者打开界面
         gui.open(target);
+        TradeSounds.opened(target);
     }
 
     public void openTest(Player administrator, String virtualPlayerName) {
@@ -61,6 +63,7 @@ public class TradeView extends View {
         session = TradeManager.createTestSession(administrator, virtualPlayerName, this);
         initializeGui(administrator, administrator.getName(), virtualPlayerName);
         gui.open(administrator);
+        TradeSounds.opened(administrator);
         administrator.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.test-opening"));
     }
 
@@ -91,7 +94,7 @@ public class TradeView extends View {
             Player user = (Player) event.getWhoClicked();
             if (!session.canControlSide(user, senderSide)) {
                 user.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.self-operation"));
-                user.playSound(user.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+                TradeSounds.denied(user);
                 event.setCancelled(true);
                 return;
             } else {
@@ -101,14 +104,14 @@ public class TradeView extends View {
                 if (session.isSenderReady()) {
                     event.setCancelled(true);
                     user.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.items-locked"));
-                    user.playSound(user.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+                    TradeSounds.denied(user);
                     return;
                 }
             } else {
                 if (session.isTargetReady()) {
                     event.setCancelled(true);
                     user.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.items-locked"));
-                    user.playSound(user.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+                    TradeSounds.denied(user);
                     return;
                 }
             }
@@ -148,6 +151,7 @@ public class TradeView extends View {
                     prepareTrade(session);
                 }
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.confirm"));
+                TradeSounds.confirmed(player);
             }
         });
         senderReadyButtonYes.setOnClick(event -> {
@@ -156,6 +160,7 @@ public class TradeView extends View {
                 session.setSenderReady(false);
                 changeButtons(senderReadyButton, 48, 47, 46);
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.unconfirm"));
+                TradeSounds.cancelled(player);
 
             }
         });
@@ -175,6 +180,7 @@ public class TradeView extends View {
                 //记录是发送者取消的
                 cancelledPlayer = session.getTargetPlayer();
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.cancel-ready"));
+                TradeSounds.cancelled(player);
             }
         });
         targetReadyButton.setOnClick(event -> {
@@ -190,6 +196,7 @@ public class TradeView extends View {
                     prepareTrade(session);
                 }
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.confirm"));
+                TradeSounds.confirmed(player);
             }
         });
         targetReadyButtonYes.setOnClick(event -> {
@@ -198,6 +205,7 @@ public class TradeView extends View {
                 session.setTargetReady(false);
                 changeButtons(targetReadyButton, 50, 51, 52);
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.unconfirm"));
+                TradeSounds.cancelled(player);
             }
         });
 
@@ -219,6 +227,7 @@ public class TradeView extends View {
                 cancelledPlayer = session.getSenderPlayer();
 
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.cancel-ready"));
+                TradeSounds.cancelled(player);
             }
         });
         cancelReadyButton.setOnClick(event -> {
@@ -231,6 +240,7 @@ public class TradeView extends View {
                 changeButtons(targetReadyButton, 50, 51, 52);
                 cancelledPlayer = null;
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.trade-cancelled"));
+                TradeSounds.cancelled(player);
                 return;
             }
 
@@ -247,6 +257,7 @@ public class TradeView extends View {
                 cancelledPlayer = null;
 
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.trade-cancelled"));
+                TradeSounds.cancelled(player);
             }
         });
     }
@@ -365,7 +376,7 @@ public class TradeView extends View {
         );
         Player other = session.isTestMode() ? changer : TradeManager.getOtherPlayer(changer, session);
         other.sendMessage(GoodsTrade.getPrefix() + message);
-        other.playSound(other.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+        TradeSounds.denied(other);
     }
 
     private boolean checkMoneyBeforeConfirm(Player player) {
@@ -392,12 +403,12 @@ public class TradeView extends View {
             rejectMoneyChange(player, "trade-gui.money-unavailable");
             return;
         }
-        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+        TradeSounds.denied(player);
     }
 
     private void rejectMoneyChange(Player player, String path) {
         player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString(path));
-        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+        TradeSounds.denied(player);
     }
 
     private void updateMoneyInfo() {
@@ -415,8 +426,8 @@ public class TradeView extends View {
             MoneyTrade.PaymentPlan plan = MoneyTrade.calculate(session.getOffer(currency, true), session.getOffer(currency, false));
             if (currency != session.getCurrency() && plan.getSenderPayment().signum() == 0
                     && plan.getTargetPayment().signum() == 0) continue;
-            lore.add(paymentLine("trade-view.sender-payment", session.getSenderDisplayName(), currency, plan.getSenderPayment()));
-            lore.add(paymentLine("trade-view.target-payment", session.getTargetDisplayName(), currency, plan.getTargetPayment()));
+            lore.add(paymentLine("trade-view.payment", session.getSenderDisplayName(), currency, plan.getSenderPayment()));
+            lore.add(paymentLine("trade-view.payment", session.getTargetDisplayName(), currency, plan.getTargetPayment()));
         }
         meta.setLore(lore);
         item.setItemMeta(meta);
@@ -577,6 +588,8 @@ public class TradeView extends View {
                 : "trade-status.money-settlement-failed";
         sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString(path));
         target.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString(path));
+        TradeSounds.cancelled(sender);
+        TradeSounds.cancelled(target);
         TradeManager.removeSession(sender);
         returnCursorItem(sender);
         ServerCompatibility.closeInventory(sender);

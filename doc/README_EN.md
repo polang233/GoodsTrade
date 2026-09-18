@@ -21,7 +21,7 @@ GoodsTrade is a lightweight, inventory-based trading plugin for Minecraft server
 - **Locked offers:** confirmed players cannot quietly swap items at the last moment.
 - **Multiple currencies:** Vault, PlayerPoints, ExcellentEconomy, and Minecraft experience level offers can be combined in one trade. Changes reset existing confirmations.
 - **Safe returns:** cancelling or closing the menu returns offered items; overflow is dropped at the player's location instead of disappearing.
-- **Quick requests:** players can use a command or sneak-right-click another player.
+- **Quick requests:** players can use a command or sneak-right-click another player; the recipient can sneak-right-click back to accept.
 - **Trade preferences:** each player can disable incoming requests when they want some peace and quiet.
 - **Item rules:** block items by display name, lore text, an NBT path, or an NBT path/value pair.
 - **Custom menus:** change button materials, names, lore, and custom model data in `View.yml`.
@@ -49,7 +49,7 @@ GoodsTrade does **not** currently claim Folia support.
 ## Trading workflow
 
 1. Send a request with `/gt sendtrade <player>`, or sneak-right-click the player when that trigger is enabled.
-2. The other player clicks the acceptance message or runs `/gt accept`.
+2. The other player clicks the acceptance message, sneak-right-clicks you back (when `Shift-Right-Click-Accept` is enabled), or runs `/gt accept`.
 3. Each player places items in their own side of the menu.
 4. Both players confirm their offers.
 5. The configured countdown begins. Either player can cancel during this step.
@@ -95,9 +95,9 @@ Language: system
 
 Run `/gt reload` after changing the value. Locale names follow the common Minecraft/i18n format, such as `zh_cn`, `en_us`, and `ja_jp`.
 
-The command list shown by `/gt` reads its layout and descriptions from `command.help-entry` and `command.description` in the active language file.
+The command list shown by `/gt` reads its layout and descriptions from `command.help-entry` and `command.description`. `%label%` is replaced with the main command the player typed (`gt` or `goodstrade`).
 
-GoodsTrade scans the complete `lang/` folder inside each new JAR and extracts any translation that is missing on disk. Existing files are never overwritten, so local edits are preserved while newly bundled languages appear automatically.
+GoodsTrade scans the complete `lang/` folder inside each new JAR and extracts any translation file that is missing on disk. Existing files keep their current translations; missing keys are copied from the bundled default on startup or `/gt reload`, and the added paths are logged.
 
 When upgrading from an older published version, the root-level `Lang.yml` is migrated to `lang/zh_cn.yml` when needed. The original file is left untouched.
 
@@ -121,6 +121,7 @@ Trade:
       - 10000
   Triggers:
     Shift-Right-Click: true
+    Shift-Right-Click-Accept: true
   Safe:
     Close-On-Damage: false
     Damage: false
@@ -131,7 +132,8 @@ Trade:
 - `Economy.Amounts` defines one to four button steps. Left click adds the step and right click subtracts it.
 - `Allow-Negative` lets an offer cross below zero; a negative offer means the other player must pay. The divider always shows each player's resulting payment obligation.
 - Balance checks run on every amount change, on confirmation, and immediately before settlement. Changing money resets any existing confirmation so both players must review again.
-- `Shift-Right-Click` enables the quick request gesture.
+- `Shift-Right-Click` enables sneak-right-click to send a request.
+- `Shift-Right-Click-Accept` lets the recipient sneak-right-click the requester to accept. The two options are independent.
 - `Safe.Damage` cancels damage against players who are currently trading.
 - `Safe.Move` stops block-to-block movement while the trade menu is open.
 

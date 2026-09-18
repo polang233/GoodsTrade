@@ -65,10 +65,12 @@ Trade:
         Name: "代币"
         Amounts: [1, 10, 100, 1000]
 
-  #什么方式可以发起交易
+  # 什么方式可以发起或回应交易
   Triggers:
-    #蹲下加右键快捷发起交易
+    # 蹲下右键玩家快捷发起交易
     Shift-Right-Click: true
+    # 收到请求后，蹲下右键发起者可直接接受
+    Shift-Right-Click-Accept: true
 
   #安全处理
   Safe:

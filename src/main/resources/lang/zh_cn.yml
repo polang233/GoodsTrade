@@ -1,26 +1,30 @@
 # GoodsTrade 多语言配置文件
 # 支持 & 颜色代码
-# 占位符说明:
-#   %prefix% - 插件前缀
-#   %player% - 玩家名称
-#   %target% - 目标玩家名称
+# 占位符:
+#   %prefix%      插件前缀（多数消息由插件另行添加，一般不用写在句子里）
+#   %player%      玩家名称
+#   %target%      目标玩家名称
+#   %amount%      支付数量（含单位）
+#   %currency%    当前币种名称
+#   %command%     子命令名
+#   %description% 子命令说明
+#   %label%       玩家实际输入的主命令（goodstrade 或 gt）
 
-# 插件前缀
 prefix: "&7[&2&lGoods&6&lTrade&7] &r"
 
-# 命令相关
 command:
   help: "&7可用命令："
-  help-entry: "&e/gt %command% &7- %description%"
-  unknown: "&c未知命令，请输入 /gt 查看帮助。"
-  no-permission: "&c你没有权限执行此命令！"
-  player-only: "&c该命令只能由玩家执行"
+  help-entry: "&e/%label% %command% &7- %description%"
+  unknown: "&c未知命令，请输入 /%label% 查看帮助。"
+  no-permission: "&c你没有权限执行此命令。"
+  player-only: "&c该命令只能由玩家执行。"
   usage:
-    trade: "&a用法：/gt trade [发起者] [接收者]"
-    sendtrade: "&a用法：/gt sendtrade [接收人]"
-    toggle: "&c用法：/gt toggle [true|false]"
-    toggle-hint: "&7不填参数则切换当前状态"
-    test: "&a用法：/gt test [测试名称]"
+    trade: "&e用法：/%label% trade [发起者] [接收者]"
+    sendtrade: "&e用法：/%label% sendtrade [接收人]"
+    accept: "&e用法：/%label% accept [玩家名]"
+    toggle: "&e用法：/%label% toggle [true|false]"
+    toggle-hint: "&7不填参数则切换当前状态。"
+    test: "&e用法：/%label% test [测试名称]"
   description:
     accept: "接受交易请求"
     reload: "重载配置、语言和界面文件"
@@ -29,18 +33,18 @@ command:
     toggle: "开启或关闭接收交易请求"
     trade: "为两名在线玩家打开交易界面"
 
-# 交易请求相关
 trade-request:
   already-pending: "&c已向该玩家发送请求，请等待对方接受或请求过期。"
   sent: "&7已向 &e%target% &7发送交易请求。"
   received: "&e%player% &7想与你交易。&a[点击接受]"
+  received-shift-hint: " &7（可蹲下右键对方快捷回应）"
   hover: "点击接受交易"
+  hover-shift: "点击聊天，或蹲下右键对方快捷回应"
   cooldown: "&c请求发送过于频繁，请稍后再试。"
   target-closed: "&c对方暂不接受交易请求。"
   no-pending: "&c没有可接受的交易请求，请让对方重新发送。"
-  select-player: "&c有多条交易请求，请输入 /gt accept 玩家名。"
+  select-player: "&c有多条交易请求，请输入 /%label% accept 玩家名。"
 
-# 交易状态
 trade-status:
   same-world-required: "&c交易双方必须在同一个世界，交易无法继续。"
   start-too-far: "&c双方距离过远，无法发起或接受交易，请靠近后重试。"
@@ -50,9 +54,9 @@ trade-status:
   money-rollback-failed: "&c交易取消，物品已返还；部分款项未能自动退回，请联系管理员核对。"
   opening: "&a正在打开交易界面……"
   success: "&a交易成功！"
-  cancelled-by-self: "你取消了交易！"
-  cancelled-by-other: "对方取消了交易！"
-  cancelled-by-reload: "&c功能重载中，交易已取消"
+  cancelled-by-self: "&c你取消了交易。"
+  cancelled-by-other: "&c对方取消了交易。"
+  cancelled-by-reload: "&c功能重载中，交易已取消。"
   already-trading: "&c有玩家正在交易，请等待其结束。"
   money-balance-changed: "&c交易取消：倒计时期间有玩家余额不足，物品已返还。"
   money-settlement-failed: "&c交易取消：支付失败，物品已返还。"
@@ -65,20 +69,19 @@ test-trade:
   player-exists: "&c这个名字已有玩家在线，请换一个测试名称。"
   already-trading: "&c请先结束当前交易或退出测试模式。"
 
-# 交易界面
 trade-gui:
-  items-offer-changed: "&e%player% &e修改了交易物品，请检查后重新确认。"
+  items-offer-changed: "&e%player% &7修改了交易物品，请检查后重新确认。"
   currency-locked: "&c请双方取消确认后再切换币种。"
   confirm: "&a已确认，等待对方确认。"
-  unconfirm: "&c你已取消确认交易"
-  cancel-ready: "&c你已取消确认状态"
+  unconfirm: "&c你已取消确认。"
+  cancel-ready: "&c你已取消倒计时确认。"
   trade-cancelled: "&e已取消确认，可以继续调整交易内容。"
   items-locked: "&c请先取消确认，再修改物品。"
   self-operation: "&c你只能操作自己一侧的物品和按钮。"
   confirm-in-progress: "&e正在倒计时，点击下方按钮可取消确认。"
   blacklist-hit: "&c你放入了禁止交易的物品，请先取出。"
   money-changed: "&a已调整为 &e%amount%&a。"
-  money-offer-changed: "&e%player% &e修改了支付数量，请检查后重新确认。"
+  money-offer-changed: "&e%player% &7修改了支付数量，请检查后重新确认。"
   money-insufficient: "&c%player% 无法支付 %amount%。"
   money-locked: "&c请先取消确认，再调整数量。"
   money-minimum: "&c支付数量不能小于 0。"
@@ -119,35 +122,28 @@ trade-view:
     - ""
     - "&a左键: 增加 %amount%"
     - "&c右键: 减少 %amount%"
-  sender-payment: "&6%player% 需支付: &e%amount%"
-  target-payment: "&6%player% 需支付: &e%amount%"
+  payment: "&6%player% 需支付: &e%amount%"
   test-mode: "&b测试模式：不扣除货币和等级，结束后返还物品"
 
-# 交易开关
 trade-toggle:
-  enabled: "&a你已 &2开启 &a交易接受状态，其他玩家可以向你发起交易"
-  disabled: "&c你已 &4关闭 &c交易接受状态，其他玩家无法向你发起交易"
+  enabled: "&a你已 &2开启 &a交易接受状态，其他玩家可以向你发起交易。"
+  disabled: "&c你已 &4关闭 &c交易接受状态，其他玩家无法向你发起交易。"
 
-# 玩家相关
 player:
-  offline: "&c该玩家不在线"
+  offline: "&c该玩家不在线。"
   not-found: "&c找不到这名在线玩家。"
-  self-trade: "&c你不能与自己进行交易！"
-  different-players: "&c交易必须两个不同玩家！"
+  self-trade: "&c你不能与自己进行交易。"
+  different-players: "&c交易必须是两个不同的玩家。"
   inv-full: "&e背包已满，多余物品已掉落在脚下。"
 
-# 控制台相关
 console:
   need-both-players: "请填写发起者和接收者的玩家名。"
 
-# 安全保护
 protection:
-  trading: "该玩家正在交易，你无法对其造成伤害"
+  trading: "&c该玩家正在交易，你无法对其造成伤害。"
 
-# 安全违规
 security:
   exploit-attempt: "&c检测到异常聊天内容，已断开连接。"
 
-# 重载
 reload:
-  success: "&a配置文件已重载！"
+  success: "&a配置文件已重载。"

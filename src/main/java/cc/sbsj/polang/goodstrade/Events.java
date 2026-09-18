@@ -5,7 +5,7 @@ import cc.sbsj.polang.goodstrade.gui.view.View;
 import cc.sbsj.polang.goodstrade.compat.ServerCompatibility;
 import cc.sbsj.polang.goodstrade.trade.TradeManager;
 import cc.sbsj.polang.goodstrade.trade.TradeSession;
-import org.bukkit.Sound;
+import cc.sbsj.polang.goodstrade.util.TradeSounds;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -102,7 +102,7 @@ public class Events implements Listener {
             if (locked) {
                 event.setCancelled(true);
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-gui.items-locked"));
-                player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK, 1.0f, 1.0f);
+                TradeSounds.denied(player);
                 return;
             }
         }
@@ -155,7 +155,7 @@ public class Events implements Listener {
     }
 
     private void handleShiftRightClickTrade(PlayerInteractEntityEvent event) {
-        if (!GoodsTrade.config.isEnabledShiftClick()) return;
+        if (!GoodsTrade.config.isEnabledShiftClick() && !GoodsTrade.config.isEnabledShiftClickAccept()) return;
         if (isOffHandInteract(event)) return;
         if (!(event.getRightClicked() instanceof Player)) return;
 
@@ -172,7 +172,7 @@ public class Events implements Listener {
             return;
         }
         interactCooldown.put(playerId, currentTime);
-        TradeManager.sendTradeRequest(senderPlayer, targetPlayer);
+        TradeManager.handleShiftClickTrade(senderPlayer, targetPlayer);
     }
 
     /**

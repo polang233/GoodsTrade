@@ -175,7 +175,7 @@ Trade:
 [*][B]Economy.Amounts[/B] defines one to four button steps. Left click adds the step and right click subtracts it.
 [*][B]Allow-Negative[/B] lets an offer cross below zero; a negative offer means the other player must pay. The divider always shows each player's resulting payment obligation.
 [*]Balance checks run on every amount change, on confirmation, and immediately before settlement. Changing money resets any existing confirmation so both players must review again.
-[*][B]Shift-Right-Click[/B] enables the quick request gesture.
+[*][B]Shift-Right-Click[/B] enables sneak-right-click to send a request, and to accept by using the same gesture on the requester.
 [*][B]Safe.Damage[/B] cancels damage against players who are currently trading.
 [*][B]Safe.Move[/B] stops block-to-block movement while the trade menu is open.
 [/LIST]
@@ -240,7 +240,7 @@ Or sneak and right-click a player if this feature is enabled in the configuratio
 
 [*][B]Accept the trade[/B]
 
-Click the [B][Click to accept][/B] message in chat, or use:
+Click the [B][Click to accept][/B] message in chat, sneak and right-click the requester, or use:
 
 [B]/gt accept[/B]
 

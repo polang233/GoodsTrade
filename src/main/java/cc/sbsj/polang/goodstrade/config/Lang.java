@@ -2,6 +2,7 @@ package cc.sbsj.polang.goodstrade.config;
 
 import cc.sbsj.polang.goodstrade.GoodsTrade;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -109,6 +110,10 @@ public class Lang {
         return activeLanguage;
     }
 
+    public String labeled(String path, String label) {
+        return replacePlaceholders(getString(path), "%label%", label);
+    }
+
     private String getStringOrFallback(String path) {
         String value = langConfig.getString(path);
         if (value == null) {
@@ -190,6 +195,56 @@ public class Lang {
         if (!getLanguageFile(DEFAULT_LANGUAGE).exists()) {
             plugin.getLogger().severe("Default language file lang/" + DEFAULT_LANGUAGE + ".yml is missing.");
         }
+        syncMissingLanguageKeys();
+    }
+
+    /**
+     * 把默认语言文件中有、服主文件中没有的键写回去，不改已有翻译。
+     */
+    private void syncMissingLanguageKeys() {
+        File directory = new File(plugin.getDataFolder(), LANG_DIRECTORY);
+        File[] files = directory.listFiles((dir, name) -> isYamlFile(name));
+        if (files == null) return;
+        YamlConfiguration bundledFallback = loadBundledLanguage(DEFAULT_LANGUAGE);
+        for (File file : files) {
+            String language = file.getName().substring(0, file.getName().length() - 4).toLowerCase(Locale.ROOT);
+            YamlConfiguration bundled = loadBundledLanguage(language);
+            if (bundled.getKeys(false).isEmpty()) {
+                bundled = bundledFallback;
+            }
+            if (bundled.getKeys(false).isEmpty()) continue;
+            YamlConfiguration current = YamlConfiguration.loadConfiguration(file);
+            List<String> added = fillMissingKeys(current, bundled);
+            if (added.isEmpty()) continue;
+            try {
+                current.save(file);
+                plugin.getLogger().info("已向 lang/" + file.getName() + " 补充 " + added.size()
+                        + " 条缺失的语言项（来自默认文件，已有翻译未改动）：" + formatAddedKeys(added));
+            } catch (IOException exception) {
+                plugin.getLogger().warning("无法向 lang/" + file.getName() + " 写入缺失的语言项: "
+                        + exception.getMessage());
+            }
+        }
+    }
+
+    static List<String> fillMissingKeys(Configuration target, Configuration defaults) {
+        List<String> added = new ArrayList<>();
+        for (String key : defaults.getKeys(true)) {
+            if (defaults.isConfigurationSection(key) || target.isSet(key)) continue;
+            Object value = defaults.get(key);
+            if (value instanceof List) {
+                value = new ArrayList<Object>((List<?>) value);
+            }
+            target.set(key, value);
+            added.add(key);
+        }
+        Collections.sort(added);
+        return added;
+    }
+
+    static String formatAddedKeys(List<String> keys) {
+        if (keys.size() <= 8) return String.join(", ", keys);
+        return String.join(", ", keys.subList(0, 8)) + " ...";
     }
 
     private void migrateLegacyLanguage(File source, String targetLanguage) {

@@ -4,6 +4,7 @@ import cc.sbsj.polang.goodstrade.GoodsTrade;
 import cc.sbsj.polang.goodstrade.compat.ServerCompatibility;
 import cc.sbsj.polang.goodstrade.gui.view.TradeView;
 import cc.sbsj.polang.goodstrade.util.Utils;
+import cc.sbsj.polang.goodstrade.util.TradeSounds;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -84,6 +85,7 @@ public class TradeManager {
             }
             session.getView().backPlayerItems(player);
             player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.test-cancelled"));
+            TradeSounds.cancelled(player);
             TradeManager.removeSession(player);
             return;
         }
@@ -98,6 +100,8 @@ public class TradeManager {
             //发起者结束交易
             player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.cancelled-by-self"));
             target.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.cancelled-by-other"));
+            TradeSounds.cancelled(player);
+            TradeSounds.cancelled(target);
             TradeManager.removeSession(player);
             // 手动处理光标物品后清空，防止 Bukkit closeInventory 内部重复返还
             returnCursorItem(target);
@@ -107,6 +111,8 @@ public class TradeManager {
             //被发起者结束交易
             player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.cancelled-by-self"));
             sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.cancelled-by-other"));
+            TradeSounds.cancelled(player);
+            TradeSounds.cancelled(sender);
             TradeManager.removeSession(player);
             returnCursorItem(sender);
             // 统一走兼容层：1.12 没有 closeInventory(Reason)。
@@ -150,23 +156,46 @@ public class TradeManager {
                 request.isSameSender(sender) && !request.isExpired());
     }
 
+    /**
+     * 蹲下右键玩家：若开启快捷接受且对方已向自己发过未过期请求则直接接受，
+     * 否则在开启快捷发起时发出新请求。
+     */
+    public static void handleShiftClickTrade(Player clicker, Player clicked) {
+        cleanupExpiredRequests();
+        if (GoodsTrade.config.isEnabledShiftClickAccept() && hasPendingRequest(clicked, clicker)) {
+            acceptTrade(clicked, clicker);
+            return;
+        }
+        if (GoodsTrade.config.isEnabledShiftClick()) {
+            sendTradeRequest(clicker, clicked);
+        }
+    }
+
     public static boolean acceptTrade(Player sender, Player target) {
         if (!hasPendingRequest(sender, target)) {
             target.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.no-pending"));
+            TradeSounds.denied(target);
             return false;
         }
         return startTrade(sender, target);
     }
 
     public static boolean startTrade(Player senderPlayer, Player targetPlayer) {
-        if (!checkStartLocations(senderPlayer, targetPlayer)) return false;
+        if (!checkStartLocations(senderPlayer, targetPlayer)) {
+            TradeSounds.denied(senderPlayer);
+            if (!senderPlayer.equals(targetPlayer)) TradeSounds.denied(targetPlayer);
+            return false;
+        }
         if (senderPlayer.equals(targetPlayer)) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("player.different-players"));
+            TradeSounds.denied(senderPlayer);
             return false;
         }
         if (isTrade(senderPlayer) || isTrade(targetPlayer)) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.already-trading"));
             targetPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.already-trading"));
+            TradeSounds.denied(senderPlayer);
+            TradeSounds.denied(targetPlayer);
             return false;
         }
         senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.opening"));
@@ -177,28 +206,36 @@ public class TradeManager {
     }
 
     public static void sendTradeRequest(Player senderPlayer, Player targetPlayer) {
-        if (!checkStartLocations(senderPlayer, targetPlayer)) return;
+        if (!checkStartLocations(senderPlayer, targetPlayer)) {
+            TradeSounds.denied(senderPlayer);
+            return;
+        }
         if (senderPlayer.equals(targetPlayer)) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("player.self-trade"));
+            TradeSounds.denied(senderPlayer);
             return;
         }
         if (isTrade(senderPlayer) || isTrade(targetPlayer)) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-status.already-trading"));
+            TradeSounds.denied(senderPlayer);
             return;
         }
         // 检查目标玩家是否接受交易请求
         if (!GoodsTrade.playerDataManager.isTradeAccept(targetPlayer.getUniqueId())) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.target-closed"));
+            TradeSounds.denied(senderPlayer);
             return;
         }
 
         if (requestCooldown.remaining(senderPlayer.getUniqueId()) > 0) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.cooldown"));
+            TradeSounds.denied(senderPlayer);
             return;
         }
 
         if (hasPendingRequest(senderPlayer, targetPlayer)) {
             senderPlayer.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.already-pending"));
+            TradeSounds.denied(senderPlayer);
             return;
         }
         addRequest(senderPlayer, targetPlayer);
@@ -208,18 +245,24 @@ public class TradeManager {
                 GoodsTrade.lang.getString("trade-request.received"),
                 "%player%", senderPlayer.getName()
         );
+        String hoverMsg = GoodsTrade.lang.getString("trade-request.hover");
+        if (GoodsTrade.config.isEnabledShiftClickAccept()) {
+            receivedMsg += GoodsTrade.lang.getString("trade-request.received-shift-hint");
+            hoverMsg = GoodsTrade.lang.getString("trade-request.hover-shift");
+        }
         // 不支持 BungeeChat 的服务端会由兼容层降级为普通文本消息。
         ServerCompatibility.sendClickableMessage(
                 targetPlayer,
                 GoodsTrade.getPrefix() + receivedMsg,
                 "/goodstrade accept " + senderPlayer.getName(),
-                GoodsTrade.lang.getString("trade-request.hover")
+                hoverMsg
         );
         String sentMsg = GoodsTrade.lang.replacePlaceholders(
                 GoodsTrade.lang.getString("trade-request.sent"),
                 "%target%", targetPlayer.getName()
         );
         senderPlayer.sendMessage(GoodsTrade.getPrefix() + sentMsg);
+        TradeSounds.requestSent(senderPlayer, targetPlayer);
     }
 
     public static boolean checkStartLocations(Player sender, Player target) {
@@ -263,10 +306,12 @@ public class TradeManager {
         returnCursorItem(sender);
         ServerCompatibility.closeInventory(sender);
         sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString(reasonKey));
+        TradeSounds.cancelled(sender);
         if (!session.isTestMode()) {
             returnCursorItem(target);
             ServerCompatibility.closeInventory(target);
             target.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString(reasonKey));
+            TradeSounds.cancelled(target);
         }
     }
 

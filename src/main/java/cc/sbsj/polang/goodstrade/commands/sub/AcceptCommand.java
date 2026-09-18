@@ -47,17 +47,18 @@ public class AcceptCommand implements SubCommand {
                 }
                 return TradeManager.acceptTrade(targetPlayer, player);
             }
-            player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("trade-request.select-player"));
+            player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.labeled("trade-request.select-player", label));
             return false;
         }
         if (args.length == 1) {
             Player targetPlayer = Bukkit.getPlayerExact(args[0]);
             if (targetPlayer == null) {
-                sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("player.offline"));
+                sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("player.not-found"));
                 return false;
             }
             return TradeManager.acceptTrade(targetPlayer, (Player) sender);
         }
+        sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.labeled("command.usage.accept", label));
         return false;
     }
 

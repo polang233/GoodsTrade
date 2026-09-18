@@ -26,7 +26,7 @@ public class SendTradeCommand implements SubCommand {
     public boolean execute(CommandSender sender, Command cmd, String label, String[] args) {
         if (!sender.hasPermission(getPermission())) return false;
         if (args.length == 0) {
-            sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("command.usage.sendtrade"));
+            sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.labeled("command.usage.sendtrade", label));
             return false;
         }
         if (args.length == 1) {
@@ -59,9 +59,9 @@ public class SendTradeCommand implements SubCommand {
                 return false;
             }
             TradeManager.sendTradeRequest(player, player2);
+            return true;
         }
-
-
+        sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.labeled("command.usage.sendtrade", label));
         return false;
     }
 

@@ -31,7 +31,7 @@ public class TestTradeCommand implements SubCommand {
             return false;
         }
         if (args.length > 1) {
-            sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("command.usage.test"));
+            sender.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.labeled("command.usage.test", label));
             return false;
         }
 

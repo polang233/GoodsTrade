@@ -53,13 +53,13 @@ public class TradeToggleCommand implements SubCommand {
                 sendToggleMessage(player, false);
                 return true;
             } else {
-                player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("command.usage.toggle"));
+                player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.labeled("command.usage.toggle", label));
                 player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("command.usage.toggle-hint"));
                 return false;
             }
         }
 
-        player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.getString("command.usage.toggle"));
+        player.sendMessage(GoodsTrade.getPrefix() + GoodsTrade.lang.labeled("command.usage.toggle", label));
         return false;
     }
 

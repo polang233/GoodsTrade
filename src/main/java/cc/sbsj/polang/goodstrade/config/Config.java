@@ -55,6 +55,10 @@ public class Config {
         return config.getBoolean("Trade.Triggers.Shift-Right-Click", true);
     }
 
+    public boolean isEnabledShiftClickAccept() {
+        return config.getBoolean("Trade.Triggers.Shift-Right-Click-Accept", true);
+    }
+
     public boolean isSafeDamage() {
         return config.getBoolean("Trade.Safe.Damage", false);
     }

@@ -7,7 +7,7 @@ GoodsTrade gives both players separate offer areas so they can review the exchan
 - Trade items with another player through one inventory menu.
 - Add offers in Vault currency, PlayerPoints, ExcellentEconomy currencies, or Minecraft experience levels. One trade can include several currencies.
 - Require confirmation from both players and reset confirmation when an offer changes.
-- Send requests with `/gt sendtrade <player>`, or sneak-right-click when that trigger is enabled.
+- Send requests with `/gt sendtrade <player>`, or sneak-right-click when that trigger is enabled. Recipients can sneak-right-click back to accept.
 - Let players turn incoming trade requests on or off.
 - Configure item restrictions using names, lore, NBT paths, and values.
 - Customize menu materials, names, lore, amount buttons, and currency-specific button appearances.
@@ -44,7 +44,7 @@ Missing or unavailable economy providers are skipped, so item trading remains av
 ## Start a trade
 
 1. Run `/gt sendtrade <player>`, or sneak-right-click the player.
-2. The recipient accepts the chat invitation or runs `/gt accept`.
+2. The recipient accepts the chat invitation, sneak-right-clicks you back, or runs `/gt accept`.
 3. Put items into your offer area and use the amount buttons for enabled currencies.
 4. Both players confirm their offers.
 5. After the countdown, the plugin settles the currency offers and exchanges the items.

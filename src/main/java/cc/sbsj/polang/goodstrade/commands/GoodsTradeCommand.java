@@ -43,6 +43,7 @@ public class GoodsTradeCommand implements SubCommand, CommandExecutor, TabComple
                     //只给玩家看他能看的命令
                     String entry = GoodsTrade.lang.replacePlaceholders(
                             GoodsTrade.lang.getString("command.help-entry"),
+                            "%label%", label,
                             "%command%", command.getName(),
                             "%description%", GoodsTrade.lang.getString("command.description." + command.getName())
                     );
