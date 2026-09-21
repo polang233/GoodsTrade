@@ -49,7 +49,7 @@ trade-status:
   same-world-required: "&cBoth players must be in the same world. Trading cannot continue."
   start-too-far: "&cToo far apart to request or accept a trade. Move closer and try again."
   cancelled-by-distance: "&cTrade cancelled: players moved too far apart. Items returned."
-  world-disabled: "&cBoth players must be in enabled worlds. Trading has been stopped."
+  world-disabled: "&cTrading is not allowed in this world. Trading has been stopped."
   cancelled-by-damage: "&cA player took damage. Trade cancelled and items returned."
   money-rollback-failed: "&cTrade cancelled and items returned. Some payments could not be refunded; contact an administrator."
   opening: "&aOpening the trade menu..."

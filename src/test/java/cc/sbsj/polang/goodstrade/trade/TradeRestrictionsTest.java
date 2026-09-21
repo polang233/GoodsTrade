@@ -101,6 +101,43 @@ public class TradeRestrictionsTest {
         assertNull(check(world, 100000, 0, false));
         assertEquals("trade-status.cancelled-by-distance", check(world, 100000, 0, true));
     }
+    @Test public void bangPrefixExcludesWorldsFromEnabledList() {
+        config.set("Trade.Enabled-Worlds", Arrays.asList("world", "world_nether"));
+        assertTrue(TradeRestrictions.isWorldEnabled(config, "world"));
+        assertTrue(TradeRestrictions.isWorldEnabled(config, "world_nether"));
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "arena"));
+
+        config.set("Trade.Enabled-Worlds", Collections.singletonList("!world"));
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "world"));
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "world_nether"));
+
+        config.set("Trade.Enabled-Worlds", Arrays.asList("!world", "world_nether"));
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "world"));
+        assertTrue(TradeRestrictions.isWorldEnabled(config, "world_nether"));
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "arena"));
+
+        config.set("Trade.Enabled-Worlds", Arrays.asList("*", "!world"));
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "world"));
+        assertTrue(TradeRestrictions.isWorldEnabled(config, "world_nether"));
+        assertTrue(TradeRestrictions.isWorldEnabled(config, "arena"));
+
+        config.set("Trade.Enabled-Worlds", Collections.singletonList("!*"));
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "world"));
+
+        config.set("Trade.Enabled-Worlds", Collections.emptyList());
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "world"));
+
+        config.set("Trade.Distance.Same-World", false);
+        config.set("Trade.Distance.Start", 0);
+        config.set("Trade.Distance.Trading", 0);
+        config.set("Trade.Enabled-Worlds", Arrays.asList("!world", "world_nether"));
+        for (boolean active : new boolean[]{false, true}) {
+            assertEquals("trade-status.world-disabled", check(world, 0, 0, active));
+            assertEquals("trade-status.world-disabled", check(nether, 0, 0, active));
+            assertNull(TradeRestrictions.check(config, new Location(nether, 0, 0, 0),
+                    new Location(nether, 0, 0, 0), active));
+        }
+    }
     @Test public void invalidLimitsUseDefaults() {
         for (double value : new double[]{-1, Double.NaN, Double.POSITIVE_INFINITY}) {
             config.set("Trade.Distance.Start", value);

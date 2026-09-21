@@ -137,7 +137,7 @@ Trade:
 - `Safe.Damage` cancels damage against players who are currently trading.
 - `Safe.Move` stops block-to-block movement while the trade menu is open.
 
-`Enabled-Worlds` defaults to `["*"]`, allowing all worlds, including custom and newly created worlds. Existing explicit world lists remain effective; use `["*"]` to allow all worlds. Both participants must be in `Enabled-Worlds` to request, accept or open a trade, including administrator and test commands. Entering a disabled world clears related requests and cancels the active trade. An empty world list disables trading everywhere.
+`Enabled-Worlds` defaults to `["*"]`, allowing all worlds, including custom and newly created worlds. Existing explicit world lists remain effective; use `["*"]` to allow all worlds. Prefix a name with `!` to exclude that world, for example `["*", "!world"]`. Both participants must be in allowed worlds to request, accept or open a trade, including administrator and test commands. Entering a disabled world clears related requests and cancels the active trade. An empty world list disables trading everywhere.
 
 `Distance.Same-World` defaults to true. `Start` defaults to 4 blocks for requests and opening, and `Trading` defaults to 8 blocks during trading. Distances include height; 0 disables the corresponding distance limit. Cross-world trading requires Same-World false and both distances 0. A shared task checks actual positions every 5 ticks, and settlement rechecks the rules. Exceeding the active limit cancels the countdown, returns items, closes both menus and notifies both players.
 
