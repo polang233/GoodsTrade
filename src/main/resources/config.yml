@@ -4,8 +4,16 @@
 Language: system
 
 Trade:
-  # 默认 "*" 允许所有世界；填写世界名称列表可限制生效世界，空列表禁用所有世界。
-  # 限制世界示例：Enabled-Worlds: [world, world_nether, world_the_end]
+  # 默认 false：白名单。Enabled-Worlds 列出的世界允许交易；"*" 允许全部世界；空列表禁用所有世界。
+  # 设为 true：反选为黑名单。列出的世界禁止交易；未列出的世界允许交易。
+  # 反选 + ["*"] 禁止所有世界；反选 + 空列表不禁止任何世界（全部允许）。
+  # 白名单示例（仅主世界和地狱可交易）：
+  #   Invert-Enabled-Worlds: false
+  #   Enabled-Worlds: [world, world_nether]
+  # 黑名单示例（末地禁止交易，其它世界均可）：
+  #   Invert-Enabled-Worlds: true
+  #   Enabled-Worlds: [world_the_end]
+  Invert-Enabled-Worlds: false
   Enabled-Worlds: ["*"]
 
   Request:

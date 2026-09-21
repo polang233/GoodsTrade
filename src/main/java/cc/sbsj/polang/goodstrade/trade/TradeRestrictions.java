@@ -14,7 +14,9 @@ public final class TradeRestrictions {
         List<String> worlds = config.isList("Trade.Enabled-Worlds")
                 ? config.getStringList("Trade.Enabled-Worlds")
                 : Collections.singletonList("*");
-        return worlds.contains("*") || worlds.contains(name);
+        boolean listed = worlds.contains("*") || worlds.contains(name);
+        // Invert-Enabled-Worlds: false 白名单（列出的可用）；true 黑名单（列出的不可用）。
+        return config.getBoolean("Trade.Invert-Enabled-Worlds", false) ? !listed : listed;
     }
 
     /** 位置不符合限制时返回提示的语言键，符合时返回 null。 */

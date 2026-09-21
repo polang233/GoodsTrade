@@ -37,6 +37,7 @@ public class TradeRestrictionsTest {
             assertTrue(defaults.getBoolean("Trade.Distance.Same-World"));
             assertEquals(4, defaults.getDouble("Trade.Distance.Start"), 0);
             assertEquals(8, defaults.getDouble("Trade.Distance.Trading"), 0);
+            assertFalse(defaults.getBoolean("Trade.Invert-Enabled-Worlds"));
             assertEquals(Collections.singletonList("*"),
                     defaults.getStringList("Trade.Enabled-Worlds"));
         }
@@ -100,6 +101,45 @@ public class TradeRestrictionsTest {
         config.set("Trade.Distance.Start", 0);
         assertNull(check(world, 100000, 0, false));
         assertEquals("trade-status.cancelled-by-distance", check(world, 100000, 0, true));
+    }
+    @Test public void invertEnabledWorldsSwitchesWhitelistToBlacklist() {
+        config.set("Trade.Enabled-Worlds", Collections.singletonList("world"));
+        assertTrue(TradeRestrictions.isWorldEnabled(config, "world"));
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "world_nether"));
+        config.set("Trade.Invert-Enabled-Worlds", true);
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "world"));
+        assertTrue(TradeRestrictions.isWorldEnabled(config, "world_nether"));
+        assertTrue(TradeRestrictions.isWorldEnabled(config, "arena"));
+
+        config.set("Trade.Enabled-Worlds", Collections.singletonList("*"));
+        config.set("Trade.Invert-Enabled-Worlds", false);
+        assertTrue(TradeRestrictions.isWorldEnabled(config, "arena"));
+        config.set("Trade.Invert-Enabled-Worlds", true);
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "world"));
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "arena"));
+
+        config.set("Trade.Enabled-Worlds", Collections.emptyList());
+        config.set("Trade.Invert-Enabled-Worlds", false);
+        assertFalse(TradeRestrictions.isWorldEnabled(config, "world"));
+        config.set("Trade.Invert-Enabled-Worlds", true);
+        assertTrue(TradeRestrictions.isWorldEnabled(config, "world"));
+        assertTrue(TradeRestrictions.isWorldEnabled(config, "arena"));
+
+        config.set("Trade.Distance.Same-World", false);
+        config.set("Trade.Distance.Start", 0);
+        config.set("Trade.Distance.Trading", 0);
+        config.set("Trade.Enabled-Worlds", Collections.singletonList("world"));
+        config.set("Trade.Invert-Enabled-Worlds", true);
+        for (boolean active : new boolean[]{false, true}) {
+            assertEquals("trade-status.world-disabled", check(world, 0, 0, active));
+            assertEquals("trade-status.world-disabled", check(nether, 0, 0, active));
+            assertNull(TradeRestrictions.check(config, new Location(nether, 0, 0, 0),
+                    new Location(nether, 0, 0, 0), active));
+        }
+        config.set("Trade.Enabled-Worlds", Collections.singletonList("*"));
+        assertEquals("trade-status.world-disabled", check(world, 0, 0, false));
+        config.set("Trade.Enabled-Worlds", Collections.emptyList());
+        assertNull(check(world, 0, 0, false));
     }
     @Test public void invalidLimitsUseDefaults() {
         for (double value : new double[]{-1, Double.NaN, Double.POSITIVE_INFINITY}) {
