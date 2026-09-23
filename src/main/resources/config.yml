@@ -4,8 +4,8 @@
 Language: system
 
 Trade:
-  # 默认 "*" 允许所有世界；填写世界名称列表可限制生效世界，空列表禁用所有世界。
-  # 限制世界示例：Enabled-Worlds: [world, world_nether, world_the_end]
+  # 默认 "*" 允许所有世界；填写世界名限制生效世界，空列表禁用所有世界。
+  # 名称前加 ! 禁止该世界，例如 ["*", "!world"] 或 ["!world", world_nether]。
   Enabled-Worlds: ["*"]
 
   Request:

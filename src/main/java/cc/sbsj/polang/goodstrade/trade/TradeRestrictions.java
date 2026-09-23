@@ -14,7 +14,9 @@ public final class TradeRestrictions {
         List<String> worlds = config.isList("Trade.Enabled-Worlds")
                 ? config.getStringList("Trade.Enabled-Worlds")
                 : Collections.singletonList("*");
-        return worlds.contains("*") || worlds.contains(name);
+        // "!name" / "!*" 优先禁止；否则 "*" 或正名允许。
+        return !worlds.contains("!" + name) && !worlds.contains("!*")
+                && (worlds.contains("*") || worlds.contains(name));
     }
 
     /** 位置不符合限制时返回提示的语言键，符合时返回 null。 */
